@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!-- <item android:id="@+id/where" android:title="@string/menu_where"></item> -->
+    <item
+        android:id="@+id/checkin"
+        android:title="@string/menu_checkin">
+    </item>
+    <item
+        android:id="@+id/callaround"
+        android:title="@string/menu_callaround">
+    </item>
+    <item
+        android:id="@+id/teammembers"
+        android:title="@string/menu_teammembers">
+    </item>
+    <item
+        android:id="@+id/chooselocations"
+        android:title="@string/menu_chooselocations">
+    </item>
+
+</menu>

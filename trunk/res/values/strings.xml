@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- UI Strings -->
+    <string name="app_name">24/7</string>
+    <string name="activty_where">Team member locations</string>
+    <string name="activty_teammembers">Team members</string>
+    <string name="activty_callaround">Call around</string>
+    <string name="activty_checkin">Check-in</string>
+    <string name="activty_chooselocations">Choose locations</string>
+    <string name="menu_where">Where is everybody?</string>
+    <string name="menu_teammembers">Team members</string>
+    <string name="menu_callaround">Call around</string>
+    <string name="menu_checkin">Oustanding check-ins</string>
+    <string name="menu_chooselocations">Permitted locations</string>
+    <string name="noLocations">No locations yet</string>
+    <string name="newLocation">New location…</string>
+    <string name="permitted">Permitted Location</string>
+    <string name="location_name_hint">Location name</string>
+    <string name="confirm">Confirm</string>
+    <string name="location_edit">Edit Location</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="call_number">Call number</string>
+    <string name="red_alert">Red Alert!</string>
+    <string name="noCheckins">There are no outstanding check-ins.</string>
+    <string name="callaround_enabled">Call around Enabled</string>
+    <string name="editTeammember">Edit Teammember</string>
+    <string name="checkedout">Not checked in:</string>
+    <string name="checkedin">Checked in:</string>
+    <string name="no_teammembers">No teammembers</string>
+    <string name="goneto">Gone to: %s</string>
+    <string name="returning">Returning: %s</string>
+    <string name="resolve_checkin">Resolve checkin</string>
+    <string name="unresolve_checkin">Unresolve checkin</string>
+    <string name="resolve_callaround">Resolve call around</string>
+    <string name="unresolve_callaround">Undo call around</string>
+    <string name="settings">Settings</string>
+    <string name="disable_callaround">Disable call around</string>
+    <string name="enable_callaround">Enable call around</string>
+    <string name="unknown_number">Unknown number</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="callaround_summary" formatted="false">%s called in, %s remaining</string>
+    <string name="callaround_summary_allin">All in</string>
+    <string name="callaround_summary_none">No call arounds are set</string>
+    <string name="checkin_summary_none" formatted="false">No pending check-ins</string>
+    <string name="checkin_summary_singular" formatted="false">1 pending check-in</string>
+    <string name="checkin_summary" formatted="false">%s pending check-ins</string>
+    <string name="noCallarounds">There are currently no call arounds.</string>
+    <string name="callaround_title">Call arounds: %s</string>
+    <string name="home_checkins">Check-ins</string>
+    <string name="home_callaround">Call arounds</string>
+    <string name="home_locations">Permitted locations</string>
+    <string name="home_teammembers">Team members</string>
+    <string name="home_houses">Houses/Groups</string>
+    <string name="home_settings">Settings</string>
+    <string name="no_callaround_report">No report available</string>
+    <string name="manual_add_callarounds">Add today\'s call arounds</string>
+    <string name="house_settings">House settings</string>
+    <string name="select_groups_instructions">Select which of the contact groups should be doing call around.</string>
+    <string name="select_groups_none">There are currently no contact groups. Add these in the phone\'s contacts settings.</string>
+    <string name="callaround_groups">Call around groups</string>
+    <string name="newHouse">Add a new house</string>
+    <string name="noHouses">There are no houses yet.</string>
+    <string name="location_instructions">A checkmark means that the location is permitted.</string>
+    <string name="house_instructions">A checkmark means that call around is expected from the house.</string>
+    <string name="set_house">Set house</string>
+    <string name="not_yet_received">Not yet received</string>
+    <string name="edit_name">Edit name</string>
+    <string name="edit_phone">Edit phone</string>
+    <string name="edit_email">Edit email</string>
+    <string name="delete_teammember">Remove teammember</string>
+    <string name="email_database">Email database</string>
+    <string name="upload_database">Upload database</string>
+    <string name="reset_database">Reset database</string>
+    <string name="callaround">Call around</string>
+    <string name="database">Database</string>
+    <string name="upload_database_instructions">If you don\'t know exactly what you\'re doing here, hit Cancel now. Otherwise, hit OK to upload a new database. The database should be called "thedatabase" and it should be on the SD card, in the "temp" folder.</string>
+    <string name="reset_database_first_warning">If you don\'t know exactly what you\'re doing here, hit Cancel now. You will lose ALL of the data. You will never get it back.</string>
+    <string name="reset_database_second_warning">This is just to confirm that you want to delete EVERYTHING, irrecoverably. This is the last warning! Click Ok to delete everything and start from scratch.</string>
+    <string name="noCallaroundsForDay">There are no callarounds for this day.</string>
+    <string name="clear_data">Clear records older than 1 week</string>
+    <string name="clear_oneweek">Call arounds &amp; check-ins</string>
+    <string name="clear_log">The event log</string>
+    <string name="callaround_due">Call around due time</string>
+    <string name="callaround_earliest">Call around earliest time</string>
+    <string name="callaround_add">Call around add time</string>
+    <string name="callaround_settings">Call around settings</string>
+    <string name="block_number">Block number</string>
+    <string name="block_number_warning">If you block this person\'s number, s/he will be cut off from the system entirely. (This can be undone later.) Are you sure you want to do this?</string>
+    <string name="unblock_number">Unblock number</string>
+    <string name="number_blocking">Number blocking</string>
+    <string name="customization">Customization</string>
+    <string name="thisis_enabled">Permit "This is"</string>
+    <string name="callaround_reminder_enabled">Send all around reminder</string>
+    <string name="no_blocked_numbers">There are currently no blocked numbers</string>
+    <string name="no_house_contacts">There are no numbers associated with this house. Either add people or disable this house\'s call around.</string>
+    <string name="call_house">Call someone</string>
+    <string name="missed_call_delay">Missed call delay</string>
+    <string name="allow_request_reports">Allow report requests</string>
+    <string name="disallow_request_reports">Disallow report requests</string>
+    <string name="none">None</string>
+    <string name="noLogEvents">No events logged at this time</string>
+    <string name="log">Log</string>
+    <string name="callaround_resolved">Today\'s call around resolved</string>
+    <string name="checkin_reminders">Check-in reminders</string>
+    <string name="delete_callaround">Delete</string>
+    <string name="second_time">Second time</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="first_time">First time</string>
+    <string name="second_time_enabled">Second time enabled</string>
+    <string name="add_travel_callaround">Add travel call-ins</string>
+    <string name="house_group">House/Group</string>
+    <string name="callaround_window">Window (minutes)</string>
+    <string name="show_future">Show future</string>
+
+    <!-- Localization -->
+    <string name="loc_country_phonecode">+93</string>
+    <string name="loc_gmt_offset">GMT+04:30</string>
+
+    <!-- Regular expressions for parsing messages -->
+    <string name="re_turnoncallaround">(?:turn\\s*on\\s*call\\s*around|turn\\s*call\\s*around\\s*on)</string>
+    <string name="re_turnoffcallaround">(?:turn\\s*off\\s*call\\s*around|turn\\s*call\\s*around\\s*off)</string>
+    <string name="re_callaround_ok">(?:all in|777)</string>
+    <string name="re_checkin_back">back</string>
+    <string name="re_distress">help|666</string>
+    <string name="re_thisis">this\\s*is\\s*(.*)</string>
+    <string name="re_startcheckin">going\\s*to\\s*(.*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
+    <string name="re_startcheckin_nocheckin">going\\s*to\\s*([^\\s]*)\\s*back\\s*(?:by|at)\\s*(.*)\\s*no\\s*checkin</string>
+    <string name="re_permission">permission|travel</string>
+    <string name="re_time">^(\\d{1,2})?\\s?[\\p{Punct}]?\\s?(\\d{2}|)(a|p)?m?$</string>
+    <string name="re_undocallaround">(?:undo|cancel)\\s*call\\s*around</string>
+    <string name="re_turnoffreminders">(?:turn\\s*off\\s*reminders|turn\\s*reminders\\s*off)</string>
+    <string name="re_turnonreminders">(?:turn\\s*on\\s*reminders|turn\\s*reminders\\s*on)</string>
+    <string name="re_report">report</string>
+
+    <!-- TTS Messages -->
+    <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>
+    <string name="tts_missedcheckin">Attention! Someone has missed a check-in.</string>
+    <string name="tts_missedcallaround">Attention! There is a missed call around.</string>
+    <string name="tts_missedcallarounds">Attention! There are missed call arounds.</string>
+
+    <!-- SMS Messages -->
+    <string name="sms_requestid">24/7 says: I don\'t recognize this number. Please identify yourself with this kind of message: this is John Doe</string>
+    <string name="sms_requestid_acknowledgement">24/7 says: Thank you. In the future this number will be associated with %s</string>
+    <string name="sms_message_error">24/7 says: I\'m sorry I didn\'t recognize that command. Please check your spelling and try again.</string>
+    <string name="sms_247_error">24/7 says: I\'m sorry but something\'s gone wrong on our end. Please contact the RTL for help.</string>
+    <string name="sms_alreadyin">24/7 says: We actually didn\'t have a record of you being out, but we\'re glad you\'re okay.</string>
+    <string name="sms_callaround_disabled">24/7 says: Thanks. We won\'t expect call around from you until you text: turn on call around</string>
+    <string name="sms_callaround_enabled">24/7 says: Thanks. We\'ll be expecting a call around from you. To disable call around, text: turn off call around</string>
+    <string name="sms_callaround_disabled_already">24/7 says: Thanks. We\'re showing that call around was already disabled for you. To enable call around, text: turn on call around</string>
+    <string name="sms_callaround_enabled_already">24/7 says: Thanks. We\'re showing that call around was already enabled for you. To disable call around, text: turn off call around</string>
+    <string name="sms_forbidden">24/7 says: The place(s) that are currently off-limits are: %s</string>
+    <string name="sms_forbidden_none">24/7 says: There are currently no travel restrictions.</string>
+    <string name="sms_confirm_checkin_request" formatted="false">24/7 says: We understand that you are going to %s and will return by %s. If this is an error please send another request to correct it.</string>
+    <string name="sms_existing_checkin_resolved">(In setting this checkin we have resolved an existing one.)</string>
+    <string name="sms_contact_exists">24/7 says: We already have a name associated with this phone number; you may just be already in the system. If you feel this is an error please contact the RTL.</string>
+    <string name="sms_acknowledge_checkin">24/7 says: Thank you for checking in.</string>
+    <string name="sms_callaround_is_disabled">24/7 says: Thanks, but we\'re showing that call around is currently disabled for you. To enable call around, text: turn on call around</string>
+    <string name="sms_callaround_acknowledgement">24/7 says: Thanks for the call around. Have a good night!</string>
+    <string name="sms_callaround_unnecessary">24/7 says: Thanks, but it looks like someone else has already checked in. If you feel this is an error please contact the RTL.</string>
+    <string name="sms_permission_default">travel</string>
+    <string name="sms_callaround_undo_acknowledgement">24/7 says: Your previous call around has been canceled.</string>
+    <string name="sms_callaround_nohouse">24/7 says: At the moment you are not associated with any house in our system. This should change soon. Please contact the RTL in the meantime if you need assistance.</string>
+    <string name="sms_checkin_resolved_foryou">24/7 says: This is a notification that the RTL has resolved your check-in. If you feel this is a mistake, send another check-in request or contact the RTL.</string>
+    <string name="sms_this_disabled_notification">24/7 says: New users are currently not being accepted. Please contact the RTL if you need help.</string>
+    <string name="sms_checkin_reminder">24/7 says: This is a reminder that you have a check-in due in about three minutes.</string>
+    <string name="sms_checkin_reminder_on_confirm">24/7 says: Okay, we\'ll send you a reminder three minutes before your check-in is due. (This will take effect for the next check-in request you send.)</string>
+    <string name="sms_checkin_reminder_off_confirm">24/7 says: Okay, we won\'t send any reminders about check-in. (If you have a current check-in, you\'ll get a reminder for one last one.)</string>
+    <string name="sms_already">24/7 says: Thanks. That\'s actually the setting we already had for you.</string>
+    <string name="sms_report" formatted="false">24/7 says: %s. %s</string>
+    <string name="sms_report_callarounds">Outstanding call arounds: %s</string>
+    <string name="sms_report_checkins">Outstanding check-ins: %s</string>
+
+</resources>

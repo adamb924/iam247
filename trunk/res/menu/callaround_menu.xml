@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/callaround_due"
+        android:title="@string/callaround_due">
+    </item>
+    <item
+        android:id="@+id/callaround_earliest"
+        android:title="@string/callaround_earliest">
+    </item>
+    <item
+        android:id="@+id/callaround_add"
+        android:title="@string/callaround_add">
+    </item>
+    <item
+        android:id="@+id/add_callarounds"
+        android:title="@string/manual_add_callarounds">
+    </item>
+    <item
+        android:id="@+id/add_travel_callaround"
+        android:title="@string/add_travel_callaround">
+    </item>
+    <group android:checkableBehavior="all" >
+        <item
+            android:id="@+id/show_future"
+            android:title="@string/show_future">
+        </item>
+    </group>
+
+</menu>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="fatButtonLike">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">30sp</item>
+    </style>
+
+    <style name="textExplanation">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingBottom">5sp</item>
+        <item name="android:paddingLeft">20sp</item>
+        <item name="android:textColor">@color/explanatory_text_color</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="plainText">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="mediumCheckedItem">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:drawableLeft">?android:attr/listChoiceIndicatorMultiple</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/resolve_checkin"
+        android:title="@string/resolve_checkin">
+    </item>
+    <item
+        android:id="@+id/unresolve_checkin"
+        android:title="@string/unresolve_checkin">
+    </item>
+    <item
+        android:id="@+id/call_number"
+        android:title="@string/call_number">
+    </item>
+
+</menu>
