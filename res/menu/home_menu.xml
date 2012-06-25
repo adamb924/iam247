@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!-- <item -->
+    <!-- android:id="@+id/callaround_settings" -->
+    <!-- android:title="@string/callaround_settings"> -->
+    <!-- <menu> -->
+    <!-- <item -->
+    <!-- android:id="@+id/callaround_due" -->
+    <!-- android:title="@string/callaround_due"> -->
+    <!-- </item> -->
+    <!-- <item -->
+    <!-- android:id="@+id/callaround_add" -->
+    <!-- android:title="@string/callaround_add"> -->
+    <!-- </item> -->
+    <!-- </menu> -->
+    <!-- </item> -->
+    <item
+        android:id="@+id/clear_data"
+        android:title="@string/clear_data">
+        <menu>
+            <item
+                android:id="@+id/clear_oneweek"
+                android:title="@string/clear_oneweek">
+            </item>
+            <item
+                android:id="@+id/clear_log"
+                android:title="@string/clear_log">
+            </item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/database"
+        android:title="@string/database">
+        <menu>
+            <item
+                android:id="@+id/email_database"
+                android:title="@string/email_database">
+            </item>
+            <item
+                android:id="@+id/upload_database"
+                android:title="@string/upload_database">
+            </item>
+            <item
+                android:id="@+id/reset_database"
+                android:title="@string/reset_database">
+            </item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/number_blocking"
+        android:title="@string/number_blocking">
+        <menu>
+            <item
+                android:id="@+id/block_number"
+                android:title="@string/block_number">
+            </item>
+            <item
+                android:id="@+id/unblock_number"
+                android:title="@string/unblock_number">
+            </item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/customization"
+        android:title="@string/customization">
+        <menu>
+            <group android:checkableBehavior="all" >
+                <item
+                    android:id="@+id/thisis_enabled"
+                    android:title="@string/thisis_enabled">
+                </item>
+                <item
+                    android:id="@+id/callaround_reminder_enabled"
+                    android:title="@string/callaround_reminder_enabled">
+                </item>
+            </group>
+
+            <item
+                android:id="@+id/missed_call_delay"
+                android:title="@string/missed_call_delay">
+            </item>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/log"
+        android:title="@string/log">
+    </item>
+
+</menu>

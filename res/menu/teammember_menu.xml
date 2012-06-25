@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/call_number"
+        android:title="@string/call_number">
+    </item>
+    <item
+        android:id="@+id/resolve_checkin"
+        android:title="@string/resolve_checkin">
+    </item>
+
+    <group android:checkableBehavior="all" >
+        <item
+            android:id="@+id/callaround_enabled"
+            android:title="@string/callaround_enabled">
+        </item>
+        <item
+            android:id="@+id/callaround_resolved"
+            android:title="@string/callaround_resolved">
+        </item>
+    </group>
+
+    <item
+        android:id="@+id/edit"
+        android:title="@string/edit">
+        <menu>
+            <item
+                android:id="@+id/set_house"
+                android:title="@string/set_house">
+            </item>
+            <item
+                android:id="@+id/edit_name"
+                android:title="@string/edit_name">
+            </item>
+            <item
+                android:id="@+id/edit_phone"
+                android:title="@string/edit_phone">
+            </item>
+            <item
+                android:id="@+id/edit_email"
+                android:title="@string/edit_email">
+            </item>
+
+            <group android:checkableBehavior="all" >
+                <item
+                    android:id="@+id/checkin_reminders"
+                    android:title="@string/allow_request_reports">
+                </item>
+                <item
+                    android:id="@+id/allow_request_reports"
+                    android:title="@string/allow_request_reports">
+                </item>
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/block_number"
+        android:title="@string/block_number">
+    </item>
+    <item
+        android:id="@+id/delete_teammember"
+        android:title="@string/delete_teammember">
+    </item>
+
+</menu>
