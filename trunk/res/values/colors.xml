@@ -3,4 +3,5 @@
 	<color name="default_text_color">#fff</color>
     	<color name="explanatory_text_color">#3BA7F7</color>
     	<color name="alert">#FF0000</color>
+    	<color name="darkGrey">#464646</color>
 </resources>
