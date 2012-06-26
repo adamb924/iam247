@@ -9,16 +9,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/house_instructions" />
-    
-<!--     <Button -->
-<!--         android:id="@+id/newHouse" -->
-<!--         android:layout_width="wrap_content" -->
-<!--         android:layout_height="wrap_content" -->
-<!--         android:text="@string/newHouse" /> -->
 
     <ListView
         android:id="@+id/android:list"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
         style="mediumCheckedItem"
         />

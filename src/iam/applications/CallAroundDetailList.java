@@ -326,8 +326,8 @@ public class CallAroundDetailList extends ListActivity implements
 		 *            the cur
 		 */
 		public CallaroundAdapter(Context context, Cursor cur) {
-			// super(context, R.layout.callaround_item, cur);
-			super(context, R.layout.twolinelistitem, cur);
+			// super(context, R.layout.twolinelistitem, cur);
+			super(context, R.layout.callaround_detail_item, cur);
 		}
 
 		/*
@@ -340,8 +340,8 @@ public class CallAroundDetailList extends ListActivity implements
 		@Override
 		public View newView(Context context, Cursor cur, ViewGroup parent) {
 			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			// return li.inflate(R.layout.callaround_item, parent, false);
-			return li.inflate(R.layout.twolinelistitem, parent, false);
+			// return li.inflate(R.layout.twolinelistitem, parent, false);
+			return li.inflate(R.layout.callaround_detail_item, parent, false);
 		}
 
 		/*
@@ -361,8 +361,13 @@ public class CallAroundDetailList extends ListActivity implements
 			long outstanding = cur.getLong(cur
 					.getColumnIndex(DbAdapter.KEY_OUTSTANDING));
 
-			// Log.i("Debug", String.valueOf(outstanding));
-			// Log.i("Debug", dateLabel == null ? "null" : dateLabel);
+			String dueFrom = cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_DUEFROM));
+			dueFrom = Time.prettyTime(dueFrom);
+
+			String dueBy = cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_DUEBY));
+			dueBy = Time.prettyTime(dueBy);
 
 			if (dateLabel == null || outstanding == 1) {
 				dateLabel = context.getString(R.string.not_yet_received);
@@ -370,10 +375,16 @@ public class CallAroundDetailList extends ListActivity implements
 				dateLabel = Time.prettyTime(dateLabel);
 			}
 
-			TextView tvTitle = (TextView) view.findViewById(R.id.text1);
+			TextView tvTitle = (TextView) view.findViewById(R.id.header);
 			tvTitle.setText(houseName);
-			TextView tvDetails = (TextView) view.findViewById(R.id.text2);
+			TextView tvDetails = (TextView) view.findViewById(R.id.subheader);
 			tvDetails.setText(dateLabel);
+
+			TextView tvDueTime = (TextView) view.findViewById(R.id.dueTime);
+			tvDueTime.setText(dueBy);
+
+			TextView tvEarlyTime = (TextView) view.findViewById(R.id.earlyTime);
+			tvEarlyTime.setText(dueFrom);
 		}
 	}
 
