@@ -1,0 +1,55 @@
+#summary Summarizes commands available to 24/7 by SMS.
+
+= 24/7 Commands =
+{{{
+this is [name]
+}}}
+Add address book entry [name] with current number
+{{{
+going to [place] back by [time]
+}}}
+Record [place] of user; set checkin time of [time]
+{{{
+going to [place] back by [time] no checkin
+}}}
+Record [place] of user (no checkin time)
+{{{
+going to [place] check-in by [time]
+}}}
+Record [place] of user; set checkin time of [time]
+{{{
+turn off call around
+}}}
+Disable nightly callaround until further notice
+{{{
+turn on call around
+}}}
+Enable nightly callaround until further notice
+{{{
+back
+}}}
+Resolve current checkin
+{{{
+all in   OR    777
+}}}
+Resolve current call around
+{{{
+help    OR     666
+}}}
+Alert RTL of situation
+{{{
+undo call around
+}}}
+Undo a call around that was a mistake
+{{{
+turn on reminders
+}}}
+Have the system send reminders 3 minutes before your checkin is due
+{{{
+turn off reminders
+}}}
+Turn off reminders (see “turn on reminders”)
+{{{
+report
+}}}
+Request an SMS report of outstanding check-ins and call arounds
