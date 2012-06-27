@@ -44,6 +44,11 @@ public class LogList extends ListActivity {
 		registerForContextMenu(getListView());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onDestroy()
+	 */
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();

@@ -112,6 +112,7 @@ public class RedAlert extends Activity implements OnInitListener {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+
 		mDbHelper.close();
 
 		if (mTts != null) {

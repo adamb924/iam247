@@ -96,11 +96,11 @@ public class PreferencesActivity extends PreferenceActivity {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see java.lang.Object#finalize()
+	 * @see android.preference.PreferenceActivity#onDestroy()
 	 */
 	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
+	protected void onDestroy() {
+		super.onDestroy();
 		mDbHelper.close();
 	}
 
