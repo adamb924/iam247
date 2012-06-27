@@ -83,6 +83,10 @@
             android:name=".AddTravelCallaround"
             android:label="@string/add_travel_callaround" >
         </activity>
+        <activity
+            android:name=".PreferencesActivity"
+            android:label="@string/customization" >
+        </activity>
         
         <receiver android:name=".SmsReceiver" >
             <intent-filter>

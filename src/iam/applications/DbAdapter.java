@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -219,18 +220,18 @@ public class DbAdapter {
 	}
 
 	public void addCallaroundForToday(long house_id) throws SQLException {
-		SharedPreferences settings = mContext.getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext);
 		String settings_dueby = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		Date dueby_date = Time.timeFromString(mContext, settings_dueby);
+		Date dueby_date = Time.timeFromColonTime(settings_dueby);
 		Date today_dueby = new Date();
 		today_dueby.setHours(dueby_date.getHours());
 		today_dueby.setMinutes(dueby_date.getMinutes());
 
 		String settings_duefrom = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "00:00");
-		Date duefrom_date = Time.timeFromString(mContext, settings_duefrom);
+		Date duefrom_date = Time.timeFromColonTime(settings_duefrom);
 
 		Date today_duefrom = new Date();
 		today_duefrom.setHours(duefrom_date.getHours());
@@ -253,18 +254,18 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public void addCallarounds() throws SQLException {
-		SharedPreferences settings = mContext.getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext);
 		String settings_dueby = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		Date dueby_date = Time.timeFromString(mContext, settings_dueby);
+		Date dueby_date = Time.timeFromColonTime(settings_dueby);
 		Date today_dueby = new Date();
 		today_dueby.setHours(dueby_date.getHours());
 		today_dueby.setMinutes(dueby_date.getMinutes());
 
 		String settings_duefrom = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "00:00");
-		Date duefrom_date = Time.timeFromString(mContext, settings_duefrom);
+		Date duefrom_date = Time.timeFromColonTime(settings_duefrom);
 
 		Date today_duefrom = new Date();
 		today_duefrom.setHours(duefrom_date.getHours());
@@ -288,6 +289,9 @@ public class DbAdapter {
 			String firstEarliest = Time.iso8601Date(from.getTime()) + " "
 					+ firstTimeEarliest;
 
+			AlarmReceiver.setCallaroundDueAlarm(mContext,
+					Time.iso8601DateTime(first));
+
 			mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
 					+ String.valueOf(house_id)
 					+ "','"
@@ -300,6 +304,9 @@ public class DbAdapter {
 						+ secondTime;
 				String secondEarliest = Time.iso8601Date(from.getTime()) + " "
 						+ secondTimeEarliest;
+
+				AlarmReceiver.setCallaroundDueAlarm(mContext,
+						Time.iso8601DateTime(second));
 
 				mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
 						+ String.valueOf(house_id)
@@ -632,7 +639,7 @@ public class DbAdapter {
 	 * Returns a cursor with the call around report for one day. KEY_NAME is the
 	 * name of the house. KEY_TIMERECEIVED is empty or null if the call around
 	 * has not been resolved. Columns: KEY_ROWID, KEY_NAME, KEY_TIMERECEIVED,
-	 * KEY_OUTSTANDING
+	 * KEY_OUTSTANDING, KEY_DUEFROM, KEY_DUEBY
 	 * 
 	 * @param isoday
 	 *            the requested day, in ISO 8601 format (2012-06-18)
@@ -644,7 +651,7 @@ public class DbAdapter {
 			throws SQLException {
 		return mDb
 				.rawQuery(
-						"select callarounds._id as _id,name,timereceived,outstanding from callarounds,houses where date(dueby)='"
+						"select callarounds._id as _id,name,timereceived,outstanding,duefrom,dueby from callarounds,houses where date(dueby)='"
 								+ isoday
 								+ "' and callarounds.house_id=houses._id order by outstanding asc;",
 						null);

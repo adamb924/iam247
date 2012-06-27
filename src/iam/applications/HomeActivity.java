@@ -17,7 +17,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -70,7 +69,7 @@ public class HomeActivity extends Activity {
 						| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 						| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-		// add these two alarms for managing callarounds
+		// add these two alarms for managing call arounds
 		AlarmReceiver.setAddCallaroundAlarm(this);
 
 		setContentView(R.layout.home_activity);
@@ -193,9 +192,9 @@ public class HomeActivity extends Activity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.home_menu, menu);
 
-		MenuItem thisIsAllowed = menu.findItem(R.id.thisis_enabled);
-		thisIsAllowed.setCheckable(true);
-		thisIsAllowed.setChecked(getThisIsAllowed(this));
+		// MenuItem thisIsAllowed = menu.findItem(R.id.thisis_enabled);
+		// thisIsAllowed.setCheckable(true);
+		// thisIsAllowed.setChecked(getThisIsAllowed(this));
 
 		return r;
 	}
@@ -223,17 +222,11 @@ public class HomeActivity extends Activity {
 		case R.id.unblock_number:
 			unblockNumber();
 			return true;
-		case R.id.thisis_enabled:
-			boolean newValue = !item.isChecked();
-			item.setChecked(newValue);
-			setThisIsAllowed(newValue);
-			return true;
-		case R.id.missed_call_delay:
-			setMissedCallDelay();
+		case R.id.customization:
+			startActivity(new Intent(this, PreferencesActivity.class));
 			return true;
 		case R.id.log:
-			Intent i = new Intent(this, LogList.class);
-			startActivity(i);
+			startActivity(new Intent(this, LogList.class));
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -407,56 +400,6 @@ public class HomeActivity extends Activity {
 				long number_id = spinnerinput.getSelectedItemId();
 				mDbHelper.deleteBlockedNumber(number_id);
 				fillData();
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
-		alert.show();
-	}
-
-	static public boolean getThisIsAllowed(Context context) {
-		SharedPreferences settings = context.getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-		return settings
-				.getBoolean(HomeActivity.PREFERENCES_PERMIT_THISIS, true);
-	}
-
-	private void setThisIsAllowed(boolean allowed) {
-		SharedPreferences settings = getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-
-		SharedPreferences.Editor editor = settings.edit();
-		editor.putBoolean(HomeActivity.PREFERENCES_PERMIT_THISIS, allowed);
-		editor.commit();
-	}
-
-	private void setMissedCallDelay() {
-		SharedPreferences settings = getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-		long delay = settings.getLong(
-				HomeActivity.PREFERENCES_MISSED_CALL_DELAY, 5000);
-
-		AlertDialog.Builder alert;
-		final EditText editinput;
-		alert = new AlertDialog.Builder(HomeActivity.this);
-		editinput = new EditText(HomeActivity.this);
-		editinput.setText(String.valueOf(delay));
-		alert.setView(editinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				long newdelay = -1;
-				try {
-					newdelay = Long.valueOf(editinput.getText().toString());
-				} catch (Exception e) {
-				}
-				if (newdelay > 0) {
-					SharedPreferences settings = getSharedPreferences(
-							HomeActivity.PREFERENCES, 0);
-					SharedPreferences.Editor editor = settings.edit();
-					editor.putLong(HomeActivity.PREFERENCES_MISSED_CALL_DELAY,
-							newdelay);
-					editor.commit();
-				}
 			}
 		});
 		alert.setNegativeButton("Cancel", null);

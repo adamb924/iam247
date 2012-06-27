@@ -1,9 +1,6 @@
 package iam.applications;
 
-import java.util.Date;
-
 import android.app.ListActivity;
-import android.app.TimePickerDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 /**
  * A ListActivity that shows a list of call around summaries (how many in, how
@@ -79,7 +76,12 @@ public class CallAroundList extends ListActivity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		mReportCur = mDbHelper.fetchCallaroundReport(getShowFuture(this));
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(getBaseContext());
+		boolean showFuture = settings.getBoolean(
+				HomeActivity.PREFERENCES_CALLAROUNDS_SHOW_FUTURE, false);
+
+		mReportCur = mDbHelper.fetchCallaroundReport(!showFuture);
 		startManagingCursor(mReportCur);
 		mCallaroundAdapter = new CallaroundAdapter(this, mReportCur);
 		getListView().setAdapter(mCallaroundAdapter);
@@ -136,11 +138,6 @@ public class CallAroundList extends ListActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.callaround_menu, menu);
-
-		MenuItem showFuture = menu.findItem(R.id.show_future);
-		showFuture.setCheckable(true);
-		showFuture.setChecked(getShowFuture(this));
-
 		return true;
 	}
 
@@ -156,24 +153,9 @@ public class CallAroundList extends ListActivity {
 			mDbHelper.addCallarounds();
 			fillData();
 			return true;
-		case R.id.callaround_due:
-			callaroundDueSetting();
-			return true;
-		case R.id.callaround_add:
-			callaroundAddSetting();
-			return true;
-		case R.id.callaround_earliest:
-			callaroundEarliestSetting();
-			return true;
 		case R.id.add_travel_callaround:
 			Intent i = new Intent(this, AddTravelCallaround.class);
 			startActivity(i);
-			return true;
-		case R.id.show_future:
-			boolean newValue = !item.isChecked();
-			item.setChecked(newValue);
-			setShowFuture(newValue);
-			fillData();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -259,131 +241,6 @@ public class CallAroundList extends ListActivity {
 			TextView tvDetails = (TextView) view.findViewById(R.id.text2);
 			tvDetails.setText(callaround_summary);
 		}
-	}
-
-	public void callaroundDueSetting() {
-		// setTimePreferencesString(HomeActivity.PREFERENCES_CALLAROUND_DUE,
-		// "21:00");
-
-		SharedPreferences settings = getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-
-		String old = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		Date date = Time.timeFromString(this, old);
-
-		TimePickerDialog dialog = new TimePickerDialog(this, 0,
-				new TimePickerDialog.OnTimeSetListener() {
-					@Override
-					public void onTimeSet(TimePicker view, int hourOfDay,
-							int minute) {
-						SharedPreferences settings = getSharedPreferences(
-								HomeActivity.PREFERENCES, 0);
-
-						String newTime = String.format("%02d:%02d", hourOfDay,
-								minute);
-
-						SharedPreferences.Editor editor = settings.edit();
-
-						editor.putString(
-								HomeActivity.PREFERENCES_CALLAROUND_DUE_BY,
-								newTime);
-						editor.commit();
-
-						// AlarmReceiver
-						// .setCallaroundDueAlarm(CallAroundList.this);
-
-					}
-				}, date.getHours(), date.getMinutes(), false);
-
-		dialog.show();
-	}
-
-	public void callaroundAddSetting() {
-		SharedPreferences settings = getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-
-		String old = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_ADD, "21:00");
-		Date date = Time.timeFromString(this, old);
-
-		TimePickerDialog dialog = new TimePickerDialog(this, 0,
-				new TimePickerDialog.OnTimeSetListener() {
-					@Override
-					public void onTimeSet(TimePicker view, int hourOfDay,
-							int minute) {
-						SharedPreferences settings = getSharedPreferences(
-								HomeActivity.PREFERENCES, 0);
-
-						String newTime = String.format("%02d:%02d", hourOfDay,
-								minute);
-
-						SharedPreferences.Editor editor = settings.edit();
-
-						editor.putString(
-								HomeActivity.PREFERENCES_CALLAROUND_ADD,
-								newTime);
-						editor.commit();
-
-						AlarmReceiver
-								.setAddCallaroundAlarm(CallAroundList.this);
-					}
-				}, date.getHours(), date.getMinutes(), false);
-
-		dialog.show();
-
-	}
-
-	public void callaroundEarliestSetting() {
-		SharedPreferences settings = getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-
-		String old = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "00:00");
-		Date date = Time.timeFromString(this, old);
-
-		TimePickerDialog dialog = new TimePickerDialog(this, 0,
-				new TimePickerDialog.OnTimeSetListener() {
-					@Override
-					public void onTimeSet(TimePicker view, int hourOfDay,
-							int minute) {
-						SharedPreferences settings = getSharedPreferences(
-								HomeActivity.PREFERENCES, 0);
-
-						String newTime = String.format("%02d:%02d", hourOfDay,
-								minute);
-
-						SharedPreferences.Editor editor = settings.edit();
-
-						editor.putString(
-								HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM,
-								newTime);
-						editor.commit();
-
-						AlarmReceiver
-								.setAddCallaroundAlarm(CallAroundList.this);
-					}
-				}, date.getHours(), date.getMinutes(), false);
-
-		dialog.show();
-
-	}
-
-	public boolean getShowFuture(Context context) {
-		SharedPreferences settings = context.getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-		return settings.getBoolean(
-				HomeActivity.PREFERENCES_CALLAROUNDS_SHOW_FUTURE, false);
-	}
-
-	private void setShowFuture(boolean allowed) {
-		SharedPreferences settings = getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-
-		SharedPreferences.Editor editor = settings.edit();
-		editor.putBoolean(HomeActivity.PREFERENCES_CALLAROUNDS_SHOW_FUTURE,
-				allowed);
-		editor.commit();
 	}
 
 }

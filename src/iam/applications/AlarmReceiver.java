@@ -9,6 +9,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -65,6 +67,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		mDbHelper = new DbAdapter(mContext);
 		mDbHelper.open();
+
+		Log.i("Debug", intent.getAction());
 
 		String action = intent.getAction();
 
@@ -148,9 +152,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Intent intent = new Intent(ctx, AlarmReceiver.class);
 		intent.setAction(ALERT_CHECKIN_DUE);
-		// TODO as of now there's no distinguishing marks for these intents. so
-		// a negative result in the 11:55 test is not conclusive
-		PendingIntent sender = PendingIntent.getBroadcast(ctx, 0, intent,
+		// TODO does this work with multiple requests? (expect so)
+		PendingIntent sender = PendingIntent.getBroadcast(ctx,
+				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		AlarmManager am = (AlarmManager) ctx
@@ -171,8 +175,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
-		SharedPreferences settings = ctx.getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(ctx);
 		int offset = -1
 				* settings.getInt(
 						HomeActivity.PREFERENCES_CHECKIN_REMINDER_DELAY, 3);
@@ -181,12 +185,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Intent intent = new Intent(ctx, AlarmReceiver.class);
 		intent.setAction(ALERT_CHECKIN_REMINDER);
-		// might as well re-use this
-		// this ought to keep multiple check-in requests from canceling each
-		// other
-		// TODO do multiple checkins get separate alerts?
 		intent.putExtra(ALERT_CHECKIN_REMINDER, checkin_id);
-		PendingIntent sender = PendingIntent.getBroadcast(ctx, 0, intent,
+		// TODO does this work with multiple requests? (expect so)
+		PendingIntent sender = PendingIntent.getBroadcast(ctx,
+				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		AlarmManager am = (AlarmManager) ctx
@@ -202,18 +204,21 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 *            the application context
 	 */
 	static public void setAddCallaroundAlarm(Context context) {
-		SharedPreferences settings = context.getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
 		String old = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_ADD, "06:00");
-		Date targetdate = Time.timeFromString(context, old);
+
+		Date targetdate = Time.timeFromColonTime(old);
 		Date thisdate = new Date();
-		thisdate.setHours(targetdate.getHours()); //
+		thisdate.setHours(targetdate.getHours());
 		thisdate.setMinutes(targetdate.getMinutes());
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_ADD_CALLAROUNDS);
-		PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent,
+		intent.putExtra("TIME", ALERT_ADD_CALLAROUNDS);
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) thisdate.getTime(), intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
@@ -230,42 +235,19 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 *            the application context
 	 */
 	static public void setCallaroundDueAlarm(Context context, Date date) {
-		// TODO does this work?
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_CALLAROUND_DUE);
 		intent.putExtra("TIME", Time.iso8601DateTime(date));
-		PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent,
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
-
-		// SharedPreferences settings = context.getSharedPreferences(
-		// HomeActivity.PREFERENCES, 0);
-		// String old = settings.getString(
-		// HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		// Date targetdate = Time.timeFromString(context, old);
-		// Date thisdate = new Date();
-		// thisdate.setHours(targetdate.getHours());
-		// thisdate.setMinutes(targetdate.getMinutes());
-		//
-		// Intent intent = new Intent(context, AlarmReceiver.class);
-		// intent.setAction(ALERT_CALLAROUND_DUE);
-		// // send the time in an effort to make multiple PendingIntents unequal
-		// // TODO do multiple call-arounds get separate alerts?
-		// intent.putExtra("TIME", Time.iso8601DateTime(thisdate));
-		// PendingIntent sender = PendingIntent.getBroadcast(context, 0, intent,
-		// PendingIntent.FLAG_UPDATE_CURRENT);
-		//
-		// AlarmManager am = (AlarmManager) context
-		// .getSystemService(Context.ALARM_SERVICE);
-		// am.cancel(sender);
-		// am.setRepeating(AlarmManager.RTC_WAKEUP, thisdate.getTime(),
-		// AlarmManager.INTERVAL_DAY, sender);
 	}
 
 	/**

@@ -308,4 +308,27 @@ public class Time {
 			return null;
 		}
 	}
+
+	/**
+	 * Return a Date object with the time set to that specified in timeString.
+	 * timeString is assumed to be two colon-delimited integers (e.g., 10:00 or
+	 * 10:0). No error checking is done to ensure that the time is valid or
+	 * meaninful.
+	 * 
+	 * @param timeString
+	 *            the date
+	 * @return the date object
+	 */
+	static public Date timeFromColonTime(String timeString) {
+		String[] pieces = timeString.split(":");
+		if (pieces.length != 2) {
+			return null;
+		} else {
+			Date r = new Date();
+			r.setHours(Integer.parseInt(pieces[0]));
+			r.setMinutes(Integer.parseInt(pieces[1]));
+			return r;
+		}
+	}
+
 }
