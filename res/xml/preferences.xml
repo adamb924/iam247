@@ -9,7 +9,7 @@
 
     <EditTextPreference
         android:defaultValue="5000"
-            android:inputType="number"
+        android:inputType="number"
         android:key="PREFERENCES_MISSED_CALL_DELAY"
         android:summary="@string/missed_call_delay_summary"
         android:title="@string/missed_call_delay" >
@@ -18,14 +18,14 @@
     <PreferenceCategory android:title="@string/blocked_numbers" >
         <iam.applications.BlockPhonePreferenceDialog
             android:defaultValue=""
-    		android:inputType="phone"
+            android:inputType="phone"
             android:summary="@string/block_number_summary"
             android:title="@string/block_number" />
+
         <iam.applications.UnblockPhonePreferenceDialog
             android:defaultValue=""
             android:title="@string/unblock_number" />
-        </PreferenceCategory>
-
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/callaround_preferences" >
         <iam.applications.TimePreferenceDialog
             android:defaultValue="05:00"
@@ -48,6 +48,30 @@
             android:key="PREFERENCES_CALLAROUNDS_SHOW_FUTURE"
             android:summary="@string/show_future_summary"
             android:title="@string/show_future" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/database" >
+        <Preference
+            android:key="email_database"
+            android:summary="@string/email_database_summary"
+            android:title="@string/email_database" />
+        <Preference
+            android:key="upload_database"
+            android:summary="@string/upload_database_summary"
+            android:title="@string/upload_database" />
+        <Preference
+            android:key="reset_database"
+            android:summary="@string/reset_database_summary"
+            android:title="@string/reset_database" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/clear_data" >
+        <Preference
+            android:key="clear_oneweek"
+            android:summary="@string/clear_oneweek_summary"
+            android:title="@string/clear_oneweek" />
+            <Preference
+            android:key="clear_log"
+            android:summary="@string/clear_log_summary"
+            android:title="@string/clear_log" />
     </PreferenceCategory>
 
 </PreferenceScreen>

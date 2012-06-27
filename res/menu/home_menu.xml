@@ -1,38 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
-        android:id="@+id/clear_data"
-        android:title="@string/clear_data">
-        <menu>
-            <item
-                android:id="@+id/clear_oneweek"
-                android:title="@string/clear_oneweek">
-            </item>
-            <item
-                android:id="@+id/clear_log"
-                android:title="@string/clear_log">
-            </item>
-        </menu>
-    </item>
-    <item
-        android:id="@+id/database"
-        android:title="@string/database">
-        <menu>
-            <item
-                android:id="@+id/email_database"
-                android:title="@string/email_database">
-            </item>
-            <item
-                android:id="@+id/upload_database"
-                android:title="@string/upload_database">
-            </item>
-            <item
-                android:id="@+id/reset_database"
-                android:title="@string/reset_database">
-            </item>
-        </menu>
-    </item>
-    <item
         android:id="@+id/customization"
         android:title="@string/customization">
     </item>
@@ -40,5 +8,4 @@
         android:id="@+id/log"
         android:title="@string/log">
     </item>
-
 </menu>
