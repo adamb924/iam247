@@ -17,7 +17,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -27,12 +26,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.SimpleCursorAdapter;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * This is the home activity of the app, i.e., the first screen that is
@@ -217,11 +212,6 @@ public class HomeActivity extends Activity {
 		case R.id.clear_log:
 			clearLogBeforeOneWeek();
 			return true;
-		case R.id.block_number:
-			blockNumber();
-		case R.id.unblock_number:
-			unblockNumber();
-			return true;
 		case R.id.customization:
 			startActivity(new Intent(this, PreferencesActivity.class));
 			return true;
@@ -351,58 +341,5 @@ public class HomeActivity extends Activity {
 
 	private void clearLogBeforeOneWeek() {
 		mDbHelper.deleteLogBeforeOneWeek();
-	}
-
-	private void blockNumber() {
-		AlertDialog.Builder alert;
-		final EditText editinput;
-		alert = new AlertDialog.Builder(HomeActivity.this);
-		editinput = new EditText(HomeActivity.this);
-		alert.setView(editinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = editinput.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setNumberIsBlocked(value, true);
-					fillData();
-				}
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
-		alert.show();
-	}
-
-	private void unblockNumber() {
-		Cursor c = mDbHelper.fetchBlockedNumbers();
-		if (c.getCount() == 0) {
-			Toast toast = Toast.makeText(this,
-					getString(R.string.no_blocked_numbers), Toast.LENGTH_SHORT);
-			toast.show();
-			return;
-		}
-
-		AlertDialog.Builder alert;
-		alert = new AlertDialog.Builder(HomeActivity.this);
-
-		final Spinner spinnerinput = new Spinner(HomeActivity.this);
-		String[] from = new String[] { DbAdapter.KEY_NUMBER };
-		int[] to = new int[] { android.R.id.text1 };
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_spinner_item, c, from, to);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinnerinput.setAdapter(adapter);
-
-		alert.setView(spinnerinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				long number_id = spinnerinput.getSelectedItemId();
-				mDbHelper.deleteBlockedNumber(number_id);
-				fillData();
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
-		alert.show();
 	}
 }
