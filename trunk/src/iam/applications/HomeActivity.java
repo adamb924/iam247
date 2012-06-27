@@ -29,6 +29,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -76,7 +77,7 @@ public class HomeActivity extends Activity {
 
 		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
 
-		TextView checkinsButton = (TextView) findViewById(R.id.home_checkins);
+		LinearLayout checkinsButton = (LinearLayout) findViewById(R.id.checkins_button);
 		checkinsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -85,7 +86,7 @@ public class HomeActivity extends Activity {
 			}
 		});
 
-		TextView callaroundButton = (TextView) findViewById(R.id.home_callaround);
+		LinearLayout callaroundButton = (LinearLayout) findViewById(R.id.callarounds_button);
 		callaroundButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
