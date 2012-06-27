@@ -3,6 +3,7 @@ package iam.applications;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 
@@ -39,11 +40,10 @@ public class MissedCallReceiver extends PhoneStateListener {
 		mContext = context;
 		mHandler = new Handler();
 
-		SharedPreferences settings = context.getSharedPreferences(
-				HomeActivity.PREFERENCES, 0);
-		mDelay = settings.getLong(HomeActivity.PREFERENCES_MISSED_CALL_DELAY,
-				5000);
-
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		mDelay = Long.valueOf(settings.getString(
+				HomeActivity.PREFERENCES_MISSED_CALL_DELAY, "5000"));
 	}
 
 	/*

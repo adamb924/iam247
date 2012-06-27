@@ -8,7 +8,9 @@ import java.util.regex.Pattern;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -82,7 +84,14 @@ public class SmsHandler {
 		if (mContactId == -1) {
 			// perhaps he is identifying himself
 			if (messageMatches(R.string.re_thisis)) {
-				if (!HomeActivity.getThisIsAllowed(context)) {
+				SharedPreferences settings = PreferenceManager
+						.getDefaultSharedPreferences(mContext);
+				boolean thisisAllowed = settings
+						.getBoolean(
+								HomeActivity.PREFERENCES_CALLAROUNDS_SHOW_FUTURE,
+								false);
+
+				if (!thisisAllowed) {
 					sendSms(R.string.sms_this_disabled_notification);
 					mDbHelper.close();
 					return;

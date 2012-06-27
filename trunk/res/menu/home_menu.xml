@@ -64,23 +64,25 @@
     <item
         android:id="@+id/customization"
         android:title="@string/customization">
-        <menu>
-            <group android:checkableBehavior="all" >
-                <item
-                    android:id="@+id/thisis_enabled"
-                    android:title="@string/thisis_enabled">
-                </item>
-                <item
-                    android:id="@+id/callaround_reminder_enabled"
-                    android:title="@string/callaround_reminder_enabled">
-                </item>
-            </group>
 
-            <item
-                android:id="@+id/missed_call_delay"
-                android:title="@string/missed_call_delay">
-            </item>
-        </menu>
+<!--         <menu> -->
+<!--             <group android:checkableBehavior="all" > -->
+<!--                 <item -->
+<!--                     android:id="@+id/thisis_enabled" -->
+<!--                     android:title="@string/thisis_enabled"> -->
+<!--                 </item> -->
+<!--                 <item -->
+<!--                     android:id="@+id/callaround_reminder_enabled" -->
+<!--                     android:title="@string/callaround_reminder_enabled"> -->
+<!--                 </item> -->
+<!--             </group> -->
+
+<!--             <item -->
+<!--                 android:id="@+id/missed_call_delay" -->
+<!--                 android:title="@string/missed_call_delay"> -->
+<!--             </item> -->
+<!--         </menu> -->
+        
     </item>
     <item
         android:id="@+id/log"

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="PREFERENCES_PERMIT_THISIS"
+        android:summary="@string/thisis_enabled_summary"
+        android:title="@string/thisis_enabled" />
+
+    <EditTextPreference
+        android:defaultValue="5000"
+        android:key="PREFERENCES_MISSED_CALL_DELAY"
+        android:summary="@string/missed_call_delay_summary"
+        android:title="@string/missed_call_delay" >
+    </EditTextPreference>
+
+<!--     <PreferenceCategory android:title="@string/blocked_numbers" > -->
+<!--     </PreferenceCategory> -->
+    
+    <PreferenceCategory android:title="@string/callaround_preferences" >
+        <iam.applications.TimePreferenceDialog
+            android:defaultValue="05:00"
+            android:key="PREFERENCES_CALLAROUND_ADD"
+            android:summary="@string/callaround_add_summary"
+            android:title="@string/callaround_add" />
+        <iam.applications.TimePreferenceDialog
+            android:defaultValue="21:00"
+            android:key="PREFERENCES_CALLAROUND_DUE_BY"
+            android:summary="@string/callaround_due_summary"
+            android:title="@string/callaround_due" />
+        <iam.applications.TimePreferenceDialog
+            android:defaultValue="17:00"
+            android:key="PREFERENCES_CALLAROUND_DUE_FROM"
+            android:summary="@string/callaround_earliest_summary"
+            android:title="@string/callaround_earliest" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="PREFERENCES_CALLAROUNDS_SHOW_FUTURE"
+            android:summary="@string/show_future_summary"
+            android:title="@string/show_future" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

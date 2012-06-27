@@ -87,20 +87,26 @@
     <string name="clear_oneweek">Call arounds &amp; check-ins</string>
     <string name="clear_log">The event log</string>
     <string name="callaround_due">Call around due time</string>
+    <string name="callaround_due_summary">What time daily call around is due</string>
     <string name="callaround_earliest">Call around earliest time</string>
+    <string name="callaround_earliest_summary">The earliest time a team member can do call around</string>
     <string name="callaround_add">Call around add time</string>
+    <string name="callaround_add_summary">The time each day that the day\'s call arounds should be added</string>
     <string name="callaround_settings">Call around settings</string>
+    <string name="blocked_numbers">Block number</string>
     <string name="block_number">Block number</string>
     <string name="block_number_warning">If you block this person\'s number, s/he will be cut off from the system entirely. (This can be undone later.) Are you sure you want to do this?</string>
     <string name="unblock_number">Unblock number</string>
     <string name="number_blocking">Number blocking</string>
-    <string name="customization">Customization</string>
-    <string name="thisis_enabled">Permit "This is"</string>
+    <string name="customization">Preferences</string>
+    <string name="thisis_enabled">Permit &quot;This is&quot;</string>
+    <string name="thisis_enabled_summary">Allow new users to add themselves to the system</string>
     <string name="callaround_reminder_enabled">Send all around reminder</string>
     <string name="no_blocked_numbers">There are currently no blocked numbers</string>
     <string name="no_house_contacts">There are no numbers associated with this house. Either add people or disable this house\'s call around.</string>
     <string name="call_house">Call someone</string>
-    <string name="missed_call_delay">Missed call delay</string>
+    <string name="missed_call_delay">Missed call delay (ms)</string>
+    <string name="missed_call_delay_summary">The delay between when the phone first starts ringing and when 24/7 checks for the ringing to have stopped.</string>
     <string name="allow_request_reports">Allow report requests</string>
     <string name="disallow_request_reports">Disallow report requests</string>
     <string name="none">None</string>
@@ -118,6 +124,8 @@
     <string name="house_group">House/Group</string>
     <string name="callaround_window">Window (minutes)</string>
     <string name="show_future">Show future</string>
+    <string name="show_future_summary">Show call arounds that are scheduled after today</string>
+    <string name="callaround_preferences">Call around preferences</string>
 
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>
