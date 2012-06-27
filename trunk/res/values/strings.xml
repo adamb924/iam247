@@ -95,6 +95,7 @@
     <string name="callaround_settings">Call around settings</string>
     <string name="blocked_numbers">Block number</string>
     <string name="block_number">Block number</string>
+    <string name="block_number_summary">Blocking number will make 24/7 ignore everything from that number.</string>
     <string name="block_number_warning">If you block this person\'s number, s/he will be cut off from the system entirely. (This can be undone later.) Are you sure you want to do this?</string>
     <string name="unblock_number">Unblock number</string>
     <string name="number_blocking">Number blocking</string>

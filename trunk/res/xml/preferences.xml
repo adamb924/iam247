@@ -9,14 +9,23 @@
 
     <EditTextPreference
         android:defaultValue="5000"
+            android:inputType="number"
         android:key="PREFERENCES_MISSED_CALL_DELAY"
         android:summary="@string/missed_call_delay_summary"
         android:title="@string/missed_call_delay" >
     </EditTextPreference>
 
-<!--     <PreferenceCategory android:title="@string/blocked_numbers" > -->
-<!--     </PreferenceCategory> -->
-    
+    <PreferenceCategory android:title="@string/blocked_numbers" >
+        <iam.applications.BlockPhonePreferenceDialog
+            android:defaultValue=""
+    		android:inputType="phone"
+            android:summary="@string/block_number_summary"
+            android:title="@string/block_number" />
+        <iam.applications.UnblockPhonePreferenceDialog
+            android:defaultValue=""
+            android:title="@string/unblock_number" />
+        </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/callaround_preferences" >
         <iam.applications.TimePreferenceDialog
             android:defaultValue="05:00"
