@@ -26,9 +26,6 @@ public class MissedCallReceiver extends PhoneStateListener {
 	/** The phone number number. */
 	private String mNumber;
 
-	/** A boolean value that remembers weather the phone was just ringing. */
-	private boolean mPhoneWasRinging;
-
 	/**
 	 * Instantiates a new missed call receiver.
 	 * 
@@ -58,14 +55,23 @@ public class MissedCallReceiver extends PhoneStateListener {
 
 		mNumber = SmsHandler.getNormalizedPhoneNumber(mContext, incomingNumber);
 
+		// handy for subsequent debugging:
+		// switch (state) {
+		// case TelephonyManager.CALL_STATE_RINGING:
+		// Log.i("Debug", "CALL_STATE_RINGING");
+		// break;
+		// case TelephonyManager.CALL_STATE_IDLE:
+		// Log.i("Debug", "CALL_STATE_IDLE");
+		// break;
+		// case TelephonyManager.CALL_STATE_OFFHOOK:
+		// Log.i("Debug", "CALL_STATE_OFFHOOK");
+		// break;
+		// }
+
+		// if the phone is ringing set a timer to check the phone status after
+		// mDelay milliseconds
 		if (state == TelephonyManager.CALL_STATE_RINGING) {
-			mPhoneWasRinging = true;
-		} else if (state == TelephonyManager.CALL_STATE_IDLE
-				&& mPhoneWasRinging) {
-			mPhoneWasRinging = false;
 			mHandler.postDelayed(checkForMissedCall, mDelay);
-		} else {
-			mPhoneWasRinging = false;
 		}
 	}
 
@@ -75,8 +81,9 @@ public class MissedCallReceiver extends PhoneStateListener {
 		public void run() {
 			TelephonyManager telephonyManager = (TelephonyManager) mContext
 					.getSystemService(Context.TELEPHONY_SERVICE);
-			// if it's a missed call
-			if (telephonyManager.getCallState() != TelephonyManager.CALL_STATE_RINGING) {
+
+			// if the phone is no longer ringing
+			if (telephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
 				// not proud of this, but it seems the most efficient way
 				new SmsHandler(mContext, mNumber,
 						mContext.getString(R.string.sms_permission_default),
