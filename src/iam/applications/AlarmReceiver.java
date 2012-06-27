@@ -152,7 +152,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Intent intent = new Intent(ctx, AlarmReceiver.class);
 		intent.setAction(ALERT_CHECKIN_DUE);
-		// TODO does this work with multiple requests? (expect so)
 		PendingIntent sender = PendingIntent.getBroadcast(ctx,
 				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
@@ -186,7 +185,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Intent intent = new Intent(ctx, AlarmReceiver.class);
 		intent.setAction(ALERT_CHECKIN_REMINDER);
 		intent.putExtra(ALERT_CHECKIN_REMINDER, checkin_id);
-		// TODO does this work with multiple requests? (expect so)
+
 		PendingIntent sender = PendingIntent.getBroadcast(ctx,
 				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_UPDATE_CURRENT);
