@@ -102,7 +102,7 @@ public class CallAroundDetailList extends ListActivity implements
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see android.app.ListActivity#onDestroy()
+	 * @see android.app.Activity#onDestroy()
 	 */
 	@Override
 	protected void onDestroy() {
