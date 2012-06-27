@@ -154,7 +154,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		intent.setAction(ALERT_CHECKIN_DUE);
 		PendingIntent sender = PendingIntent.getBroadcast(ctx,
 				(int) cal.getTimeInMillis(), intent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) ctx
 				.getSystemService(Context.ALARM_SERVICE);
@@ -188,7 +188,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		PendingIntent sender = PendingIntent.getBroadcast(ctx,
 				(int) cal.getTimeInMillis(), intent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) ctx
 				.getSystemService(Context.ALARM_SERVICE);
@@ -218,7 +218,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		intent.putExtra("TIME", ALERT_ADD_CALLAROUNDS);
 		PendingIntent sender = PendingIntent.getBroadcast(context,
 				(int) thisdate.getTime(), intent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
@@ -242,7 +242,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		intent.putExtra("TIME", Time.iso8601DateTime(date));
 		PendingIntent sender = PendingIntent.getBroadcast(context,
 				(int) cal.getTimeInMillis(), intent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
