@@ -224,10 +224,11 @@ public class CallAroundDetailList extends ListActivity implements
 		long callaround_id = info.id;
 		long house_id = mDbHelper.getHouseIdFromCallaround(callaround_id);
 
-		MenuItem callaroundResolved = menu.findItem(R.id.callaround_resolved);
-		callaroundResolved.setCheckable(true);
-		callaroundResolved.setChecked(!mDbHelper
-				.getCallaroundOutstanding(house_id));
+		MenuItem callaroundOutstanding = menu
+				.findItem(R.id.callaround_resolved);
+		callaroundOutstanding.setCheckable(true);
+		callaroundOutstanding.setChecked(mDbHelper
+				.getCallaroundResolvedFromId(callaround_id));
 
 		MenuItem callaroundEnabled = menu.findItem(R.id.callaround_enabled);
 		callaroundEnabled.setCheckable(true);
@@ -326,7 +327,6 @@ public class CallAroundDetailList extends ListActivity implements
 		 *            the cur
 		 */
 		public CallaroundAdapter(Context context, Cursor cur) {
-			// super(context, R.layout.twolinelistitem, cur);
 			super(context, R.layout.callaround_detail_item, cur);
 		}
 
@@ -340,7 +340,6 @@ public class CallAroundDetailList extends ListActivity implements
 		@Override
 		public View newView(Context context, Cursor cur, ViewGroup parent) {
 			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			// return li.inflate(R.layout.twolinelistitem, parent, false);
 			return li.inflate(R.layout.callaround_detail_item, parent, false);
 		}
 
