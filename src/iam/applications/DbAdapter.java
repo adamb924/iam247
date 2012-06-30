@@ -861,6 +861,32 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns true if a current call around is resolved, otherwise false.
+	 * 
+	 * @param house_id
+	 *            the house_id of the call around
+	 * @return True if the call around is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCallaroundResolved(long house_id) throws SQLException {
+		String now = Time.iso8601DateTime();
+
+		Cursor c = mDb.rawQuery(
+				"select count(_id) as count from callarounds where house_id='"
+						+ String.valueOf(house_id)
+						+ "' and outstanding='1' and datetime('" + now
+						+ "') >= datetime(duefrom) and datetime('" + now
+						+ "') <= datetime(dueby);", null);
+
+		if (c.moveToFirst()) {
+			return c.getLong(0) > 0 ? false : true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Returns true if the specified call around is outstanding, otherwise
 	 * false.
 	 * 
@@ -877,6 +903,26 @@ public class DbAdapter {
 				new String[] { String.valueOf(rowId) }, null, null, null);
 		if (c.moveToFirst()) {
 			return c.getLong(0) > 0 ? true : false;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Returns true if the specified call around is resolved, otherwise false.
+	 * 
+	 * @param rowId
+	 *            the _id of the call around
+	 * @return True if the call around is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCallaroundResolvedFromId(long rowId) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CALLAROUNDS,
+				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(rowId) }, null, null, null);
+		if (c.moveToFirst()) {
+			return c.getLong(0) > 0 ? false : true;
 		} else {
 			return false;
 		}
@@ -1380,9 +1426,11 @@ public class DbAdapter {
 	 */
 	public int setCallaroundResolvedFromId(long callaround_id, boolean resolved)
 			throws SQLException {
+		Log.i("Debug", "Setting resolved: " + (resolved ? "true" : "false"));
+
 		ContentValues args = new ContentValues();
 		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
-		args.put(KEY_TIMERECEIVED, Time.iso8601DateTime());
+		args.put(KEY_TIMERECEIVED, resolved ? Time.iso8601DateTime() : "");
 		if (mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_ROWID + "=?",
 				new String[] { String.valueOf(callaround_id) }) > 0) {
 			return NOTIFY_SUCCESS;

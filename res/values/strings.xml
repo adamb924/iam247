@@ -119,7 +119,8 @@
     <string name="none">None</string>
     <string name="noLogEvents">No events logged at this time</string>
     <string name="log">Log</string>
-    <string name="callaround_resolved">Today\'s call around resolved</string>
+    <string name="callaround_outstanding">Outstanding</string>
+    <string name="callaround_resolved">Call around resolved</string>
     <string name="checkin_reminders">Check-in reminders</string>
     <string name="delete_callaround">Delete</string>
     <string name="second_time">Second time</string>
