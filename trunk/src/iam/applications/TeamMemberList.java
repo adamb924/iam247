@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,10 +21,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ResourceCursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 /**
  * This Activity displays two lists, one of checked-in team members and one of
@@ -102,15 +99,16 @@ public class TeamMemberList extends Activity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		// Log.i("Debug", "TeamMembersList fill data");
+		String[] from = new String[] { DbAdapter.KEY_NAME, DbAdapter.KEY_LABEL };
+		int[] to = new int[] { R.id.name, R.id.house };
 
 		Cursor checkedoutCur = mDbHelper.fetchCheckedOutPeople();
 		startManagingCursor(checkedoutCur);
 
 		if (checkedoutCur.getCount() > 0) {
-			TeammemberAdapter mCheckedOutListAdapter = new TeammemberAdapter(
-					this, checkedoutCur);
-			mCheckedOut.setAdapter(mCheckedOutListAdapter);
+			SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
+					R.layout.teammember_item, checkedoutCur, from, to);
+			mCheckedOut.setAdapter(notes);
 		} else {
 			ViewGroup vg = (ViewGroup) findViewById(R.id.teammember_layout);
 			vg.removeView(mCheckedOut);
@@ -120,9 +118,10 @@ public class TeamMemberList extends Activity {
 		Cursor checkedinCur = mDbHelper.fetchCheckedInPeople();
 		startManagingCursor(checkedinCur);
 
-		TeammemberAdapter mCheckedInListAdapter = new TeammemberAdapter(this,
-				checkedinCur);
-		mCheckedIn.setAdapter(mCheckedInListAdapter);
+		SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
+				R.layout.teammember_item, checkedinCur, from, to);
+		mCheckedIn.setAdapter(notes);
+
 	}
 
 	/*
@@ -393,60 +392,6 @@ public class TeamMemberList extends Activity {
 		});
 		alert.setNegativeButton("Cancel", null);
 		alert.show();
-	}
-
-	/**
-	 * The custom adapter is needed simply to be able to display the team member
-	 * along with his/her associated house. (In the future I hope to make that
-	 * look better.)
-	 */
-	private class TeammemberAdapter extends ResourceCursorAdapter {
-
-		/**
-		 * Instantiates a new teammember adapter.
-		 * 
-		 * @param context
-		 *            the context
-		 * @param cur
-		 *            the cur
-		 */
-		public TeammemberAdapter(Context context, Cursor cur) {
-			super(context, android.R.layout.simple_list_item_1, cur);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see
-		 * android.widget.ResourceCursorAdapter#newView(android.content.Context,
-		 * android.database.Cursor, android.view.ViewGroup)
-		 */
-		@Override
-		public View newView(Context context, Cursor cur, ViewGroup parent) {
-			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return li.inflate(android.R.layout.simple_list_item_1, parent,
-					false);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.widget.CursorAdapter#bindView(android.view.View,
-		 * android.content.Context, android.database.Cursor)
-		 */
-		@Override
-		public void bindView(View view, Context context, Cursor cur) {
-			TextView text = (TextView) view.findViewById(android.R.id.text1);
-			String name = cur.getString(cur.getColumnIndex(DbAdapter.KEY_NAME));
-			String house = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_LABEL));
-
-			if (house == null) {
-				text.setText(String.format("%s", name));
-			} else {
-				text.setText(String.format("%s (%s)", name, house));
-			}
-		}
 	}
 
 	/**
