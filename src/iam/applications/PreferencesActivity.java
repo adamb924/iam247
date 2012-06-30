@@ -24,6 +24,10 @@ import android.preference.PreferenceActivity;
  * @author Adam
  * 
  */
+/**
+ * @author Adam
+ * 
+ */
 public class PreferencesActivity extends PreferenceActivity {
 
 	/** The database interface. */
@@ -104,6 +108,11 @@ public class PreferencesActivity extends PreferenceActivity {
 		mDbHelper.close();
 	}
 
+	/**
+	 * Copies the database to "/temp/thedatabase" on the SD card, and then
+	 * attaches this file to a new email. (The two steps are required because
+	 * the database would not otherwise be accessible to the mail program.)
+	 */
 	private void emailDatabase() {
 		FileChannel source = null;
 		FileChannel destination = null;
@@ -141,6 +150,10 @@ public class PreferencesActivity extends PreferenceActivity {
 		startActivity(Intent.createChooser(sendIntent, "Email:"));
 	}
 
+	/**
+	 * Warns the user, and then copies the file at "/temp/thedatabase" on the SD
+	 * card to replace the current database file.
+	 */
 	private void uploadDatabase() {
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(R.string.upload_database);
@@ -179,6 +192,10 @@ public class PreferencesActivity extends PreferenceActivity {
 		alert.show();
 	}
 
+	/**
+	 * Warns the user twice, and then calls DbAdapter.deleteAll() to clear all
+	 * data from the database.
+	 */
 	private void resetDatabase() {
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(R.string.reset_database);

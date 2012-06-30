@@ -11,7 +11,9 @@ import android.view.View;
 import android.widget.Toast;
 
 /**
- * @author Adam
+ * A <code>ListPreference</code> subclass for removing phone numbers from the
+ * blocked numbers list. Arguably this logic would be better placed in
+ * <code>PreferencesActivity</code>.
  * 
  */
 public class UnblockPhonePreferenceDialog extends ListPreference {

@@ -16,7 +16,9 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 /**
- * @author Adam
+ * This is a simple <code>ListActivity</code> subclass for displaying the
+ * event/error log. (Currently this is accessed from the menu of the
+ * <code>HomeActivity</code>.
  * 
  */
 public class LogList extends ListActivity {

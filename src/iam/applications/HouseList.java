@@ -17,9 +17,9 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 /**
- * This <code>ListActivity</code> displays a checked list of houses, with an
- * option to add a house. Unchecking the activity means that no call around is
- * expected from that house.
+ * This <code>ListActivity</code> displays a checked list of houses/groups, with
+ * an option to add a house/group. Unchecking the activity means that no call
+ * around is expected from that house.
  */
 public class HouseList extends ListActivity {
 
@@ -166,7 +166,10 @@ public class HouseList extends ListActivity {
 	}
 
 	/**
+	 * Deletes the house associated with the item
+	 * 
 	 * @param item
+	 *            The clicked menu item.
 	 */
 	private void deleteHouse(MenuItem item) {
 		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
@@ -176,7 +179,11 @@ public class HouseList extends ListActivity {
 	}
 
 	/**
+	 * Prompts the user to edit the name of the house associated with the menu
+	 * item.
+	 * 
 	 * @param item
+	 *            The clicked menu item.
 	 */
 	private void editHouse(MenuItem item) {
 		final AdapterContextMenuInfo info2 = (AdapterContextMenuInfo) item
@@ -204,6 +211,10 @@ public class HouseList extends ListActivity {
 		alert.show();
 	}
 
+	/**
+	 * Prompts the user to enter the name of a new house, and adds that house to
+	 * the database.
+	 */
 	private void newHouse() {
 		AlertDialog.Builder alert = new AlertDialog.Builder(HouseList.this);
 

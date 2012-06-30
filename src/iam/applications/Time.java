@@ -319,7 +319,7 @@ public class Time {
 	 *            the date
 	 * @return the date object
 	 */
-	static public Date timeFromColonTime(String timeString) {
+	static public Date timeFromSimpleTime(String timeString) {
 		String[] pieces = timeString.split(":");
 		if (pieces.length != 2) {
 			return null;

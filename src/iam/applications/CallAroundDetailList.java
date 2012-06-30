@@ -54,6 +54,7 @@ public class CallAroundDetailList extends ListActivity implements
 	/** An arbitrary code for testing the availability of the TTS service. */
 	private static final int TTS_CHECK_CODE = 1234;
 
+	/** The number of missed callarounds for the present day. */
 	private long mMissedCallarounds;
 
 	/*
@@ -86,6 +87,8 @@ public class CallAroundDetailList extends ListActivity implements
 
 		fillData();
 
+		// if the intent tells us that a call around is (over)due, check that,
+		// and if it's true sound the alarm
 		if (getIntent().hasExtra(AlarmReceiver.ALERT_CALLAROUND_DUE)) {
 			mMissedCallarounds = mDbHelper.getNumberOfDueCallarounds();
 			if (mMissedCallarounds > 0) {
@@ -273,6 +276,14 @@ public class CallAroundDetailList extends ListActivity implements
 		}
 	}
 
+	/**
+	 * Displays an <code>AlertDialog</code> with a list of contacts who belong
+	 * to the house specified by house_id. If the user selects one of the
+	 * numbers, the phone calls that number.
+	 * 
+	 * @param house_id
+	 *            The _id of the house for which to display numbers.
+	 */
 	private void callNumber(long house_id) {
 		Cursor c = mDbHelper.fetchContactsForHouse(house_id);
 		if (c.getCount() == 0) {

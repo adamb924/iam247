@@ -14,7 +14,16 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
- * The Class DbAdapter.
+ * The Class DbAdapter. Provides access functions for the app's SQL database.
+ */
+
+/**
+ * @author Adam
+ *
+ */
+/**
+ * @author Adam
+ * 
  */
 public class DbAdapter {
 	/**
@@ -206,32 +215,19 @@ public class DbAdapter {
 		mContext = ctx;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#finalize()
-	 */
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-
-		// this may have been causing problems....
-		// close();
-	}
-
 	public void addCallaroundForToday(long house_id) throws SQLException {
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
 		String settings_dueby = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		Date dueby_date = Time.timeFromColonTime(settings_dueby);
+		Date dueby_date = Time.timeFromSimpleTime(settings_dueby);
 		Date today_dueby = new Date();
 		today_dueby.setHours(dueby_date.getHours());
 		today_dueby.setMinutes(dueby_date.getMinutes());
 
 		String settings_duefrom = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "00:00");
-		Date duefrom_date = Time.timeFromColonTime(settings_duefrom);
+		Date duefrom_date = Time.timeFromSimpleTime(settings_duefrom);
 
 		Date today_duefrom = new Date();
 		today_duefrom.setHours(duefrom_date.getHours());
@@ -258,14 +254,14 @@ public class DbAdapter {
 				.getDefaultSharedPreferences(mContext);
 		String settings_dueby = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		Date dueby_date = Time.timeFromColonTime(settings_dueby);
+		Date dueby_date = Time.timeFromSimpleTime(settings_dueby);
 		Date today_dueby = new Date();
 		today_dueby.setHours(dueby_date.getHours());
 		today_dueby.setMinutes(dueby_date.getMinutes());
 
 		String settings_duefrom = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "00:00");
-		Date duefrom_date = Time.timeFromColonTime(settings_duefrom);
+		Date duefrom_date = Time.timeFromSimpleTime(settings_duefrom);
 
 		Date today_duefrom = new Date();
 		today_duefrom.setHours(duefrom_date.getHours());
@@ -278,45 +274,6 @@ public class DbAdapter {
 				+ "','"
 				+ Time.iso8601DateTime(today_duefrom)
 				+ "' from houses where active='1';");
-	}
-
-	public void addTravelCallarounds(long house_id, Calendar from, Calendar to,
-			String firstTime, String firstTimeEarliest, String secondTime,
-			String secondTimeEarliest) throws SQLException {
-
-		while (from.before(to) || from.equals(to)) {
-			String first = Time.iso8601Date(from.getTime()) + " " + firstTime;
-			String firstEarliest = Time.iso8601Date(from.getTime()) + " "
-					+ firstTimeEarliest;
-
-			AlarmReceiver.setCallaroundDueAlarm(mContext,
-					Time.iso8601DateTime(first));
-
-			mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
-					+ String.valueOf(house_id)
-					+ "','"
-					+ first
-					+ "','"
-					+ firstEarliest + "');");
-
-			if (secondTime != null) {
-				String second = Time.iso8601Date(from.getTime()) + " "
-						+ secondTime;
-				String secondEarliest = Time.iso8601Date(from.getTime()) + " "
-						+ secondTimeEarliest;
-
-				AlarmReceiver.setCallaroundDueAlarm(mContext,
-						Time.iso8601DateTime(second));
-
-				mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
-						+ String.valueOf(house_id)
-						+ "','"
-						+ second
-						+ "','"
-						+ secondEarliest + "');");
-			}
-			from.add(Calendar.DAY_OF_MONTH, 1);
-		}
 	}
 
 	/**
@@ -426,6 +383,21 @@ public class DbAdapter {
 		return mDb.insert(DATABASE_TABLE_LOCATIONS, null, initialValues);
 	}
 
+	/**
+	 * Adds a record to the <code>locationlog</code> table
+	 * 
+	 * @param contact_id
+	 *            the _id of the contact
+	 * @param lat
+	 *            the latitude
+	 * @param lon
+	 *            the longitude
+	 * @param time
+	 *            the time of the SMS
+	 * @return the number of rows inserted
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
 	public long addLocationLog(long contact_id, double lat, double lon,
 			String time) throws SQLException {
 		ContentValues initialValues = new ContentValues();
@@ -434,6 +406,85 @@ public class DbAdapter {
 		initialValues.put(KEY_LON, lon);
 		initialValues.put(KEY_TIME, time);
 		return mDb.insert(DATABASE_TABLE_LOCATION_LOG, null, initialValues);
+	}
+
+	/**
+	 * Adds a record to the event log.
+	 * 
+	 * @param type
+	 *            The type of message (should be a static member of DbAdapter)
+	 * @param message
+	 *            The message to be logged
+	 * @return The number of records inserted into the database
+	 */
+	public boolean addLogEvent(String type, String message) {
+		ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_TYPE, type);
+		initialValues.put(KEY_MESSAGE, message);
+		initialValues.put(KEY_TIME, Time.iso8601DateTime());
+		return mDb.insert(DATABASE_TABLE_LOG, null, initialValues) > -1;
+	}
+
+	/**
+	 * Adds call arounds at specified times, for the range of dates given, for
+	 * the given house_id.
+	 * 
+	 * @param house_id
+	 *            the house_id
+	 * @param from
+	 *            the date at which to start adding call arounds (inclusive)
+	 * @param to
+	 *            the date to which call arounds should be added (inclusive)
+	 * @param firstTime
+	 *            the first call around time
+	 * @param firstTimeEarliest
+	 *            the earliest time the team member can respond to the first
+	 *            call around
+	 * @param secondTime
+	 *            the second call around time, or null if none is desired
+	 * @param secondTimeEarliest
+	 *            the earliest time the team member can respond to the second
+	 *            call around
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void addTravelCallarounds(long house_id, Calendar from, Calendar to,
+			String firstTime, String firstTimeEarliest, String secondTime,
+			String secondTimeEarliest) throws SQLException {
+
+		while (from.before(to) || from.equals(to)) {
+			String first = Time.iso8601Date(from.getTime()) + " " + firstTime;
+			String firstEarliest = Time.iso8601Date(from.getTime()) + " "
+					+ firstTimeEarliest;
+
+			AlarmReceiver.setCallaroundDueAlarm(mContext,
+					Time.iso8601DateTime(first));
+
+			mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
+					+ String.valueOf(house_id)
+					+ "','"
+					+ first
+					+ "','"
+					+ firstEarliest + "');");
+
+			if (secondTime != null) {
+				String second = Time.iso8601Date(from.getTime()) + " "
+						+ secondTime;
+				String secondEarliest = Time.iso8601Date(from.getTime()) + " "
+						+ secondTimeEarliest;
+
+				AlarmReceiver.setCallaroundDueAlarm(mContext,
+						Time.iso8601DateTime(second));
+
+				mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
+						+ String.valueOf(house_id)
+						+ "','"
+						+ second
+						+ "','"
+						+ secondEarliest + "');");
+			}
+			from.add(Calendar.DAY_OF_MONTH, 1);
+		}
 	}
 
 	/**
@@ -531,6 +582,18 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Deletes call arounds and checkins that were received/resolved before one
+	 * week from the current time.
+	 */
+	public void deleteDataBeforeOneWeek() {
+		String weekago = oneWeekAgo();
+		mDb.execSQL("delete from callarounds where strftime('%s',timereceived) <= strftime('%s','"
+				+ weekago + "');");
+		mDb.execSQL("delete from checkins where strftime('%s',timereceived) <= strftime('%s','"
+				+ weekago + "');");
+	}
+
+	/**
 	 * Delete a house from the database, along with records of associated
 	 * tables.
 	 * 
@@ -561,6 +624,14 @@ public class DbAdapter {
 	public long deleteLocation(long rowId) throws SQLException {
 		return mDb.delete(DATABASE_TABLE_LOCATIONS, KEY_ROWID + "=" + rowId,
 				null);
+	}
+
+	/**
+	 * Deletes log events from before one week ago.
+	 */
+	public void deleteLogBeforeOneWeek() {
+		mDb.execSQL("delete from log where strftime('%s',time) <= strftime('%s','"
+				+ oneWeekAgo() + "');");
 	}
 
 	/**
@@ -712,92 +783,17 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns true if the phone number is on the blocked list, otherwise false
+	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
+	 * KEY_LOCATION, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING
 	 * 
-	 * @return true if the phone number is on the blocked list, otherwise false
+	 * @return the cursor
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public boolean getNumberIsBlocked(String number) throws SQLException {
-		Cursor c = mDb
-				.rawQuery(
-						"select count(_id) as count from blockednumbers where number=?;",
-						new String[] { number });
-		if (c.moveToFirst()) {
-			return c.getLong(c.getColumnIndex(KEY_COUNT)) > 0 ? true : false;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Returns the number of call arounds that are due
-	 * 
-	 * @return the number of due call arounds
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public long getNumberOfDueCallarounds() throws SQLException {
-		Cursor c = mDb.rawQuery(
-				"select count(_id) as count from callarounds where date(dueby)='"
-						+ Time.iso8601Date() + "' and outstanding='1';", null);
-		if (c.moveToFirst()) {
-			return c.getLong(c.getColumnIndex(KEY_COUNT));
-		} else {
-			return 0;
-		}
-	}
-
-	/**
-	 * Returns the number of check-ins that are due
-	 * 
-	 * @return the number of due check-ins
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public long getNumberOfDueCheckins() throws SQLException {
-		Cursor c = mDb
-				.rawQuery(
-						// "select count(_id) as count from checkins where outstanding='1' and strftime('%s',timedue) <= strftime('%s','now');",
-						"select count(_id) as count from checkins where outstanding='1' and datetime(timedue) <= datetime('now','localtime');",
-						null);
-		if (c.moveToFirst()) {
-			return c.getLong(c.getColumnIndex(KEY_COUNT));
-		} else {
-			return 0;
-		}
-	}
-
-	public String getPath() {
-		return mDb.getPath();
-	}
-
-	/**
-	 * Return a list of forbidden locations in a CSV string.
-	 * 
-	 * @return the string
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public String getForbiddenLocations() throws SQLException {
-		Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS, new String[] {
-				KEY_ROWID, KEY_LABEL }, KEY_ALLOWED + "='0'", null, null, null,
-				KEY_LABEL);
-		if (cursor.moveToFirst()) {
-			String r = "";
-			for (int i = 0; i < cursor.getCount(); i++) {
-				r += cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL));
-				if (!cursor.isLast()) {
-					r += ", ";
-				}
-				cursor.moveToNext();
-			}
-			cursor.close();
-			return r;
-		} else {
-			return null;
-		}
+	public Cursor fetchLog() throws SQLException {
+		return mDb.rawQuery(
+				"select _id,type,message,time from log order by time desc;",
+				null);
 	}
 
 	/**
@@ -813,6 +809,19 @@ public class DbAdapter {
 				.rawQuery(
 						"select checkins._id,location,timedue,name from checkins,contacts where checkins.contact_id=contacts._id and outstanding='1';",
 						null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#finalize()
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+
+		// this may have been causing problems....
+		// close();
 	}
 
 	/**
@@ -861,6 +870,28 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns true if the specified call around is outstanding, otherwise
+	 * false.
+	 * 
+	 * @param rowId
+	 *            the _id of the call around
+	 * @return True if the call around is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCallaroundOutstandingFromId(long rowId)
+			throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CALLAROUNDS,
+				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(rowId) }, null, null, null);
+		if (c.moveToFirst()) {
+			return c.getLong(0) > 0 ? true : false;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Returns true if a current call around is resolved, otherwise false.
 	 * 
 	 * @param house_id
@@ -881,28 +912,6 @@ public class DbAdapter {
 
 		if (c.moveToFirst()) {
 			return c.getLong(0) > 0 ? false : true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true if the specified call around is outstanding, otherwise
-	 * false.
-	 * 
-	 * @param rowId
-	 *            the _id of the call around
-	 * @return True if the call around is outstanding, otherwise false.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean getCallaroundOutstandingFromId(long rowId)
-			throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_CALLAROUNDS,
-				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
-				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (c.moveToFirst()) {
-			return c.getLong(0) > 0 ? true : false;
 		} else {
 			return false;
 		}
@@ -961,6 +970,25 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns true if the check-in is outstanding, otherwise false.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @return true if the check-in is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCheckinOutstanding(long checkin_id) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
+				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }, null, null, null);
+		c.moveToFirst();
+		long r = c.getLong(0);
+		c.close();
+		return r == 1 ? true : false;
+	}
+
+	/**
 	 * Returns a formatted string with the number of outstanding checkins.
 	 * 
 	 * @return the checkin summary
@@ -1004,6 +1032,26 @@ public class DbAdapter {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Returns true if the contact has an outstanding check-in, otherwise false.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @return True if the contact has an outstanding check-in, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getContactHasCheckinOutstanding(long contact_id)
+			throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
+				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
+						+ "' and " + KEY_OUTSTANDING + "='1'", null, null,
+				null, null);
+		boolean r = c.moveToFirst();
+		c.close();
+		return r;
 	}
 
 	/**
@@ -1066,22 +1114,23 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns true if the check-in is outstanding, otherwise false.
+	 * Returns the specified contact's specified preference.
 	 * 
 	 * @param contact_id
 	 *            the contact_id
-	 * @return true if the check-in is outstanding, otherwise false.
+	 * @return the value of the preference
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public boolean getCheckinOutstanding(long checkin_id) throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
-				new String[] { String.valueOf(checkin_id) }, null, null, null);
+	public boolean getContactPermission(long contact_id, long preferenceId)
+			throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CONTACTS,
+				new String[] { KEY_PERMISSIONS }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(contact_id) }, null, null, null);
 		c.moveToFirst();
-		long r = c.getLong(0);
+		long result = c.getLong(0);
 		c.close();
-		return r == 1 ? true : false;
+		return (preferenceId & result) > 0;
 	}
 
 	/**
@@ -1105,43 +1154,31 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the specified contact's specified preference.
+	 * Return a list of forbidden locations in a CSV string.
 	 * 
-	 * @param contact_id
-	 *            the contact_id
-	 * @return the value of the preference
+	 * @return the string
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public boolean getContactPermission(long contact_id, long preferenceId)
-			throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_CONTACTS,
-				new String[] { KEY_PERMISSIONS }, KEY_ROWID + "=?",
-				new String[] { String.valueOf(contact_id) }, null, null, null);
-		c.moveToFirst();
-		long result = c.getLong(0);
-		c.close();
-		return (preferenceId & result) > 0;
-	}
-
-	/**
-	 * Returns true if the contact has an outstanding check-in, otherwise false.
-	 * 
-	 * @param contact_id
-	 *            the contact_id
-	 * @return True if the contact has an outstanding check-in, otherwise false.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean getContactHasCheckinOutstanding(long contact_id)
-			throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
-						+ "' and " + KEY_OUTSTANDING + "='1'", null, null,
-				null, null);
-		boolean r = c.moveToFirst();
-		c.close();
-		return r;
+	public String getForbiddenLocations() throws SQLException {
+		Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS, new String[] {
+				KEY_ROWID, KEY_LABEL }, KEY_ALLOWED + "='0'", null, null, null,
+				KEY_LABEL);
+		if (cursor.moveToFirst()) {
+			String r = "";
+			for (int i = 0; i < cursor.getCount(); i++) {
+				r += cursor.getString(cursor
+						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL));
+				if (!cursor.isLast()) {
+					r += ", ";
+				}
+				cursor.moveToNext();
+			}
+			cursor.close();
+			return r;
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -1270,6 +1307,72 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns true if the phone number is on the blocked list, otherwise false
+	 * 
+	 * @return true if the phone number is on the blocked list, otherwise false
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getNumberIsBlocked(String number) throws SQLException {
+		Cursor c = mDb
+				.rawQuery(
+						"select count(_id) as count from blockednumbers where number=?;",
+						new String[] { number });
+		if (c.moveToFirst()) {
+			return c.getLong(c.getColumnIndex(KEY_COUNT)) > 0 ? true : false;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Returns the number of call arounds that are due
+	 * 
+	 * @return the number of due call arounds
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long getNumberOfDueCallarounds() throws SQLException {
+		Cursor c = mDb.rawQuery(
+				"select count(_id) as count from callarounds where date(dueby)='"
+						+ Time.iso8601Date() + "' and outstanding='1';", null);
+		if (c.moveToFirst()) {
+			return c.getLong(c.getColumnIndex(KEY_COUNT));
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * Returns the number of check-ins that are due
+	 * 
+	 * @return the number of due check-ins
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long getNumberOfDueCheckins() throws SQLException {
+		Cursor c = mDb
+				.rawQuery(
+						// "select count(_id) as count from checkins where outstanding='1' and strftime('%s',timedue) <= strftime('%s','now');",
+						"select count(_id) as count from checkins where outstanding='1' and datetime(timedue) <= datetime('now','localtime');",
+						null);
+		if (c.moveToFirst()) {
+			return c.getLong(c.getColumnIndex(KEY_COUNT));
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * Returns the path to the database file.
+	 * 
+	 * @return the path to the database file
+	 */
+	public String getPath() {
+		return mDb.getPath();
+	}
+
+	/**
 	 * Returns a formatted report out outstanding call arounds and check-ins.
 	 * 
 	 * @return the value of SQLite's last_insert_rowid()
@@ -1340,6 +1443,19 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns the ISO 8601 date/time string from one week before the present
+	 * time.
+	 * 
+	 * @return the ISO 8601 date/time string from one week before the present
+	 *         time
+	 */
+	private String oneWeekAgo() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -7);
+		return Time.iso8601DateTime(cal.getTime());
+	}
+
+	/**
 	 * Opens the database
 	 * 
 	 * @return the database helper object
@@ -1350,30 +1466,7 @@ public class DbAdapter {
 		mDbHelper = new DatabaseHelper(mContext);
 		mDb = mDbHelper.getWritableDatabase();
 
-		// Cursor c = mDb.rawQuery("select sqlite_version();", null);
-		// c.moveToFirst();
-		// Log.i("Debug", "SQLite version: " + c.getString(0));
-		// c.close();
-
 		return this;
-	}
-
-	/**
-	 * Set the number as blocked or not
-	 * 
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public void setNumberIsBlocked(String number, boolean blocked)
-			throws SQLException {
-		if (blocked) {
-			ContentValues initialValues = new ContentValues();
-			initialValues.put(KEY_NUMBER, number);
-			mDb.insert(DATABASE_TABLE_BLOCKEDNUMBERS, null, initialValues);
-		} else {
-			mDb.delete(DATABASE_TABLE_BLOCKEDNUMBERS, KEY_NUMBER + "=?",
-					new String[] { number });
-		}
 	}
 
 	/**
@@ -1424,34 +1517,6 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public int setCallaroundResolvedFromId(long callaround_id, boolean resolved)
-			throws SQLException {
-		Log.i("Debug", "Setting resolved: " + (resolved ? "true" : "false"));
-
-		ContentValues args = new ContentValues();
-		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
-		args.put(KEY_TIMERECEIVED, resolved ? Time.iso8601DateTime() : "");
-		if (mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_ROWID + "=?",
-				new String[] { String.valueOf(callaround_id) }) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
-	}
-
-	/**
-	 * Set whether an existing call around is resolved or not, for whatever call
-	 * arounds can be resolved
-	 * 
-	 * @param house_id
-	 *            the house_id of the call around to update
-	 * @param resolved
-	 *            whether the call around is to be resolved or not
-	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
-	 *         NOTIFY_ALREADY, NOTIFY_INACTIVE
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
 	public int setCallaroundResolved(long house_id, boolean resolved)
 			throws SQLException {
 		boolean outstanding = getCallaroundOutstanding(house_id);
@@ -1475,6 +1540,34 @@ public class DbAdapter {
 				+ String.valueOf(house_id) + "';");
 
 		if (changes() > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
+
+	/**
+	 * Set whether an existing call around is resolved or not, for whatever call
+	 * arounds can be resolved
+	 * 
+	 * @param house_id
+	 *            the house_id of the call around to update
+	 * @param resolved
+	 *            whether the call around is to be resolved or not
+	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
+	 *         NOTIFY_ALREADY, NOTIFY_INACTIVE
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public int setCallaroundResolvedFromId(long callaround_id, boolean resolved)
+			throws SQLException {
+		Log.i("Debug", "Setting resolved: " + (resolved ? "true" : "false"));
+
+		ContentValues args = new ContentValues();
+		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
+		args.put(KEY_TIMERECEIVED, resolved ? Time.iso8601DateTime() : "");
+		if (mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_ROWID + "=?",
+				new String[] { String.valueOf(callaround_id) }) > 0) {
 			return NOTIFY_SUCCESS;
 		} else {
 			return NOTIFY_FAILURE;
@@ -1565,24 +1658,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Sets the phone number of a contact.
-	 * 
-	 * @param contact_id
-	 *            the contact_id
-	 * @param newPhoneNumber
-	 *            the new phone number
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public void setContactPhone(long contact_id, String newPhoneNumber)
-			throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(KEY_NUMBER, newPhoneNumber);
-		mDb.update(DATABASE_TABLE_CONTACTPHONES, args, KEY_CONTACTID + "= ?",
-				new String[] { String.valueOf(contact_id) });
-	}
-
-	/**
 	 * Sets the specified contact's specified permission.
 	 * 
 	 * @param contact_id
@@ -1626,6 +1701,24 @@ public class DbAdapter {
 		} else {
 			return NOTIFY_FAILURE;
 		}
+	}
+
+	/**
+	 * Sets the phone number of a contact.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @param newPhoneNumber
+	 *            the new phone number
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setContactPhone(long contact_id, String newPhoneNumber)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_NUMBER, newPhoneNumber);
+		mDb.update(DATABASE_TABLE_CONTACTPHONES, args, KEY_CONTACTID + "= ?",
+				new String[] { String.valueOf(contact_id) });
 	}
 
 	/**
@@ -1769,23 +1862,22 @@ public class DbAdapter {
 				new String[] { String.valueOf(rowId) });
 	}
 
-	private String oneWeekAgo() {
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, -7);
-		return Time.iso8601DateTime(cal.getTime());
-	}
-
-	public void deleteDataBeforeOneWeek() {
-		String weekago = oneWeekAgo();
-		mDb.execSQL("delete from callarounds where strftime('%s',timereceived) <= strftime('%s','"
-				+ weekago + "');");
-		mDb.execSQL("delete from checkins where strftime('%s',timereceived) <= strftime('%s','"
-				+ weekago + "');");
-	}
-
-	public void deleteLogBeforeOneWeek() {
-		mDb.execSQL("delete from log where strftime('%s',time) <= strftime('%s','"
-				+ oneWeekAgo() + "');");
+	/**
+	 * Set the number as blocked or not
+	 * 
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setNumberIsBlocked(String number, boolean blocked)
+			throws SQLException {
+		if (blocked) {
+			ContentValues initialValues = new ContentValues();
+			initialValues.put(KEY_NUMBER, number);
+			mDb.insert(DATABASE_TABLE_BLOCKEDNUMBERS, null, initialValues);
+		} else {
+			mDb.delete(DATABASE_TABLE_BLOCKEDNUMBERS, KEY_NUMBER + "=?",
+					new String[] { number });
+		}
 	}
 
 	/**
@@ -1803,27 +1895,5 @@ public class DbAdapter {
 			throws SQLException {
 		return setContactPermission(contact_id, preferenceId,
 				!getContactPermission(contact_id, preferenceId));
-	}
-
-	/**
-	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
-	 * KEY_LOCATION, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING
-	 * 
-	 * @return the cursor
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public Cursor fetchLog() throws SQLException {
-		return mDb.rawQuery(
-				"select _id,type,message,time from log order by time desc;",
-				null);
-	}
-
-	public boolean addLogEvent(String type, String message) {
-		ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_TYPE, type);
-		initialValues.put(KEY_MESSAGE, message);
-		initialValues.put(KEY_TIME, Time.iso8601DateTime());
-		return mDb.insert(DATABASE_TABLE_LOG, null, initialValues) > -1;
 	}
 }
