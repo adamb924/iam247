@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -68,10 +67,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 		mDbHelper = new DbAdapter(mContext);
 		mDbHelper.open();
 
-		Log.i("Debug", intent.getAction());
-
+		// call various functions depending on the action of the intent. the
+		// action will have been set in one of the static member functions of
+		// this class.
 		String action = intent.getAction();
-
 		if (action.equals(ALERT_CHECKIN_DUE)) {
 			checkinDue();
 		} else if (action.equals(ALERT_ADD_CALLAROUNDS)) {
@@ -86,7 +85,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * 
+	 * Checks if there are due call arounds, and if so, starts a
+	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
+	 * alert.
 	 */
 	private void callaroundDue() {
 		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
@@ -101,7 +102,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
+	 * Checks of the check-in specified in the intent parameter is still
+	 * outstanding, and if so, sends the reminder text message.
+	 * 
 	 * @param intent
+	 *            An intent object with the extra ALERT_CHECKIN_REMINDER, which
+	 *            has the _id of the checkin.
 	 */
 	private void checkinReminder(Intent intent) {
 		long checkinId = intent.getLongExtra(ALERT_CHECKIN_REMINDER, -1);
@@ -113,7 +119,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * 
+	 * Calls DbAdapter.addCallarounds() to add the day's call arounds, and sends
+	 * a signal for activities to refres their data.
 	 */
 	private void addCallarounds() {
 		mDbHelper.addCallarounds();
@@ -121,7 +128,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * 
+	 * Checks if there is a check-in due, and if so, starts the
+	 * <code>CheckinList</code> activity with a flag to sound the audio alert.
 	 */
 	private void checkinDue() {
 		if (mDbHelper.getNumberOfDueCheckins() > 0) {
@@ -133,64 +141,60 @@ public class AlarmReceiver extends BroadcastReceiver {
 		}
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-	}
-
 	/**
 	 * Set an alert to check for overdue check-ins at a certain time
 	 * 
-	 * @param ctx
+	 * @param context
 	 *            the application context
 	 * @param date
 	 *            the date/time at which to check for overdue check-ins
 	 */
-	static public void setCheckinAlert(Context ctx, Date date) {
+	static public void setCheckinAlert(Context context, Date date) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
-		Intent intent = new Intent(ctx, AlarmReceiver.class);
+		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_CHECKIN_DUE);
-		PendingIntent sender = PendingIntent.getBroadcast(ctx,
+		PendingIntent sender = PendingIntent.getBroadcast(context,
 				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
-		AlarmManager am = (AlarmManager) ctx
+		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
 	}
 
 	/**
-	 * Set an alert to remind the user about a due checkin
+	 * Set an alert to remind the user about a due check-in
 	 * 
-	 * @param ctx
+	 * @param context
 	 *            the application context
 	 * @param date
 	 *            the date/time at which the check-in is due
 	 */
-	static public void setCheckinReminderAlert(Context ctx, Date date,
+	static public void setCheckinReminderAlert(Context context, Date date,
 			long checkin_id) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
+		// read the reminder offset from the system preferences, and calculate
+		// the new time based on that offset
 		SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(ctx);
+				.getDefaultSharedPreferences(context);
 		int offset = -1
 				* settings.getInt(
 						HomeActivity.PREFERENCES_CHECKIN_REMINDER_DELAY, 3);
-
 		cal.add(Calendar.MINUTE, offset);
 
-		Intent intent = new Intent(ctx, AlarmReceiver.class);
+		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_CHECKIN_REMINDER);
 		intent.putExtra(ALERT_CHECKIN_REMINDER, checkin_id);
 
-		PendingIntent sender = PendingIntent.getBroadcast(ctx,
+		PendingIntent sender = PendingIntent.getBroadcast(context,
 				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
-		AlarmManager am = (AlarmManager) ctx
+		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
 	}
@@ -208,7 +212,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		String old = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_ADD, "06:00");
 
-		Date targetdate = Time.timeFromColonTime(old);
+		Date targetdate = Time.timeFromSimpleTime(old);
 		Date thisdate = new Date();
 		thisdate.setHours(targetdate.getHours());
 		thisdate.setMinutes(targetdate.getMinutes());
@@ -228,7 +232,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * Sets a recurring alarm, which checks for completed call arounds
+	 * Sets a call around due alarm at the specified date. This alarm will later
+	 * be processed by the onReceive() method of this class.
 	 * 
 	 * @param context
 	 *            the application context
@@ -239,6 +244,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_CALLAROUND_DUE);
+		// this extra is there only so that several ALERT_CALLAROUND_DUE Intents
+		// don't overwrite one another
 		intent.putExtra("TIME", Time.iso8601DateTime(date));
 		PendingIntent sender = PendingIntent.getBroadcast(context,
 				(int) cal.getTimeInMillis(), intent,

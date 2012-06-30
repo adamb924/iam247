@@ -8,7 +8,8 @@ import android.preference.EditTextPreference;
 import android.util.AttributeSet;
 
 /**
- * @author Adam
+ * This is an EditTextPreference for blocking a phone number. Arguably this
+ * logic would be better placed in <code>PreferencesActivity</code>.
  * 
  */
 public class BlockPhonePreferenceDialog extends EditTextPreference {

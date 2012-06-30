@@ -11,9 +11,11 @@ import android.view.View;
 import android.widget.TimePicker;
 
 /**
- * @author Adam Largely from
- *         http://stackoverflow.com/questions/5533078/timepicker
- *         -in-preferencescreen
+ * This is a DialogPreference subclass that creates a generic
+ * <code>TimePicker</code> preference window.
+ * 
+ * Largely from http://stackoverflow.com/questions/5533078/timepicker
+ * -in-preferencescreen
  */
 public class TimePreferenceDialog extends DialogPreference {
 

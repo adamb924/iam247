@@ -36,6 +36,9 @@ public class SmsReceiver extends BroadcastReceiver {
 	}
 
 	/**
+	 * Processes SMS messages, sending them to <code>SmsHandler</code>. Messages
+	 * with text delimited by "..." are split and send as separate SMS messages.
+	 * 
 	 * @param context
 	 * @param intent
 	 */
@@ -57,6 +60,8 @@ public class SmsReceiver extends BroadcastReceiver {
 	}
 
 	/**
+	 * Processes notifications that an SMS was sent (or not).
+	 * 
 	 * @param context
 	 * @param intent
 	 */
@@ -91,6 +96,8 @@ public class SmsReceiver extends BroadcastReceiver {
 	}
 
 	/**
+	 * Processes notifications that an SMS has been delivered (or not).
+	 * 
 	 * @param context
 	 * @param intent
 	 */

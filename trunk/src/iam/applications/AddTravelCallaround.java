@@ -19,7 +19,10 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 
 /**
- * @author Adam
+ * This is an <code>Activity</code> subclass, which creates an interface for
+ * adding pre-defined call arounds for travel arrangements. Call arounds can be
+ * added for a range of days, with one or two call arounds per day. (Currently
+ * this activity is accessible from the menu of the CallAroundActivity.)
  * 
  */
 public class AddTravelCallaround extends Activity {
@@ -44,6 +47,7 @@ public class AddTravelCallaround extends Activity {
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
 
+		// populate the spinner with the names of the houses/groups
 		mWhichHouse = (Spinner) findViewById(R.id.which_house);
 		Cursor c = mDbHelper.fetchAllHouses();
 		String[] from = new String[] { DbAdapter.KEY_NAME };
@@ -53,12 +57,14 @@ public class AddTravelCallaround extends Activity {
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mWhichHouse.setAdapter(adapter);
 
-		mSecondTimePicker = (TimePicker) findViewById(R.id.secondTime);
-		mSecondTimePicker.setEnabled(false);
-
+		// set the default call around window to 60 minutes
 		mWindow = (EditText) findViewById(R.id.callaround_window);
 		mWindow.setText(String.valueOf(60));
 
+		// the TimePicker for the second checkin is disabled by default; if the
+		// checkbox is checked it is enabled
+		mSecondTimePicker = (TimePicker) findViewById(R.id.secondTime);
+		mSecondTimePicker.setEnabled(false);
 		CheckBox secondTimeEnabled = (CheckBox) findViewById(R.id.secondTimeEnabled);
 		secondTimeEnabled
 				.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -69,12 +75,12 @@ public class AddTravelCallaround extends Activity {
 					}
 				});
 
+		// logic for the Ok and Cancel buttons
 		Button okButton = (Button) findViewById(R.id.ok);
 		okButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				addCallarounds();
-				setResult(RESULT_OK); // I guess this is never really used
 				finish();
 			}
 		});
@@ -83,7 +89,6 @@ public class AddTravelCallaround extends Activity {
 		cancelButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				setResult(RESULT_CANCELED);
 				finish();
 			}
 		});
@@ -101,19 +106,11 @@ public class AddTravelCallaround extends Activity {
 		mDbHelper.close();
 	}
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-	}
-
+	/**
+	 * Grabs the data from the layout, formats it for
+	 * DbAdapter.addTravelCallarounds(), and calls that function.
+	 */
 	private void addCallarounds() {
-		// private Spinner mWhichHouse;
-		// private TimePicker mSecondTimePicker;
 		DatePicker fromDatePicker = (DatePicker) findViewById(R.id.fromDate);
 		DatePicker toDatePicker = (DatePicker) findViewById(R.id.toDate);
 		TimePicker firstTimePicker = (TimePicker) findViewById(R.id.firstTime);

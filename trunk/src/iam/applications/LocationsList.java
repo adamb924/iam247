@@ -187,6 +187,10 @@ public class LocationsList extends ListActivity {
 		}
 	}
 
+	/**
+	 * Prompts the user to enter the name of a new location, and adds that
+	 * location to the database.
+	 */
 	private void newLocation() {
 		AlertDialog.Builder alert = new AlertDialog.Builder(LocationsList.this);
 

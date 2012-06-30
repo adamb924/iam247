@@ -107,19 +107,7 @@ public class TeamMemberList extends Activity {
 		Cursor checkedoutCur = mDbHelper.fetchCheckedOutPeople();
 		startManagingCursor(checkedoutCur);
 
-		// Log.i("Debug",
-		// "Checked out n: " + String.valueOf(checkedoutCur.getCount()));
-
 		if (checkedoutCur.getCount() > 0) {
-
-			// String[] from = new String[] { DbAdapter.KEY_NAME };
-			// int[] to = new int[] { android.R.id.text1 };
-			// SimpleCursorAdapter mCheckedOutListAdapter = new
-			// SimpleCursorAdapter(
-			// this, android.R.layout.simple_list_item_1, checkedoutCur,
-			// from, to);
-			// mCheckedOut.setAdapter(mCheckedOutListAdapter);
-
 			TeammemberAdapter mCheckedOutListAdapter = new TeammemberAdapter(
 					this, checkedoutCur);
 			mCheckedOut.setAdapter(mCheckedOutListAdapter);
@@ -131,16 +119,6 @@ public class TeamMemberList extends Activity {
 
 		Cursor checkedinCur = mDbHelper.fetchCheckedInPeople();
 		startManagingCursor(checkedinCur);
-
-		// Log.i("Debug",
-		// "Checked in n: " + String.valueOf(checkedinCur.getCount()));
-
-		// String[] from = new String[] { DbAdapter.KEY_NAME };
-		// int[] to = new int[] { android.R.id.text1 };
-		// SimpleCursorAdapter mCheckedInListAdapter = new SimpleCursorAdapter(
-		// this, android.R.layout.simple_list_item_1, checkedinCur, from,
-		// to);
-		// mCheckedIn.setAdapter(mCheckedInListAdapter);
 
 		TeammemberAdapter mCheckedInListAdapter = new TeammemberAdapter(this,
 				checkedinCur);
@@ -265,6 +243,9 @@ public class TeamMemberList extends Activity {
 	}
 
 	/**
+	 * Warns the user, and then adds the contact's number to the blocked numbers
+	 * list.
+	 * 
 	 * @param contact_id
 	 */
 	private void blockNumber(final long contact_id) {
@@ -283,6 +264,9 @@ public class TeamMemberList extends Activity {
 	}
 
 	/**
+	 * Prompts the user to edit the contact's email address, and saves the
+	 * result.
+	 * 
 	 * @param contact_id
 	 */
 	private void editEmail(final long contact_id) {
@@ -307,6 +291,10 @@ public class TeamMemberList extends Activity {
 	}
 
 	/**
+	 * Prompts the user to edit the contact's phone number, and saves the
+	 * result. Currently only the first phone number associated with an account
+	 * is used.
+	 * 
 	 * @param contact_id
 	 */
 	private void editPhone(final long contact_id) {
@@ -331,6 +319,9 @@ public class TeamMemberList extends Activity {
 	}
 
 	/**
+	 * Prompts the user to edit the contact's email address, and saves the
+	 * result.
+	 * 
 	 * @param contact_id
 	 */
 	private void editName(final long contact_id) {
@@ -355,6 +346,8 @@ public class TeamMemberList extends Activity {
 	}
 
 	/**
+	 * Calls the first phone number associated with the contact.
+	 * 
 	 * @param contact_id
 	 */
 	private void callNumber(final long contact_id) {
@@ -371,6 +364,9 @@ public class TeamMemberList extends Activity {
 	}
 
 	/**
+	 * Prompts the user to select the house/group with which the contact is
+	 * associated, and saves the result.
+	 * 
 	 * @param contact_id
 	 */
 	private void setHouse(final long contact_id) {
