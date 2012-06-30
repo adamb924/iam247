@@ -1,33 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" -->
-<!--     android:layout_width="fill_parent" -->
-<!--     android:layout_height="match_parent" -->
-<!--     android:orientation="vertical" > -->
-
-    <TwoLineListItem xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/item"
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="0.15" />
-    
-<!--     <TextView -->
-<!--         android:id="@+id/callaround_day" -->
-<!--         style="@android:style/TextAppearance.SearchResult.Title" /> -->
-
-<!--     <TextView -->
-<!--         android:id="@+id/callaround_report" -->
-<!--         style="@android:style/TextAppearance.SearchResult.Subtitle" /> -->
-    
-<!--         <TextView -->
-<!--         android:id="@+id/callaround_day" -->
-<!--         android:layout_width="fill_parent" -->
-<!--         android:layout_height="wrap_content" -->
-<!--         android:textAppearance="?android:attr/textAppearanceLarge" /> -->
-
-<!--     <TextView -->
-<!--         android:id="@+id/callaround_report" -->
-<!--         android:layout_width="fill_parent" -->
-<!--         android:layout_height="wrap_content" -->
-<!--         android:textAppearance="?android:attr/textAppearanceMedium" /> -->
-    
-<!-- </LinearLayout> -->
+<TwoLineListItem xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="0dip"
+    android:layout_weight="0.15" />
