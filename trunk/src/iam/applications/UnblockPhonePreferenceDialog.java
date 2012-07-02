@@ -17,7 +17,7 @@ import android.widget.Toast;
  * 
  */
 public class UnblockPhonePreferenceDialog extends ListPreference {
-	private final DbAdapter mDbHelper;
+	private DbAdapter mDbHelper;
 	private final Context mContext;
 
 	/**
@@ -27,10 +27,9 @@ public class UnblockPhonePreferenceDialog extends ListPreference {
 	public UnblockPhonePreferenceDialog(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
-		mDbHelper = new DbAdapter(getContext());
-		mDbHelper.open();
-
 		mContext = context;
+
+		mDbHelper = null;
 
 		this.setEntries(new CharSequence[0]);
 		this.setEntryValues(new CharSequence[0]);
@@ -44,7 +43,6 @@ public class UnblockPhonePreferenceDialog extends ListPreference {
 	@Override
 	protected void finalize() throws Throwable {
 		super.finalize();
-		mDbHelper.close();
 	}
 
 	/*
@@ -62,6 +60,8 @@ public class UnblockPhonePreferenceDialog extends ListPreference {
 	}
 
 	protected void fillData() {
+		mDbHelper = new DbAdapter(getContext());
+		mDbHelper.open();
 		Cursor c = mDbHelper.fetchBlockedNumbers();
 		if (c.getCount() == 0) {
 			Toast toast = Toast.makeText(mContext,
@@ -83,6 +83,8 @@ public class UnblockPhonePreferenceDialog extends ListPreference {
 
 		c.close();
 
+		mDbHelper.close();
+
 		this.setEntries(entries);
 		this.setEntryValues(entries);
 	}
@@ -97,7 +99,10 @@ public class UnblockPhonePreferenceDialog extends ListPreference {
 		super.onDialogClosed(positiveResult);
 
 		if (positiveResult) {
+			mDbHelper = new DbAdapter(getContext());
+			mDbHelper.open();
 			mDbHelper.setNumberIsBlocked(getValue(), false);
+			mDbHelper.close();
 		}
 	}
 
