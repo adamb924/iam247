@@ -587,7 +587,7 @@ public class DbAdapter {
 	 */
 	public void deleteDataBeforeOneWeek() {
 		String weekago = oneWeekAgo();
-		mDb.execSQL("delete from callarounds where strftime('%s',timereceived) <= strftime('%s','"
+		mDb.execSQL("delete from callarounds where strftime('%s',dueby) <= strftime('%s','"
 				+ weekago + "');");
 		mDb.execSQL("delete from checkins where strftime('%s',timereceived) <= strftime('%s','"
 				+ weekago + "');");
@@ -630,6 +630,9 @@ public class DbAdapter {
 	 * Deletes log events from before one week ago.
 	 */
 	public void deleteLogBeforeOneWeek() {
+		Log.i("Debug",
+				"delete from log where strftime('%s',time) <= strftime('%s','"
+						+ oneWeekAgo() + "');");
 		mDb.execSQL("delete from log where strftime('%s',time) <= strftime('%s','"
 				+ oneWeekAgo() + "');");
 	}
