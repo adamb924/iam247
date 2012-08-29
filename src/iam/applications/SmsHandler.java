@@ -86,10 +86,8 @@ public class SmsHandler {
 			if (messageMatches(R.string.re_thisis)) {
 				SharedPreferences settings = PreferenceManager
 						.getDefaultSharedPreferences(mContext);
-				boolean thisisAllowed = settings
-						.getBoolean(
-								HomeActivity.PREFERENCES_CALLAROUNDS_SHOW_FUTURE,
-								false);
+				boolean thisisAllowed = settings.getBoolean(
+						HomeActivity.PREFERENCES_PERMIT_THISIS, false);
 
 				if (!thisisAllowed) {
 					sendSms(R.string.sms_this_disabled_notification);
@@ -480,6 +478,8 @@ public class SmsHandler {
 		ArrayList<PendingIntent> sentPIArray = new ArrayList<PendingIntent>();
 		ArrayList<PendingIntent> deliveredPIArray = new ArrayList<PendingIntent>();
 		for (int i = 0; i < parts.size(); i++) {
+			// TODO I need to put information about the SMS into the Intent,
+			// which I expect will be available in SmsReceiver
 			sentPIArray.add(PendingIntent.getBroadcast(appContext, 0,
 					new Intent("iam.applications.SmsReceiver.SMS_SENT"), 0));
 
