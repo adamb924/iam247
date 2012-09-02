@@ -16,6 +16,24 @@
         <item name="android:textSize">20sp</item>
     </style>
 
+    	<style name="textExplanationMedium">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingBottom">5sp</item>
+        <item name="android:paddingLeft">20sp</item>
+        <item name="android:textColor">@color/explanatory_text_color</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+    
+	<style name="textExplanationSmall">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingBottom">5sp</item>
+        <item name="android:paddingLeft">20sp</item>
+        <item name="android:textColor">@color/explanatory_text_color</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+    
     <style name="plainText">
         <item name="android:textSize">20sp</item>
     </style>

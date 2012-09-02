@@ -106,6 +106,16 @@ public class HomeActivity extends Activity {
 			}
 		});
 
+		LinearLayout messageerrorsButton = (LinearLayout) findViewById(R.id.message_errors);
+		messageerrorsButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent i = new Intent(HomeActivity.this,
+						UnsentMessageList.class);
+				startActivity(i);
+			}
+		});
+
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
 
@@ -132,6 +142,22 @@ public class HomeActivity extends Activity {
 
 		TextView callaroundSummary = (TextView) findViewById(R.id.home_callaround_summary);
 		callaroundSummary.setText(mDbHelper.getCallaroundSummary(new Date()));
+
+		TextView messageErrorReport = (TextView) findViewById(R.id.error_report);
+		int count = mDbHelper.getNumberOfMessageErrors();
+
+		switch (count) {
+		case 0:
+			messageErrorReport.setText(R.string.noerrors);
+			break;
+		case 1:
+			messageErrorReport.setText(R.string.message_error_one);
+			break;
+		default:
+			messageErrorReport.setText(String.format(
+					getString(R.string.message_errors), String.valueOf(count)));
+			break;
+		}
 	}
 
 	/*

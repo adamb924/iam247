@@ -87,6 +87,10 @@
             android:name=".PreferencesActivity"
             android:label="@string/customization" >
         </activity>
+        <activity
+            android:name=".UnsentMessageList"
+            android:label="@string/msgerror" >
+        </activity>
         
         <receiver android:name=".SmsReceiver" >
             <intent-filter>

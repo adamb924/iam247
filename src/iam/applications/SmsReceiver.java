@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 
 /**
@@ -14,8 +13,8 @@ import android.telephony.SmsMessage;
  * class also handles SMS sent and delivered messages.
  */
 public class SmsReceiver extends BroadcastReceiver {
-	public static String SMS_SENT = "SMS_SENT";
-	public static String SMS_DELIVERED = "SMS_DELIVERED";
+	public static String SMS_SENT = "iam.applications.SmsReceiver.SMS_SENT";
+	public static String SMS_DELIVERED = "iam.applications.SmsReceiver.SMS_DELIVERED";
 
 	/*
 	 * (non-Javadoc)
@@ -26,6 +25,7 @@ public class SmsReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
+
 		if (action.equals("android.provider.Telephony.SMS_RECEIVED")) {
 			processSms(context, intent);
 		} else if (action.equals("iam.applications.SmsReceiver.SMS_SENT")) {
@@ -69,27 +69,13 @@ public class SmsReceiver extends BroadcastReceiver {
 		DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 
-		switch (getResultCode()) {
-		case Activity.RESULT_OK:
-			// dbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_NOTIFICATION,
-			// "SMS sent");
-			break;
-		case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-			dbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_NOTIFICATION,
-					"Generic failure");
-			break;
-		case SmsManager.RESULT_ERROR_NO_SERVICE:
-			dbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_NOTIFICATION,
-					"No service");
-			break;
-		case SmsManager.RESULT_ERROR_NULL_PDU:
-			dbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_NOTIFICATION,
-					"Null PDU");
-			break;
-		case SmsManager.RESULT_ERROR_RADIO_OFF:
-			dbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_NOTIFICATION,
-					"Radio off");
-			break;
+		String number = intent.getStringExtra(SmsHandler.PHONE_NUMBER);
+		String message = intent.getStringExtra(SmsHandler.MESSAGE);
+
+		if (getResultCode() == Activity.RESULT_OK) {
+			dbHelper.deleteMessagePendingSent(number, message);
+			AlarmReceiver.sendRefreshAlert(context);
+
 		}
 
 		dbHelper.close();
@@ -105,15 +91,12 @@ public class SmsReceiver extends BroadcastReceiver {
 		DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 
-		switch (getResultCode()) {
-		case Activity.RESULT_OK:
-			// dbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_NOTIFICATION,
-			// "SMS delivered");
-			break;
-		case Activity.RESULT_CANCELED:
-			dbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_NOTIFICATION,
-					"SMS not delivered");
-			break;
+		String number = intent.getStringExtra(SmsHandler.PHONE_NUMBER);
+		String message = intent.getStringExtra(SmsHandler.MESSAGE);
+
+		if (getResultCode() == Activity.RESULT_OK) {
+			dbHelper.deleteMessagePendingDelivered(number, message);
+			AlarmReceiver.sendRefreshAlert(context);
 		}
 
 		dbHelper.close();

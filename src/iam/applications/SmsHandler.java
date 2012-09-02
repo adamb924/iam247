@@ -6,8 +6,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
@@ -36,6 +38,9 @@ public class SmsHandler {
 
 	/** The database interface. */
 	private final DbAdapter mDbHelper;
+
+	static public String PHONE_NUMBER = "PHONE_NUMBER";
+	static public String MESSAGE = "MESSAGE";
 
 	/**
 	 * Instantiates a new sms handler.
@@ -86,6 +91,7 @@ public class SmsHandler {
 			if (messageMatches(R.string.re_thisis)) {
 				SharedPreferences settings = PreferenceManager
 						.getDefaultSharedPreferences(mContext);
+
 				boolean thisisAllowed = settings.getBoolean(
 						HomeActivity.PREFERENCES_PERMIT_THISIS, false);
 
@@ -478,21 +484,50 @@ public class SmsHandler {
 		ArrayList<PendingIntent> sentPIArray = new ArrayList<PendingIntent>();
 		ArrayList<PendingIntent> deliveredPIArray = new ArrayList<PendingIntent>();
 		for (int i = 0; i < parts.size(); i++) {
-			// TODO I need to put information about the SMS into the Intent,
-			// which I expect will be available in SmsReceiver
+			// curiously, passing SmsReceiver.SMS_SENT instead of the identical
+			// string literal doesn't work
+			Intent sentIntent = new Intent(
+					"iam.applications.SmsReceiver.SMS_SENT");
+			sentIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
+			sentIntent.putExtra(SmsHandler.MESSAGE, message);
 			sentPIArray.add(PendingIntent.getBroadcast(appContext, 0,
-					new Intent("iam.applications.SmsReceiver.SMS_SENT"), 0));
+					sentIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
-			deliveredPIArray.add(PendingIntent
-					.getBroadcast(appContext, 0, new Intent(
-							"iam.applications.SmsReceiver.SMS_DELIVERED"), 0));
+			// ---when the SMS has been sent---
+			appContext.registerReceiver(new BroadcastReceiver() {
+				@Override
+				public void onReceive(Context arg0, Intent arg1) {
+					Log.i("Debug",
+							"My embedded receiver: "
+									+ String.valueOf(getResultCode()));
+				}
+			}, new IntentFilter("iam.applications.SmsReceiver.SMS_SENT"));
+
+			// curiously, passing SmsReceiver.SMS_DELIVERED instead of the
+			// identical string literal doesn't work
+			Intent deliveredIntent = new Intent(
+					"iam.applications.SmsReceiver.SMS_DELIVERED");
+			deliveredIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
+			deliveredIntent.putExtra(SmsHandler.MESSAGE, message);
+			deliveredPIArray.add(PendingIntent.getBroadcast(appContext, 0,
+					deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 		}
+
+		AlarmReceiver.sendRefreshAlert(context);
 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, sentPIArray,
 				deliveredPIArray);
 
-		Log.i("Debug", phoneNumber);
-		Log.i("Debug", message);
+		// add the message to SQL tables, to be deleted when confirmation of
+		// being sent and being delivered are received
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addMessagePendingSent(phoneNumber, message);
+		dbHelper.addMessagePendingDelivered(phoneNumber, message);
+		dbHelper.close();
+
+		// Log.i("Debug", phoneNumber);
+		// Log.i("Debug", message);
 	}
 
 	/**
