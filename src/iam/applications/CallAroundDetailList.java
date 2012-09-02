@@ -145,10 +145,12 @@ public class CallAroundDetailList extends ListActivity implements
 				Log.e("Debug", "Language is not available.");
 			}
 
+			mMissedCallarounds = mDbHelper.getNumberOfDueCallarounds();
+
 			if (mMissedCallarounds == 1) {
 				mTts.speak(getString(R.string.tts_missedcallaround),
 						TextToSpeech.QUEUE_FLUSH, null);
-			} else {
+			} else if (mMissedCallarounds > 1) {
 				mTts.speak(getString(R.string.tts_missedcallarounds),
 						TextToSpeech.QUEUE_FLUSH, null);
 			}
