@@ -65,17 +65,12 @@ public class CheckinList extends ListActivity implements OnInitListener {
 		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
 
 		Intent i = getIntent();
-		// this may produce an alert when none is required
 		if (i.getBooleanExtra(AlarmReceiver.ALERT_CHECKIN_DUE, false)) {
 			// play the alert
 			Intent checkIntent = new Intent();
 			checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
 			startActivityForResult(checkIntent, TTS_CHECK_CODE);
 		}
-
-		// Intent checkIntent = new Intent();
-		// checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-		// startActivityForResult(checkIntent, TTS_CHECK_CODE);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
@@ -140,8 +135,10 @@ public class CheckinList extends ListActivity implements OnInitListener {
 				Log.e("Debug", "Language is not available.");
 			}
 
-			mTts.speak(getString(R.string.tts_missedcheckin),
-					TextToSpeech.QUEUE_FLUSH, null);
+			if (mDbHelper.getNumberOfDueCheckins() > 0) {
+				mTts.speak(getString(R.string.tts_missedcheckin),
+						TextToSpeech.QUEUE_FLUSH, null);
+			}
 		} else {
 			// Initialization failed.
 			Log.e("Debug", "Could not initialize TextToSpeech.");
