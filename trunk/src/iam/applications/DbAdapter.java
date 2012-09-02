@@ -17,14 +17,6 @@ import android.util.Log;
  * The Class DbAdapter. Provides access functions for the app's SQL database.
  */
 
-/**
- * @author Adam
- *
- */
-/**
- * @author Adam
- * 
- */
 public class DbAdapter {
 	/**
 	 * This is the interface class for the SQL database. Typical usage would be
@@ -63,6 +55,8 @@ public class DbAdapter {
 			db.execSQL(DATABASE_CREATE_BLOCKEDNUMBERS);
 			db.execSQL(DATABASE_CREATE_LOG);
 			db.execSQL(DATABASE_CREATE_LOCATION_LOG);
+			db.execSQL(DATABASE_CREATE_PENDING_SENT);
+			db.execSQL(DATABASE_CREATE_PENDING_DELIVERED);
 		}
 
 		/*
@@ -87,13 +81,17 @@ public class DbAdapter {
 			db.execSQL(DROP_TABLE_BLOCKEDNUMBERS);
 			db.execSQL(DROP_TABLE_LOG);
 			db.execSQL(DROP_TABLE_LOCATION_LOG);
+			db.execSQL(DROP_TABLE_PENDING_SENT);
+			db.execSQL(DROP_TABLE_PENDING_DELIVERED);
 
 			onCreate(db);
 		}
 	}
 
+	/** The user preference checkin reminder. */
 	public static int USER_PREFERENCE_CHECKIN_REMINDER = 1;
 
+	/** The user permission report. */
 	public static int USER_PERMISSION_REPORT = 1;
 
 	/** Return value to indicate failure. */
@@ -118,76 +116,204 @@ public class DbAdapter {
 	public static int NOTIFY_INACTIVE = 4;
 
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 12;
 
 	/** Create Table Commands. */
 	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, allowed integer default 0);";
+
+	/** The Constant DATABASE_CREATE_CHECKINS. */
 	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, timedue string not null, timereceived string, outstanding integer default 1, checkinrequest integer default 1);";
+
+	/** The Constant DATABASE_CREATE_CALLAROUNDS. */
 	private static final String DATABASE_CREATE_CALLAROUNDS = "create table if not exists callarounds (_id integer primary key autoincrement, house_id integer not null, duefrom string not null, dueby string not null, timereceived string, outstanding integer default 1, unique(house_id,dueby) on conflict ignore );";
+
+	/** The Constant DATABASE_CREATE_CONTACTS. */
 	private static final String DATABASE_CREATE_CONTACTS = "create table contacts ( _id integer primary key autoincrement , name text not null , preferences int default 0 , permissions int default 0 )";
+
+	/** The Constant DATABASE_CREATE_CONTACTPHONES. */
 	private static final String DATABASE_CREATE_CONTACTPHONES = "create table contactphones ( _id integer primary key autoincrement , contact_id integer not null, number text not null, integer precedence default 1 )";
+
+	/** The Constant DATABASE_CREATE_CONTACTEMAILS. */
 	private static final String DATABASE_CREATE_CONTACTEMAILS = "create table contactemails ( _id integer primary key autoincrement , contact_id integer not null, email text not null, integer precedence default 1 )";
+
+	/** The Constant DATABASE_CREATE_HOUSES. */
 	private static final String DATABASE_CREATE_HOUSES = "create table houses ( _id integer primary key autoincrement , name text not null, active int default 1 )";
+
+	/** The Constant DATABASE_CREATE_HOUSEMEMBERS. */
 	private static final String DATABASE_CREATE_HOUSEMEMBERS = "create table housemembers ( _id integer primary key autoincrement , house_id integer not null, contact_id integer not null, unique(contact_id) on conflict ignore )";
+
+	/** The Constant DATABASE_CREATE_BLOCKEDNUMBERS. */
 	private static final String DATABASE_CREATE_BLOCKEDNUMBERS = "create table blockednumbers ( _id integer primary key autoincrement , number text not null )";
+
+	/** The Constant DATABASE_CREATE_LOG. */
 	private static final String DATABASE_CREATE_LOG = "create table log ( _id integer primary key autoincrement , type text default 'Normal' , message text not null, time text )";
+
+	/** The Constant DATABASE_CREATE_LOCATION_LOG. */
 	private static final String DATABASE_CREATE_LOCATION_LOG = "create table locationlog ( _id integer primary key autoincrement , contact_id integer not null, lat real not null, lon real not null, time text )";
 
-	/** Drop Table Commands */
+	/** The Constant DATABASE_CREATE_PENDING_SENT. */
+	private static final String DATABASE_CREATE_PENDING_SENT = "create table pendingsent ( _id integer primary key autoincrement , number text not null, message text not null, time text not null )";
+
+	/** The Constant DATABASE_CREATE_PENDING_DELIVERED. */
+	private static final String DATABASE_CREATE_PENDING_DELIVERED = "create table pendingdelivered ( _id integer primary key autoincrement, number text not null, message text not null, time text not null )";
+
+	/** Drop Table Commands. */
 	private static final String DROP_TABLE_LOCATIONS = "DROP TABLE IF EXISTS locations;";
+
+	/** The Constant DROP_TABLE_CHECKINS. */
 	private static final String DROP_TABLE_CHECKINS = "DROP TABLE IF EXISTS checkins;";
+
+	/** The Constant DROP_TABLE_CALLAROUNDS. */
 	private static final String DROP_TABLE_CALLAROUNDS = "DROP TABLE IF EXISTS callarounds;";
+
+	/** The Constant DROP_TABLE_CONTACTS. */
 	private static final String DROP_TABLE_CONTACTS = "DROP TABLE IF EXISTS contacts;";
+
+	/** The Constant DROP_TABLE_CONTACTPHONES. */
 	private static final String DROP_TABLE_CONTACTPHONES = "DROP TABLE IF EXISTS contactphones;";
+
+	/** The Constant DROP_TABLE_CONTACTEMAILS. */
 	private static final String DROP_TABLE_CONTACTEMAILS = "DROP TABLE IF EXISTS contactemails;";
+
+	/** The Constant DROP_TABLE_HOUSES. */
 	private static final String DROP_TABLE_HOUSES = "DROP TABLE IF EXISTS houses;";
+
+	/** The Constant DROP_TABLE_HOUSEMEMBERS. */
 	private static final String DROP_TABLE_HOUSEMEMBERS = "DROP TABLE IF EXISTS housemembers;";
+
+	/** The Constant DROP_TABLE_BLOCKEDNUMBERS. */
 	private static final String DROP_TABLE_BLOCKEDNUMBERS = "DROP TABLE IF EXISTS blockednumbers;";
+
+	/** The Constant DROP_TABLE_LOG. */
 	private static final String DROP_TABLE_LOG = "DROP TABLE IF EXISTS log;";
+
+	/** The Constant DROP_TABLE_LOCATION_LOG. */
 	private static final String DROP_TABLE_LOCATION_LOG = "DROP TABLE IF EXISTS locationlog;";
+
+	/** The Constant DROP_TABLE_PENDING_SENT. */
+	private static final String DROP_TABLE_PENDING_SENT = "DROP TABLE IF EXISTS pendingsent;";
+
+	/** The Constant DROP_TABLE_PENDING_DELIVERED. */
+	private static final String DROP_TABLE_PENDING_DELIVERED = "DROP TABLE IF EXISTS pendingdelivered;";
 
 	/** The Constant DATABASE_NAME. */
 	private static final String DATABASE_NAME = "thedatabase";
 
 	/** Database table names. */
 	private static final String DATABASE_TABLE_LOCATIONS = "locations";
+
+	/** The Constant DATABASE_TABLE_CHECKINS. */
 	private static final String DATABASE_TABLE_CHECKINS = "checkins";
+
+	/** The Constant DATABASE_TABLE_CALLAROUNDS. */
 	private static final String DATABASE_TABLE_CALLAROUNDS = "callarounds";
+
+	/** The Constant DATABASE_TABLE_CONTACTS. */
 	private static final String DATABASE_TABLE_CONTACTS = "contacts";
+
+	/** The Constant DATABASE_TABLE_CONTACTPHONES. */
 	private static final String DATABASE_TABLE_CONTACTPHONES = "contactphones";
+
+	/** The Constant DATABASE_TABLE_CONTACTEMAILS. */
 	private static final String DATABASE_TABLE_CONTACTEMAILS = "contactemails";
+
+	/** The Constant DATABASE_TABLE_HOUSES. */
 	private static final String DATABASE_TABLE_HOUSES = "houses";
+
+	/** The Constant DATABASE_TABLE_HOUSEMEMBERS. */
 	private static final String DATABASE_TABLE_HOUSEMEMBERS = "housemembers";
+
+	/** The Constant DATABASE_TABLE_BLOCKEDNUMBERS. */
 	private static final String DATABASE_TABLE_BLOCKEDNUMBERS = "blockednumbers";
+
+	/** The Constant DATABASE_TABLE_LOG. */
 	private static final String DATABASE_TABLE_LOG = "log";
+
+	/** The Constant DATABASE_TABLE_LOCATION_LOG. */
 	private static final String DATABASE_TABLE_LOCATION_LOG = "locationlog";
+
+	/** The Constant DATABASE_TABLE_PENDING_SENT. */
+	private static final String DATABASE_TABLE_PENDING_SENT = "pendingsent";
+
+	/** The Constant DATABASE_TABLE_PENDING_DELIVERED. */
+	private static final String DATABASE_TABLE_PENDING_DELIVERED = "pendingdelivered";
 
 	/** SQL column names constants. */
 	public static final String KEY_ROWID = "_id";
+
+	/** The Constant KEY_LABEL. */
 	public static final String KEY_LABEL = "label";
+
+	/** The Constant KEY_ALLOWED. */
 	public static final String KEY_ALLOWED = "allowed";
+
+	/** The Constant KEY_CONTACTID. */
 	public static final String KEY_CONTACTID = "contact_id";
+
+	/** The Constant KEY_LOCATION. */
 	public static final String KEY_LOCATION = "location";
+
+	/** The Constant KEY_TIMEDUE. */
 	public static final String KEY_TIMEDUE = "timedue";
+
+	/** The Constant KEY_TIMERECEIVED. */
 	public static final String KEY_TIMERECEIVED = "timereceived";
+
+	/** The Constant KEY_OUTSTANDING. */
 	public static final String KEY_OUTSTANDING = "outstanding";
+
+	/** The Constant KEY_RESOLVED. */
 	public static final String KEY_RESOLVED = "resolved";
+
+	/** The Constant KEY_HOUSEID. */
 	public static final String KEY_HOUSEID = "house_id";
+
+	/** The Constant KEY_DUEBY. */
 	public static final String KEY_DUEBY = "dueby";
+
+	/** The Constant KEY_DUEFROM. */
 	public static final String KEY_DUEFROM = "duefrom";
+
+	/** The Constant KEY_CHECKINREQUEST. */
 	public static final String KEY_CHECKINREQUEST = "checkinrequest";
+
+	/** The Constant KEY_ACTIVE. */
 	public static final String KEY_ACTIVE = "active";
+
+	/** The Constant KEY_SUMMARY. */
 	public static final String KEY_SUMMARY = "summary";
+
+	/** The Constant KEY_NAME. */
 	public static final String KEY_NAME = "name";
+
+	/** The Constant KEY_NUMBER. */
 	public static final String KEY_NUMBER = "number";
+
+	/** The Constant KEY_EMAIL. */
 	public static final String KEY_EMAIL = "email";
+
+	/** The Constant KEY_COUNT. */
 	public static final String KEY_COUNT = "count";
+
+	/** The Constant KEY_PREFERENCES. */
 	public static final String KEY_PREFERENCES = "preferences";
+
+	/** The Constant KEY_PERMISSIONS. */
 	public static final String KEY_PERMISSIONS = "permissions";
+
+	/** The Constant KEY_TYPE. */
 	public static final String KEY_TYPE = "type";
+
+	/** The Constant KEY_TIME. */
 	public static final String KEY_TIME = "time";
+
+	/** The Constant KEY_MESSAGE. */
 	public static final String KEY_MESSAGE = "message";
+
+	/** The Constant KEY_LAT. */
 	public static final String KEY_LAT = "lat";
+
+	/** The Constant KEY_LON. */
 	public static final String KEY_LON = "lon";
 
 	/** Log message types. */
@@ -215,6 +341,14 @@ public class DbAdapter {
 		mContext = ctx;
 	}
 
+	/**
+	 * Adds the callaround for today.
+	 * 
+	 * @param house_id
+	 *            the house_id
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
 	public void addCallaroundForToday(long house_id) throws SQLException {
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
@@ -244,8 +378,6 @@ public class DbAdapter {
 	/**
 	 * Adds call arounds to <code>Callarounds</code> for today.
 	 * 
-	 * @param duefrom
-	 *            the date from which the callaround can be satisfied
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
@@ -277,7 +409,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Adds a check-in to the database
+	 * Adds a check-in to the database.
 	 * 
 	 * @param contact_id
 	 *            the contact_id of the person check-in in
@@ -366,7 +498,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Adds a location to the database
+	 * Adds a location to the database.
 	 * 
 	 * @param label
 	 *            the label of the new location
@@ -384,7 +516,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Adds a record to the <code>locationlog</code> table
+	 * Adds a record to the <code>locationlog</code> table.
 	 * 
 	 * @param contact_id
 	 *            the _id of the contact
@@ -423,6 +555,46 @@ public class DbAdapter {
 		initialValues.put(KEY_MESSAGE, message);
 		initialValues.put(KEY_TIME, Time.iso8601DateTime());
 		return mDb.insert(DATABASE_TABLE_LOG, null, initialValues) > -1;
+	}
+
+	/**
+	 * Adds the message to the pendingdelivered table, to be deleted when
+	 * confirmation is received that the message was delivered.
+	 * 
+	 * @param number
+	 *            the phone number
+	 * @param message
+	 *            the message
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void addMessagePendingDelivered(String number, String message)
+			throws SQLException {
+		ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_NUMBER, number);
+		initialValues.put(KEY_MESSAGE, message);
+		initialValues.put(KEY_TIME, Time.iso8601DateTime());
+		mDb.insert(DATABASE_TABLE_PENDING_DELIVERED, null, initialValues);
+	}
+
+	/**
+	 * Adds the message to the pendingsent table, to be deleted when
+	 * confirmation is received that the message was sent.
+	 * 
+	 * @param number
+	 *            the phone number
+	 * @param message
+	 *            the message
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void addMessagePendingSent(String number, String message)
+			throws SQLException {
+		ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_NUMBER, number);
+		initialValues.put(KEY_MESSAGE, message);
+		initialValues.put(KEY_TIME, Time.iso8601DateTime());
+		mDb.insert(DATABASE_TABLE_PENDING_SENT, null, initialValues);
 	}
 
 	/**
@@ -504,7 +676,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Closes the database
+	 * Closes the database.
 	 * 
 	 * @throws SQLException
 	 *             a SQL exception
@@ -530,10 +702,12 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_BLOCKEDNUMBERS, null, null);
 		mDb.delete(DATABASE_TABLE_LOG, null, null);
 		mDb.delete(DATABASE_TABLE_LOCATION_LOG, null, null);
+		mDb.delete(DATABASE_TABLE_PENDING_SENT, null, null);
+		mDb.delete(DATABASE_TABLE_PENDING_DELIVERED, null, null);
 	}
 
 	/**
-	 * Delete blocked number (= unblock the number)
+	 * Delete blocked number (= unblock the number).
 	 * 
 	 * @param _id
 	 *            the contact_id
@@ -638,6 +812,51 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Deletes rows with the given phone number and message from
+	 * pendingdelivered (i.e., indicating that the message was successfully
+	 * sent).
+	 * 
+	 * @param number
+	 *            the phone number
+	 * @param message
+	 *            the message
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void deleteMessagePendingDelivered(String number, String message)
+			throws SQLException {
+		mDb.delete(DATABASE_TABLE_PENDING_DELIVERED, KEY_NUMBER + "=? and "
+				+ KEY_MESSAGE + "=?", new String[] { number, message });
+	}
+
+	/**
+	 * Deletes rows with the given phone number and message from pendingsent
+	 * (i.e., indicating that the message was successfully sent).
+	 * 
+	 * @param number
+	 *            the phone number
+	 * @param message
+	 *            the message
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void deleteMessagePendingSent(String number, String message)
+			throws SQLException {
+		mDb.delete(DATABASE_TABLE_PENDING_SENT, KEY_NUMBER + "=? and "
+				+ KEY_MESSAGE + "=?", new String[] { number, message });
+	}
+
+	/**
+	 * Delete all unsent and undelivered messages from the database
+	 * 
+	 * @throws SQLException
+	 */
+	public void deleteUnsentUndelivered() throws SQLException {
+		mDb.delete(DATABASE_TABLE_PENDING_SENT, null, null);
+		mDb.delete(DATABASE_TABLE_PENDING_DELIVERED, null, null);
+	}
+
+	/**
 	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
 	 * KEY_LOCATION, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING
 	 * 
@@ -678,7 +897,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns a cursor with the blocked numbers Columns: KEY_ROWID, KEY_NUMBER
+	 * Returns a cursor with the blocked numbers Columns: KEY_ROWID, KEY_NUMBER.
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -692,6 +911,8 @@ public class DbAdapter {
 	 * Returns a cursor with call around reports for all days in the database.
 	 * Columns: KEY_ROWID,KEY_DUEBY,KEY_OUTSTANDING,KEY_RESOLVED
 	 * 
+	 * @param showFuture
+	 *            the show future
 	 * @return the cursor
 	 * @throws SQLException
 	 *             a SQL exception
@@ -760,10 +981,6 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public Cursor fetchCheckedOutPeople() throws SQLException {
-		// return mDb
-		// .rawQuery(
-		// "select contacts._id,contacts.name||' ('||houses.name||')' as name from contacts,houses,housemembers where contacts._id in (select contact_id from checkins where outstanding='1') and housemembers.contact_id=contacts._id and houses._id=housemembers.house_id;",
-		// null);
 		return mDb
 				.rawQuery(
 						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from checkins where outstanding='1');",
@@ -774,6 +991,8 @@ public class DbAdapter {
 	 * Returns a cursor with names and phone numbers for a given house. Columns:
 	 * KEY_ROWID, KEY_NAME, KEY_NUMBER
 	 * 
+	 * @param house_id
+	 *            the house_id
 	 * @return the cursor
 	 * @throws SQLException
 	 *             a SQL exception
@@ -811,6 +1030,19 @@ public class DbAdapter {
 		return mDb
 				.rawQuery(
 						"select checkins._id,location,timedue,name from checkins,contacts where checkins.contact_id=contacts._id and outstanding='1';",
+						null);
+	}
+
+	/**
+	 * Fetch unsent and undelivered messages. Columns KEY_ID, KEY_NUMBER,
+	 * KEY_MESSAGE, KEY_TIME, KEY_TYPE
+	 * 
+	 * @return the cursor
+	 */
+	public Cursor fetchUnsentUndeliveredMessages() {
+		return mDb
+				.rawQuery(
+						"select _id,number,message,time,'Unsent' as type from pendingsent union all select _id,number,message,time,'Undelivered' as type from pendingdelivered order by time desc;",
 						null);
 	}
 
@@ -975,8 +1207,8 @@ public class DbAdapter {
 	/**
 	 * Returns true if the check-in is outstanding, otherwise false.
 	 * 
-	 * @param contact_id
-	 *            the contact_id
+	 * @param checkin_id
+	 *            the checkin_id
 	 * @return true if the check-in is outstanding, otherwise false.
 	 * @throws SQLException
 	 *             a SQL exception
@@ -1121,6 +1353,8 @@ public class DbAdapter {
 	 * 
 	 * @param contact_id
 	 *            the contact_id
+	 * @param preferenceId
+	 *            the preference id
 	 * @return the value of the preference
 	 * @throws SQLException
 	 *             a SQL exception
@@ -1141,6 +1375,8 @@ public class DbAdapter {
 	 * 
 	 * @param contact_id
 	 *            the contact_id
+	 * @param permissionId
+	 *            the permission id
 	 * @return the value of the preference
 	 * @throws SQLException
 	 *             a SQL exception
@@ -1271,8 +1507,8 @@ public class DbAdapter {
 	/**
 	 * Returns a number given the _id from the contactphones table.
 	 * 
-	 * @param contactId
-	 *            the contact id
+	 * @param contactphoneId
+	 *            the contactphone id
 	 * @return the contact number
 	 * @throws SQLException
 	 *             a SQL exception
@@ -1310,8 +1546,10 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns true if the phone number is on the blocked list, otherwise false
+	 * Returns true if the phone number is on the blocked list, otherwise false.
 	 * 
+	 * @param number
+	 *            the number
 	 * @return true if the phone number is on the blocked list, otherwise false
 	 * @throws SQLException
 	 *             a SQL exception
@@ -1329,7 +1567,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the number of call arounds that are due
+	 * Returns the number of call arounds that are due.
 	 * 
 	 * @return the number of due call arounds
 	 * @throws SQLException
@@ -1347,7 +1585,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the number of check-ins that are due
+	 * Returns the number of check-ins that are due.
 	 * 
 	 * @return the number of due check-ins
 	 * @throws SQLException
@@ -1364,6 +1602,21 @@ public class DbAdapter {
 		} else {
 			return 0;
 		}
+	}
+
+	/**
+	 * Returns the combined number of unsent and undelivered messages in the
+	 * database.
+	 * 
+	 * @return the combined number of unsent and undelivered messages in the
+	 *         database
+	 */
+	public int getNumberOfMessageErrors() {
+		Cursor c1 = mDb.rawQuery("select count(_id) from pendingsent;", null);
+		Cursor c2 = mDb.rawQuery("select count(_id) from pendingdelivered;",
+				null);
+		return (c1.moveToFirst() ? c1.getInt(0) : 0)
+				+ (c2.moveToFirst() ? c2.getInt(0) : 0);
 	}
 
 	/**
@@ -1459,7 +1712,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Opens the database
+	 * Opens the database.
 	 * 
 	 * @return the database helper object
 	 * @throws SQLException
@@ -1509,7 +1762,7 @@ public class DbAdapter {
 
 	/**
 	 * Set whether an existing call around is resolved or not, for whatever call
-	 * arounds can be resolved
+	 * arounds can be resolved.
 	 * 
 	 * @param house_id
 	 *            the house_id of the call around to update
@@ -1551,10 +1804,10 @@ public class DbAdapter {
 
 	/**
 	 * Set whether an existing call around is resolved or not, for whatever call
-	 * arounds can be resolved
+	 * arounds can be resolved.
 	 * 
-	 * @param house_id
-	 *            the house_id of the call around to update
+	 * @param callaround_id
+	 *            the callaround_id
 	 * @param resolved
 	 *            whether the call around is to be resolved or not
 	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
@@ -1583,6 +1836,8 @@ public class DbAdapter {
 	 * 
 	 * @param contact_id
 	 *            the contact_id
+	 * @param resolved
+	 *            the resolved
 	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             a SQL exception
@@ -1604,6 +1859,8 @@ public class DbAdapter {
 	 * 
 	 * @param checkin_id
 	 *            the checkin_id
+	 * @param resolved
+	 *            the resolved
 	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             a SQL exception
@@ -1729,8 +1986,8 @@ public class DbAdapter {
 	 * 
 	 * @param contact_id
 	 *            the contact_id
-	 * @param permissionId
-	 *            the id of the permission being changed
+	 * @param preferenceId
+	 *            the preference id
 	 * @param pref
 	 *            the new permission value
 	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE, NOTIFY_ALREADY
@@ -1791,7 +2048,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Set the name of a house
+	 * Set the name of a house.
 	 * 
 	 * @param rowId
 	 *            the row id
@@ -1866,8 +2123,12 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Set the number as blocked or not
+	 * Set the number as blocked or not.
 	 * 
+	 * @param number
+	 *            the number
+	 * @param blocked
+	 *            the blocked
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
@@ -1899,4 +2160,5 @@ public class DbAdapter {
 		return setContactPermission(contact_id, preferenceId,
 				!getContactPermission(contact_id, preferenceId));
 	}
+
 }

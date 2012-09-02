@@ -1,84 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
     <LinearLayout
-        android:id="@+id/checkins_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
         android:orientation="vertical" >
 
+        <LinearLayout
+            android:id="@+id/checkins_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/home_checkins"
+                style="@style/fatButtonLike"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/home_checkins" />
+
+            <TextView
+                android:id="@+id/home_checkins_summary"
+                style="@style/textExplanation"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="20sp"
+                android:text="@string/home_checkins" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/callarounds_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/home_callaround"
+                style="@style/fatButtonLike"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/home_callaround" />
+
+            <TextView
+                android:id="@+id/home_callaround_summary"
+                style="@style/textExplanation"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="20sp"
+                android:text="@string/home_checkins" />
+        </LinearLayout>
+
         <TextView
-            android:id="@+id/home_checkins"
+            android:id="@+id/home_locations"
             style="@style/fatButtonLike"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/home_checkins" />
-
-        <TextView
-            android:id="@+id/home_checkins_summary"
-            style="@style/textExplanation"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
             android:paddingBottom="20sp"
-            android:text="@string/home_checkins" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/callarounds_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:orientation="vertical" >
+            android:text="@string/home_locations" />
 
         <TextView
-            android:id="@+id/home_callaround"
+            android:id="@+id/home_teammembers"
             style="@style/fatButtonLike"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/home_callaround" />
+            android:paddingBottom="20sp"
+            android:text="@string/home_teammembers" />
 
         <TextView
-            android:id="@+id/home_callaround_summary"
-            style="@style/textExplanation"
+            android:id="@+id/home_houses"
+            style="@style/fatButtonLike"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="20sp"
-            android:text="@string/home_checkins" />
+            android:text="@string/home_houses" />
+
+        <LinearLayout
+            android:id="@+id/message_errors"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/msgerrors"
+                style="@style/fatButtonLike"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/msgerror" />
+
+            <TextView
+                android:id="@+id/error_report"
+                style="@style/textExplanation"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="20sp"
+                android:text="@string/noerrors" />
+        </LinearLayout>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/home_locations"
-        style="@style/fatButtonLike"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="20sp"
-        android:text="@string/home_locations" />
-
-    <TextView
-        android:id="@+id/home_teammembers"
-        style="@style/fatButtonLike"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="20sp"
-        android:text="@string/home_teammembers" />
-
-    <TextView
-        android:id="@+id/home_houses"
-        style="@style/fatButtonLike"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="20sp"
-        android:text="@string/home_houses" />
-
-    <!-- <TextView -->
-    <!-- android:id="@+id/home_settings" -->
-    <!-- android:text="@string/home_settings" -->
-    <!-- android:layout_width="wrap_content" -->
-    <!-- android:layout_height="wrap_content" -->
-    <!-- style="@style/fatButtonLike"/> -->
-
-</LinearLayout>
+</ScrollView>

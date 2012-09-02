@@ -21,6 +21,7 @@
     <string name="location_edit">Edit Location</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="delete_all">Delete all</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="call_number">Call number</string>
@@ -134,7 +135,15 @@
     <string name="show_future">Show future</string>
     <string name="show_future_summary">Show call arounds that are scheduled after today</string>
     <string name="callaround_preferences">Call around preferences</string>
-
+    <string name="delete_all_unsent_warning">Are you sure you want to delete all records of unsent and undelivered messages?</string>
+    <string name="unsent">Not sent</string>
+    <string name="unconfirmed">Not confirmed</string>
+    <string name="msgerror">Unsent messages</string>
+    <string name="noerrors">No errors at this time</string>
+    <string name="message_error_one">1 message error</string>
+    <string name="message_errors">%s message errors</string>
+    <string name="unsent_undelivered_header">Unsent/Undelivered:</string>
+    
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>
     <string name="loc_gmt_offset">GMT+04:30</string>
@@ -192,5 +201,5 @@
     <string name="sms_report" formatted="false">24/7 says: %s. %s</string>
     <string name="sms_report_callarounds">Outstanding call arounds: %s</string>
     <string name="sms_report_checkins">Outstanding check-ins: %s</string>
-
+    
 </resources>
