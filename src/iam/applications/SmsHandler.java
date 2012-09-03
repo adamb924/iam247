@@ -6,10 +6,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
@@ -57,9 +55,6 @@ public class SmsHandler {
 		mDbHelper = new DbAdapter(context);
 		mDbHelper.open();
 
-		// Log.i("Debug", number);
-		// Log.i("Debug", text);
-
 		mContext = context;
 		mPhoneNumber = getNormalizedPhoneNumber(context, number);
 		mMessage = text.trim();
@@ -89,12 +84,11 @@ public class SmsHandler {
 		if (mContactId == -1) {
 			// perhaps he is identifying himself
 			if (messageMatches(R.string.re_thisis)) {
+				// check whether we are accepting "this is" messages
 				SharedPreferences settings = PreferenceManager
 						.getDefaultSharedPreferences(mContext);
-
 				boolean thisisAllowed = settings.getBoolean(
 						HomeActivity.PREFERENCES_PERMIT_THISIS, false);
-
 				if (!thisisAllowed) {
 					sendSms(R.string.sms_this_disabled_notification);
 					mDbHelper.close();
@@ -136,35 +130,11 @@ public class SmsHandler {
 			unresolveCallaround();
 		} else if (messageMatches(R.string.re_checkin_back)) {
 			resolveCheckin();
-		} else if (messageMatches(R.string.re_startcheckin)) {
-
-			String[] matches = getMessageMatches(R.string.re_startcheckin);
-			if (matches == null || matches.length < 2) {
-				yourError();
-				mDbHelper.close();
-				return;
-			}
-			Date time = Time.timeFromString(context, matches[1]);
-			if (time == null) {
-				yourError();
-				mDbHelper.close();
-				return;
-			}
-			addCheckin(matches[0], time, true);
 		} else if (messageMatches(R.string.re_startcheckin_nocheckin)) {
-			String[] matches = getMessageMatches(R.string.re_startcheckin_nocheckin);
-			if (matches == null || matches.length < 2) {
-				yourError();
-				mDbHelper.close();
-				return;
-			}
-			Date time = Time.timeFromString(context, matches[1]);
-			if (time == null) {
-				yourError();
-				mDbHelper.close();
-				return;
-			}
-			addCheckin(matches[0], time, false);
+			// this condition must come before that of R.string.re_startcheckin
+			addCheckin(false);
+		} else if (messageMatches(R.string.re_startcheckin)) {
+			addCheckin(true);
 		} else if (messageMatches(R.string.re_permission)) {
 			String forbidden = mDbHelper.getForbiddenLocations();
 			if (forbidden == null) {
@@ -200,24 +170,43 @@ public class SmsHandler {
 	 * Adds a check-in to the database, handling the response values as
 	 * appropriate.
 	 * 
-	 * @param place
-	 *            the place
-	 * @param returntime
-	 *            the return time
 	 * @param requestCheckin
 	 *            whether the user is requesting a checkin
 	 */
-	private void addCheckin(String place, Date returntime,
-			boolean requestCheckin) {
-		int ret = mDbHelper.addCheckin(mContactId, place, returntime,
-				requestCheckin);
+	private void addCheckin(boolean requestCheckin) {
+		String[] matches;
+		if (requestCheckin) {
+			matches = getMessageMatches(R.string.re_startcheckin);
+		} else {
+			matches = getMessageMatches(R.string.re_startcheckin_nocheckin);
+		}
+
+		Log.i("Debug", matches[0]);
+		Log.i("Debug", matches[1]);
+
+		if (matches == null || matches.length < 2) {
+			Log.i("Debug", "less than two");
+			yourError();
+			mDbHelper.close();
+			return;
+		}
+		String place = matches[0];
+		Date time = Time.timeFromString(mContext, matches[1]);
+		if (time == null) {
+			Log.i("Debug", "bad date");
+			yourError();
+			mDbHelper.close();
+			return;
+		}
+
+		int ret = mDbHelper.addCheckin(mContactId, place, time, requestCheckin);
 
 		if (ret == DbAdapter.NOTIFY_FAILURE) {
 			ourError();
 		} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
 			String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
-					place, Time.timeTodayTomorrow(mContext, returntime))
+					place, Time.timeTodayTomorrow(mContext, time))
 					+ " "
 					+ mContext
 							.getString(R.string.sms_existing_checkin_resolved);
@@ -225,14 +214,14 @@ public class SmsHandler {
 		} else {
 			String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
-					place, Time.timeTodayTomorrow(mContext, returntime));
+					place, Time.timeTodayTomorrow(mContext, time));
 			sendSms(message);
 		}
 
 		if (ret != DbAdapter.NOTIFY_FAILURE
 				&& mDbHelper.getContactPreference(mContactId,
 						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
-			AlarmReceiver.setCheckinReminderAlert(mContext, returntime,
+			AlarmReceiver.setCheckinReminderAlert(mContext, time,
 					mDbHelper.lastInsertId());
 		}
 	}
@@ -488,25 +477,17 @@ public class SmsHandler {
 			// string literal doesn't work
 			Intent sentIntent = new Intent(
 					"iam.applications.SmsReceiver.SMS_SENT");
+			// This extras are used in SmsReceiver.processSmsSent()
 			sentIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
 			sentIntent.putExtra(SmsHandler.MESSAGE, message);
 			sentPIArray.add(PendingIntent.getBroadcast(appContext, 0,
 					sentIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
-			// ---when the SMS has been sent---
-			appContext.registerReceiver(new BroadcastReceiver() {
-				@Override
-				public void onReceive(Context arg0, Intent arg1) {
-					Log.i("Debug",
-							"My embedded receiver: "
-									+ String.valueOf(getResultCode()));
-				}
-			}, new IntentFilter("iam.applications.SmsReceiver.SMS_SENT"));
-
 			// curiously, passing SmsReceiver.SMS_DELIVERED instead of the
 			// identical string literal doesn't work
 			Intent deliveredIntent = new Intent(
 					"iam.applications.SmsReceiver.SMS_DELIVERED");
+			// This extras are used in SmsReceiver.processSmsDelivered()
 			deliveredIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
 			deliveredIntent.putExtra(SmsHandler.MESSAGE, message);
 			deliveredPIArray.add(PendingIntent.getBroadcast(appContext, 0,
