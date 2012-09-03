@@ -12,13 +12,85 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
-import android.util.Log;
 
 /**
  * This class processes SMS messages, and calls <code>DbAdapter</code> methods,
  * and sends response SMS messages, as appropriate.
  */
 public class SmsHandler {
+	/**
+	 * Returns a normalized phone number. If the number starts with zero, that
+	 * zero is replaced with the (localizable) resource string
+	 * R.string.loc_country_phonecode.
+	 */
+	static public String getNormalizedPhoneNumber(Context context, String old) {
+		String r = old;
+		if (r.startsWith("0")) {
+			r = r.replaceFirst("0",
+					context.getString(R.string.loc_country_phonecode));
+		}
+		return r;
+	}
+
+	/**
+	 * Send an SMS message to the given phone number, witht the given message.
+	 * 
+	 * @param phoneNumber
+	 *            the phone number
+	 * @param message
+	 *            the message
+	 */
+	// static public void sendSms(final Context context, String phoneNumber,
+	// String message) {
+	static public void sendSms(final Context context, String phoneNumber,
+			String message) {
+		// this application context is required because it's not allowed to
+		// register broadcast receivers from a broadcast receiver (which this
+		// is, being called from SmsReceiver)
+		Context appContext = context.getApplicationContext();
+
+		SmsManager sms = SmsManager.getDefault();
+		ArrayList<String> parts = sms.divideMessage(message);
+
+		// these intents are collected by SmsReceiver
+		ArrayList<PendingIntent> sentPIArray = new ArrayList<PendingIntent>();
+		ArrayList<PendingIntent> deliveredPIArray = new ArrayList<PendingIntent>();
+		for (int i = 0; i < parts.size(); i++) {
+			// curiously, passing SmsReceiver.SMS_SENT instead of the identical
+			// string literal doesn't work
+			Intent sentIntent = new Intent(
+					"iam.applications.SmsReceiver.SMS_SENT");
+			// This extras are used in SmsReceiver.processSmsSent()
+			sentIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
+			sentIntent.putExtra(SmsHandler.MESSAGE, message);
+			sentPIArray.add(PendingIntent.getBroadcast(appContext, 0,
+					sentIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+
+			// curiously, passing SmsReceiver.SMS_DELIVERED instead of the
+			// identical string literal doesn't work
+			Intent deliveredIntent = new Intent(
+					"iam.applications.SmsReceiver.SMS_DELIVERED");
+			// This extras are used in SmsReceiver.processSmsDelivered()
+			deliveredIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
+			deliveredIntent.putExtra(SmsHandler.MESSAGE, message);
+			deliveredPIArray.add(PendingIntent.getBroadcast(appContext, 0,
+					deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+		}
+
+		AlarmReceiver.sendRefreshAlert(context);
+
+		sms.sendMultipartTextMessage(phoneNumber, null, parts, sentPIArray,
+				deliveredPIArray);
+
+		// add the message to SQL tables, to be deleted when confirmation of
+		// being sent and being delivered are received
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addMessagePendingSent(phoneNumber, message);
+		dbHelper.addMessagePendingDelivered(phoneNumber, message);
+		dbHelper.close();
+	}
+
 	/** The application context. */
 	private final Context mContext;
 
@@ -33,11 +105,11 @@ public class SmsHandler {
 
 	/** The house id of the sender (or -1). */
 	private final long mHouseId;
-
 	/** The database interface. */
 	private final DbAdapter mDbHelper;
 
 	static public String PHONE_NUMBER = "PHONE_NUMBER";
+
 	static public String MESSAGE = "MESSAGE";
 
 	/**
@@ -136,14 +208,7 @@ public class SmsHandler {
 		} else if (messageMatches(R.string.re_startcheckin)) {
 			addCheckin(true);
 		} else if (messageMatches(R.string.re_permission)) {
-			String forbidden = mDbHelper.getForbiddenLocations();
-			if (forbidden == null) {
-				sendSms(R.string.sms_forbidden_none);
-			} else {
-				String message = String.format(
-						context.getString(R.string.sms_forbidden), forbidden);
-				sendSms(message);
-			}
+			sendForbiddenLocations(context);
 		} else if (messageMatches(R.string.re_turnoffreminders)) {
 			turnOffReminders();
 		} else if (messageMatches(R.string.re_turnonreminders)) {
@@ -181,11 +246,7 @@ public class SmsHandler {
 			matches = getMessageMatches(R.string.re_startcheckin_nocheckin);
 		}
 
-		Log.i("Debug", matches[0]);
-		Log.i("Debug", matches[1]);
-
 		if (matches == null || matches.length < 2) {
-			Log.i("Debug", "less than two");
 			yourError();
 			mDbHelper.close();
 			return;
@@ -193,7 +254,6 @@ public class SmsHandler {
 		String place = matches[0];
 		Date time = Time.timeFromString(mContext, matches[1]);
 		if (time == null) {
-			Log.i("Debug", "bad date");
 			yourError();
 			mDbHelper.close();
 			return;
@@ -314,9 +374,6 @@ public class SmsHandler {
 				Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(mMessage);
 
-		// Log.i("Debug",mMessage);
-		// Log.i("Debug",r.getString(stringId));
-
 		return m.matches();
 	}
 
@@ -325,14 +382,6 @@ public class SmsHandler {
 	 */
 	private void ourError() {
 		sendSms(R.string.sms_247_error);
-	}
-
-	/**
-	 * Send the user an SMS indicating that their input was unrecognizable.
-	 * 
-	 */
-	private void yourError() {
-		sendSms(R.string.sms_message_error);
 	}
 
 	/**
@@ -375,23 +424,6 @@ public class SmsHandler {
 	}
 
 	/**
-	 * Undoes the user's call around.
-	 */
-	private void unresolveCallaround() {
-		if (mHouseId == -1) {
-			sendSms(R.string.sms_callaround_nohouse);
-			return;
-		}
-
-		int ret = mDbHelper.setCallaroundResolved(mHouseId, false);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
-			sendSms(R.string.sms_callaround_undo_acknowledgement);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
-		}
-	}
-
-	/**
 	 * Resolve the user's check-in.
 	 */
 	private void resolveCheckin() {
@@ -405,27 +437,19 @@ public class SmsHandler {
 		}
 	}
 
-	private void turnOnReminders() {
-		int ret = mDbHelper.setContactPreference(mContactId,
-				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, true);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
-			sendSms(R.string.sms_checkin_reminder_on_confirm);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
-			sendSms(R.string.sms_already);
-		}
-	}
-
-	private void turnOffReminders() {
-		int ret = mDbHelper.setContactPreference(mContactId,
-				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, false);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
-			sendSms(R.string.sms_checkin_reminder_off_confirm);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
-			sendSms(R.string.sms_already);
+	/**
+	 * Sends the user the current list of forbidden locations.
+	 * 
+	 * @param context
+	 */
+	private void sendForbiddenLocations(Context context) {
+		String forbidden = mDbHelper.getForbiddenLocations();
+		if (forbidden == null) {
+			sendSms(R.string.sms_forbidden_none);
+		} else {
+			String message = String.format(
+					context.getString(R.string.sms_forbidden), forbidden);
+			sendSms(message);
 		}
 	}
 
@@ -449,80 +473,53 @@ public class SmsHandler {
 		sendSms(mContext, mPhoneNumber, message);
 	}
 
-	/**
-	 * Send an SMS message to the given phone number, witht the given message.
-	 * 
-	 * @param phoneNumber
-	 *            the phone number
-	 * @param message
-	 *            the message
-	 */
-	// static public void sendSms(final Context context, String phoneNumber,
-	// String message) {
-	static public void sendSms(final Context context, String phoneNumber,
-			String message) {
-		// this application context is required because it's not allowed to
-		// register broadcast receivers from a broadcast receiver (which this
-		// is, being called from SmsReceiver)
-		Context appContext = context.getApplicationContext();
-
-		SmsManager sms = SmsManager.getDefault();
-		ArrayList<String> parts = sms.divideMessage(message);
-
-		// these intents are collected by SmsReceiver
-		ArrayList<PendingIntent> sentPIArray = new ArrayList<PendingIntent>();
-		ArrayList<PendingIntent> deliveredPIArray = new ArrayList<PendingIntent>();
-		for (int i = 0; i < parts.size(); i++) {
-			// curiously, passing SmsReceiver.SMS_SENT instead of the identical
-			// string literal doesn't work
-			Intent sentIntent = new Intent(
-					"iam.applications.SmsReceiver.SMS_SENT");
-			// This extras are used in SmsReceiver.processSmsSent()
-			sentIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
-			sentIntent.putExtra(SmsHandler.MESSAGE, message);
-			sentPIArray.add(PendingIntent.getBroadcast(appContext, 0,
-					sentIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-
-			// curiously, passing SmsReceiver.SMS_DELIVERED instead of the
-			// identical string literal doesn't work
-			Intent deliveredIntent = new Intent(
-					"iam.applications.SmsReceiver.SMS_DELIVERED");
-			// This extras are used in SmsReceiver.processSmsDelivered()
-			deliveredIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
-			deliveredIntent.putExtra(SmsHandler.MESSAGE, message);
-			deliveredPIArray.add(PendingIntent.getBroadcast(appContext, 0,
-					deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+	private void turnOffReminders() {
+		int ret = mDbHelper.setContactPreference(mContactId,
+				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, false);
+		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+			sendSms(R.string.sms_checkin_reminder_off_confirm);
+		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+			ourError();
+		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+			sendSms(R.string.sms_already);
 		}
+	}
 
-		AlarmReceiver.sendRefreshAlert(context);
-
-		sms.sendMultipartTextMessage(phoneNumber, null, parts, sentPIArray,
-				deliveredPIArray);
-
-		// add the message to SQL tables, to be deleted when confirmation of
-		// being sent and being delivered are received
-		DbAdapter dbHelper = new DbAdapter(context);
-		dbHelper.open();
-		dbHelper.addMessagePendingSent(phoneNumber, message);
-		dbHelper.addMessagePendingDelivered(phoneNumber, message);
-		dbHelper.close();
-
-		// Log.i("Debug", phoneNumber);
-		// Log.i("Debug", message);
+	private void turnOnReminders() {
+		int ret = mDbHelper.setContactPreference(mContactId,
+				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, true);
+		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+			sendSms(R.string.sms_checkin_reminder_on_confirm);
+		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+			ourError();
+		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+			sendSms(R.string.sms_already);
+		}
 	}
 
 	/**
-	 * Returns a normalized phone number. If the number starts with zero, that
-	 * zero is replaced with the (localizable) resource string
-	 * R.string.loc_country_phonecode.
+	 * Undoes the user's call around.
 	 */
-	static public String getNormalizedPhoneNumber(Context context, String old) {
-		String r = old;
-		if (r.startsWith("0")) {
-			r = r.replaceFirst("0",
-					context.getString(R.string.loc_country_phonecode));
+	private void unresolveCallaround() {
+		if (mHouseId == -1) {
+			sendSms(R.string.sms_callaround_nohouse);
+			return;
 		}
-		return r;
+
+		int ret = mDbHelper.setCallaroundResolved(mHouseId, false);
+		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+			sendSms(R.string.sms_callaround_undo_acknowledgement);
+		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+			ourError();
+		}
+	}
+
+	/**
+	 * Send the user an SMS indicating that their input was unrecognizable.
+	 * 
+	 */
+	private void yourError() {
+		sendSms(R.string.sms_message_error);
 	}
 
 }

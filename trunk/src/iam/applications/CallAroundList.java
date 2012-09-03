@@ -220,9 +220,6 @@ public class CallAroundList extends ListActivity {
 			long outstanding = cur.getLong(cur
 					.getColumnIndex(DbAdapter.KEY_OUTSTANDING));
 
-			// Log.i("Debug", "Resolved: " + String.valueOf(resolved));
-			// Log.i("Debug", "Outstanding: " + String.valueOf(outstanding));
-
 			String callaround_summary;
 			if (outstanding + resolved == 0) {
 				callaround_summary = CallAroundList.this

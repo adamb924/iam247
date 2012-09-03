@@ -55,19 +55,6 @@ public class MissedCallReceiver extends PhoneStateListener {
 
 		mNumber = SmsHandler.getNormalizedPhoneNumber(mContext, incomingNumber);
 
-		// this code is handy for subsequent debugging:
-		// switch (state) {
-		// case TelephonyManager.CALL_STATE_RINGING:
-		// Log.i("Debug", "CALL_STATE_RINGING");
-		// break;
-		// case TelephonyManager.CALL_STATE_IDLE:
-		// Log.i("Debug", "CALL_STATE_IDLE");
-		// break;
-		// case TelephonyManager.CALL_STATE_OFFHOOK:
-		// Log.i("Debug", "CALL_STATE_OFFHOOK");
-		// break;
-		// }
-
 		// if the phone is ringing set a timer to check the phone status after
 		// mDelay milliseconds
 		if (state == TelephonyManager.CALL_STATE_RINGING) {
