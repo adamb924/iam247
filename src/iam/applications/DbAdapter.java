@@ -804,9 +804,6 @@ public class DbAdapter {
 	 * Deletes log events from before one week ago.
 	 */
 	public void deleteLogBeforeOneWeek() {
-		Log.i("Debug",
-				"delete from log where strftime('%s',time) <= strftime('%s','"
-						+ oneWeekAgo() + "');");
 		mDb.execSQL("delete from log where strftime('%s',time) <= strftime('%s','"
 				+ oneWeekAgo() + "');");
 	}
@@ -950,11 +947,6 @@ public class DbAdapter {
 								+ isoday
 								+ "' and callarounds.house_id=houses._id order by outstanding asc;",
 						null);
-		// return mDb.query(DATABASE_TABLE_CALLAROUNDS, new String[] {
-		// KEY_ROWID,
-		// KEY_HOUSEID, KEY_OUTSTANDING, KEY_TIMERECEIVED }, KEY_FORDAY
-		// + "='" + isoday + "'", null, null, null, KEY_OUTSTANDING
-		// + " asc");
 	}
 
 	/**
@@ -1056,6 +1048,7 @@ public class DbAdapter {
 		super.finalize();
 
 		// this may have been causing problems....
+		// 9/3/2012: I don't understand the above comment
 		// close();
 	}
 
@@ -1761,8 +1754,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Set whether an existing call around is resolved or not, for whatever call
-	 * arounds can be resolved.
+	 * Sets whether an existing call around is resolved or not, for whatever
+	 * call arounds can be resolved.
 	 * 
 	 * @param house_id
 	 *            the house_id of the call around to update
@@ -1803,8 +1796,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Set whether an existing call around is resolved or not, for whatever call
-	 * arounds can be resolved.
+	 * Sets whether an existing call around is resolved or not, for whatever
+	 * call arounds can be resolved.
 	 * 
 	 * @param callaround_id
 	 *            the callaround_id
@@ -1817,8 +1810,6 @@ public class DbAdapter {
 	 */
 	public int setCallaroundResolvedFromId(long callaround_id, boolean resolved)
 			throws SQLException {
-		Log.i("Debug", "Setting resolved: " + (resolved ? "true" : "false"));
-
 		ContentValues args = new ContentValues();
 		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
 		args.put(KEY_TIMERECEIVED, resolved ? Time.iso8601DateTime() : "");
@@ -2106,7 +2097,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Rename a location.
+	 * Renames a location.
 	 * 
 	 * @param rowId
 	 *            the row id
@@ -2123,7 +2114,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Set the number as blocked or not.
+	 * Sets the number as blocked or not.
 	 * 
 	 * @param number
 	 *            the number

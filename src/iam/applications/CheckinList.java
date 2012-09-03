@@ -66,7 +66,7 @@ public class CheckinList extends ListActivity implements OnInitListener {
 
 		Intent i = getIntent();
 		if (i.getBooleanExtra(AlarmReceiver.ALERT_CHECKIN_DUE, false)) {
-			// play the alert
+			// play the alert ... eventually
 			Intent checkIntent = new Intent();
 			checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
 			startActivityForResult(checkIntent, TTS_CHECK_CODE);
@@ -199,9 +199,6 @@ public class CheckinList extends ListActivity implements OnInitListener {
 
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 		long checkin_id = info.id;
-
-		// Log.i("Debug", mDbHelper.getCheckinOutstanding(checkin_id) ? "true"
-		// : "false");
 
 		if (mDbHelper.getCheckinOutstanding(checkin_id)) {
 			menu.removeItem(R.id.unresolve_checkin);

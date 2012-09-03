@@ -4,14 +4,15 @@ import android.content.Context;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
-import android.util.Log;
-
-/**
- * 
- */
 
 /**
  * @author Adam
+ * 
+ *         This is a class that will detect levels in phone service state.
+ *         Eventually this may be used to monitor SIM status. Currently
+ *         (9.3.2012) it seems unlikely that this will have a practical
+ *         application, beyond notifying the user that the network is down. So,
+ *         the feature is on hold indefinitely.
  * 
  */
 public class ServiceChangeReceiver extends PhoneStateListener {
@@ -29,9 +30,7 @@ public class ServiceChangeReceiver extends PhoneStateListener {
 	 */
 	@Override
 	public void onServiceStateChanged(ServiceState serviceState) {
-		Log.i("Debug", "onServiceStateChanged");
-		Log.i("Debug", serviceState.getOperatorNumeric());
-		Log.i("Debug", String.valueOf(serviceState.getState()));
+		// my recollection is that this method is not be called
 
 		super.onServiceStateChanged(serviceState);
 	}
@@ -47,9 +46,7 @@ public class ServiceChangeReceiver extends PhoneStateListener {
 	public void onSignalStrengthsChanged(SignalStrength signalStrength) {
 		super.onSignalStrengthsChanged(signalStrength);
 
-		// TODO this works
-		// Log.i("Debug", "onSignalStrengthsChanged: " +
-		// signalStrength.toString());
+		// this method is being called
 	}
 
 }
