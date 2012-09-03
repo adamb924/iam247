@@ -2,8 +2,11 @@ package iam.applications;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,18 +19,27 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
 /**
- * 
- */
-
-/**
  * @author Adam
+ * 
+ *         This is a <code>ListActivity</code> subclass for keeping track of
+ *         sent messages. It displays a list of messages which have not (yet)
+ *         been confirmed as having been sent or delivered. It is accessed from
+ *         the <code>HomeActivity</code>.
  * 
  */
 public class UnsentMessageList extends ListActivity {
 
 	/** The database interface */
 	private DbAdapter mDbHelper;
+
+	/**
+	 * Cursor for the database query; this can be left as a field in case we
+	 * want to go back and allow users to click on individual messages.
+	 */
 	private Cursor mReportCur;
+
+	/** An intent filter to catch all broadcast refresh requests. */
+	private IntentFilter mIntentFilter;
 
 	/*
 	 * (non-Javadoc)
@@ -39,6 +51,8 @@ public class UnsentMessageList extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.unsent_messages);
+
+		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
@@ -58,11 +72,51 @@ public class UnsentMessageList extends ListActivity {
 		mDbHelper.close();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		fillData();
+		unregisterReceiver(mRefreshReceiver);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		registerReceiver(mRefreshReceiver, mIntentFilter);
+		fillData();
+	}
+
+	/**
+	 * Refresh the data from the database.
+	 */
 	protected void fillData() {
 		mReportCur = mDbHelper.fetchUnsentUndeliveredMessages();
 		ListAdapter listAdapter = new ListAdapter(this, mReportCur);
 		setListAdapter(listAdapter);
 	}
+
+	/**
+	 * When the refresh request is received, call fillData() to refresh the
+	 * screen.
+	 */
+	public BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			fillData();
+		};
+	};
 
 	/*
 	 * (non-Javadoc)
