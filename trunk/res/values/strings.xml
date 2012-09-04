@@ -143,6 +143,8 @@
     <string name="message_error_one">1 message error</string>
     <string name="message_errors">%s message errors</string>
     <string name="unsent_undelivered_header">Unsent/Undelivered:</string>
+    <string name="disable_247">Disable 24/7</string>
+    <string name="disable_247_summary">If this box is checked, 24/7 will ignore any incoming messages or calls.</string>
     
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>

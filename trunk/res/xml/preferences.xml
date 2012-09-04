@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
+     <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="PREFERENCES_DISABLE_247"
+        android:summary="@string/disable_247_summary"
+        android:title="@string/disable_247" />
+    
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="PREFERENCES_PERMIT_THISIS"
@@ -21,9 +27,8 @@
             android:inputType="phone"
             android:summary="@string/block_number_summary"
             android:title="@string/block_number" />
-
-        <iam.applications.UnblockPhonePreferenceDialog
-            android:defaultValue=""
+        <Preference
+            android:key="unblock_number"
             android:title="@string/unblock_number" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/callaround_preferences" >

@@ -27,6 +27,12 @@ public class MissedCallReceiver extends PhoneStateListener {
 	private String mNumber;
 
 	/**
+	 * Whether 24/7 is disabled. It makes sense to check for this just once in
+	 * the constructor, since apparently this object is persistent.
+	 */
+	private final boolean mDisabled;
+
+	/**
 	 * Instantiates a new missed call receiver.
 	 * 
 	 * @param context
@@ -41,6 +47,8 @@ public class MissedCallReceiver extends PhoneStateListener {
 				.getDefaultSharedPreferences(context);
 		mDelay = Long.valueOf(settings.getString(
 				HomeActivity.PREFERENCES_MISSED_CALL_DELAY, "5000"));
+		mDisabled = settings.getBoolean(HomeActivity.PREFERENCES_DISABLE_247,
+				false);
 	}
 
 	/*
@@ -52,6 +60,10 @@ public class MissedCallReceiver extends PhoneStateListener {
 	@Override
 	public void onCallStateChanged(int state, String incomingNumber) {
 		super.onCallStateChanged(state, incomingNumber);
+
+		if (mDisabled) {
+			return;
+		}
 
 		mNumber = SmsHandler.getNormalizedPhoneNumber(mContext, incomingNumber);
 
