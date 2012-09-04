@@ -13,12 +13,14 @@ import java.util.Date;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.widget.Toast;
 
 /**
  * @author Adam
@@ -92,6 +94,15 @@ public class PreferencesActivity extends PreferenceActivity {
 					@Override
 					public boolean onPreferenceClick(Preference preference) {
 						mDbHelper.deleteLogBeforeOneWeek();
+						return false;
+					}
+				});
+		Preference unblockNumber = findPreference("unblock_number");
+		unblockNumber
+				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+					@Override
+					public boolean onPreferenceClick(Preference preference) {
+						unblockNumber();
 						return false;
 					}
 				});
@@ -223,6 +234,38 @@ public class PreferencesActivity extends PreferenceActivity {
 			}
 		});
 		alert.setNegativeButton("Cancel", null);
+		alert.show();
+	}
+
+	private void unblockNumber() {
+		Cursor c = mDbHelper.fetchBlockedNumbers();
+		startManagingCursor(c);
+		if (c.getCount() == 0) {
+			Toast toast = Toast.makeText(this,
+					getString(R.string.no_blocked_numbers), Toast.LENGTH_SHORT);
+			toast.show();
+			return;
+		}
+
+		final CharSequence[] entries = new CharSequence[c.getCount()];
+
+		if (c.getCount() > 0) {
+			c.moveToFirst();
+			int i = 0;
+			do {
+				entries[i] = c.getString(1);
+				++i;
+			} while (c.moveToNext());
+		}
+
+		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		alert.setTitle(getString(R.string.unblock_number));
+		alert.setItems(entries, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int item) {
+				mDbHelper.setNumberIsBlocked((String) entries[item], false);
+			}
+		});
 		alert.show();
 	}
 }

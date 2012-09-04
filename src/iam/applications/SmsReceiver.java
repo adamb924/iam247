@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.telephony.SmsMessage;
 
 /**
@@ -25,6 +27,14 @@ public class SmsReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
+
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		boolean disabled = settings.getBoolean(
+				HomeActivity.PREFERENCES_DISABLE_247, false);
+		if (disabled) {
+			return;
+		}
 
 		// process the message according to whether it is a received SMS, or a
 		// sent confirmation, or a delivery confirmation
