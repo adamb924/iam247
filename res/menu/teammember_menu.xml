@@ -45,7 +45,7 @@
             <group android:checkableBehavior="all" >
                 <item
                     android:id="@+id/checkin_reminders"
-                    android:title="@string/allow_request_reports">
+                    android:title="@string/checkin_reminders">
                 </item>
                 <item
                     android:id="@+id/allow_request_reports"
