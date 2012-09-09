@@ -264,6 +264,12 @@ public class SmsHandler {
 			return;
 		}
 
+		if (!hasLegitimateLocationKeyword(place)) {
+			needLegitimateKeyword();
+			mDbHelper.close();
+			return;
+		}
+
 		int ret = mDbHelper.addCheckin(mContactId, place, time, requestCheckin);
 
 		if (ret == DbAdapter.NOTIFY_FAILURE) {
@@ -289,6 +295,19 @@ public class SmsHandler {
 			AlarmReceiver.setCheckinReminderAlert(mContext, time,
 					mDbHelper.lastInsertId());
 		}
+	}
+
+	private boolean hasLegitimateLocationKeyword(String place) {
+		place = place.trim();
+
+		int space = place.lastIndexOf(" ");
+
+		if (space == -1 || space == place.length()) {
+			return false;
+		}
+		String putativeKeyword = place.substring(space + 1);
+
+		return mDbHelper.getLocationKeywordExists(putativeKeyword);
 	}
 
 	/**
@@ -404,6 +423,11 @@ public class SmsHandler {
 		Matcher m = p.matcher(mMessage);
 
 		return m.matches();
+	}
+
+	private void needLegitimateKeyword() {
+		// TODO eventually it will be nice to have a list of possible keywords
+		sendSms(R.string.sms_need_location_keyword);
 	}
 
 	/**

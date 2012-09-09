@@ -1673,6 +1673,26 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Return true if the given location keyword exists in the database;
+	 * otherwise returns false.
+	 * 
+	 * @param keyword
+	 * @return true if the given location keyword exists in the database,
+	 *         otherwise false
+	 * @throws SQLException
+	 */
+	public boolean getLocationKeywordExists(String keyword) throws SQLException {
+		Cursor c = mDb.rawQuery(
+				"select _id from locations where lower(keyword)=lower(?);",
+				new String[] { keyword });
+		if (c.moveToFirst()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Returns a number given the _id from the contactphones table.
 	 * 
 	 * @param contactphoneId
