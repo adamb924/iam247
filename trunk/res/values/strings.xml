@@ -97,6 +97,8 @@
     <string name="callaround_due_summary">What time daily call around is due</string>
     <string name="callaround_earliest">Call around earliest time</string>
     <string name="callaround_earliest_summary">The earliest time a team member can do call around</string>
+    <string name="callaround_delayed_time">Delayed call around time</string>
+    <string name="callaround_delayed_time_summary">The latest time a team member can do call around, if s/he requests a delay</string>
     <string name="callaround_add">Call around add time</string>
     <string name="callaround_add_summary">The time each day that the day\'s call arounds should be added</string>
     <string name="callaround_settings">Call around settings</string>
@@ -156,6 +158,7 @@
     <string name="guard_schedule">Guard schedule</string>
     <string name="house_label_keyword" formatted="false">%s (%s)</string>
     <string name="edit_keyword">Edit keyword</string>
+    <string name="delayed_suffix">—Delayed</string>
     
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>
@@ -176,6 +179,7 @@
     <string name="re_turnoffreminders">(?:turn\\s*off\\s*reminders|turn\\s*reminders\\s*off)</string>
     <string name="re_turnonreminders">(?:turn\\s*on\\s*reminders|turn\\s*reminders\\s*on)</string>
     <string name="re_report">report</string>
+    <string name="re_delay">delay</string>
 
     <!-- TTS Messages -->
     <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>
@@ -214,5 +218,6 @@
     <string name="sms_report" formatted="false">24/7 says: %s. %s</string>
     <string name="sms_report_callarounds">Outstanding call arounds: %s</string>
     <string name="sms_report_checkins">Outstanding check-ins: %s</string>
-    
+    <string name="sms_callaround_not_timely">24/7 says: Sorry, but it\'s either too early or too late for today\'s callaround. Contact the RTL if you have questions.</string>
+    <string name="sms_callaround_delay_confirmation">24/7 says:  Your call around time has been delayed until %s. You can call around before then if you wish.</string>
 </resources>

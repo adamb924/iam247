@@ -33,6 +33,7 @@ public class HomeActivity extends Activity {
 	static public String PREFERENCES_MISSED_CALL_DELAY = "PREFERENCES_MISSED_CALL_DELAY";
 	static public String PREFERENCES_CALLAROUNDS_SHOW_FUTURE = "PREFERENCES_CALLAROUNDS_SHOW_FUTURE";
 	static public String PREFERENCES_DISABLE_247 = "PREFERENCES_DISABLE_247";
+	static public String PREFERENCES_CALLAROUND_DELAYED_TIME = "PREFERENCES_CALLAROUND_DELAYED_TIME";
 
 	/** The database interface. */
 	private DbAdapter mDbHelper;

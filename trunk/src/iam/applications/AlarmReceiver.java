@@ -32,6 +32,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 	public static String ALERT_CALLAROUND_DUE = "ALERT_CALLAROUND_DUE";
 
 	/**
+	 * An Intent action string alerting the application to check for delayed
+	 * call arounds.
+	 */
+	public static String ALERT_DELAYED_CALLAROUND_DUE = "ALERT_DELAYED_CALLAROUND_DUE";
+
+	/**
 	 * An Intent action string alerting the application to add call arounds for
 	 * the day
 	 */
@@ -79,6 +85,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 			checkinReminder(intent);
 		} else if (action.equals(ALERT_CALLAROUND_DUE)) {
 			callaroundDue();
+		} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
+			delayedCallaroundDue();
 		}
 
 		mDbHelper.close();
@@ -115,6 +123,24 @@ public class AlarmReceiver extends BroadcastReceiver {
 			SmsHandler.sendSms(mContext,
 					mDbHelper.getNumberForCheckin(checkinId),
 					mContext.getString(R.string.sms_checkin_reminder));
+		}
+	}
+
+	/**
+	 * Checks if there are due delayed call arounds, and if so, starts a
+	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
+	 * alert.
+	 */
+	private void delayedCallaroundDue() {
+		if (mDbHelper.getNumberOfDueCallaroundsIncludingDelayed() > 0) {
+			mDbHelper.close();
+
+			Intent i = new Intent(mContext, CallAroundDetailList.class);
+			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			i.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
+			i.putExtra(DbAdapter.KEY_DELAYED, DbAdapter.KEY_DELAYED);
+			i.putExtra(ALERT_CALLAROUND_DUE, ALERT_CALLAROUND_DUE);
+			mContext.startActivity(i);
 		}
 	}
 
@@ -245,6 +271,32 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_CALLAROUND_DUE);
 		// this extra is there only so that several ALERT_CALLAROUND_DUE Intents
+		// don't overwrite one another
+		intent.putExtra("TIME", Time.iso8601DateTime(date));
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) cal.getTimeInMillis(), intent,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
+	}
+
+	/**
+	 * Sets a delayed call around due alarm. This alarm will later be processed
+	 * by the onReceive() method of this class.
+	 * 
+	 * @param context
+	 *            the application context
+	 */
+	static public void setDelayedCallaroundAlarm(Context context, Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+
+		Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(ALERT_DELAYED_CALLAROUND_DUE);
+		// this extra is there only so that several ALERT_DELAYED_CALLAROUND_DUE
+		// Intents
 		// don't overwrite one another
 		intent.putExtra("TIME", Time.iso8601DateTime(date));
 		PendingIntent sender = PendingIntent.getBroadcast(context,
