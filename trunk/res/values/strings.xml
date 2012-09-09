@@ -113,6 +113,7 @@
     <string name="no_blocked_numbers">There are currently no blocked numbers</string>
     <string name="no_house_contacts">There are no numbers associated with this house. Either add people or disable this house\'s call around.</string>
     <string name="call_house">Call someone</string>
+    <string name="call_guard">Call guard</string>
     <string name="missed_call_delay">Missed call delay (ms)</string>
     <string name="missed_call_delay_summary">The delay between when the phone first starts ringing and when 24/7 checks for the ringing to have stopped.</string>
     <string name="allow_request_reports">Allow report requests</string>
@@ -145,6 +146,13 @@
     <string name="unsent_undelivered_header">Unsent/Undelivered:</string>
     <string name="disable_247">Disable 24/7</string>
     <string name="disable_247_summary">If this box is checked, 24/7 will ignore any incoming messages or calls.</string>
+    <string name="newGuard">New guard</string>
+    <string name="guards">Guards</string>
+    <string name="name">Name</string>
+    <string name="number">Number</string>
+    <string name="edit_default_guard">Set typical guard schedule</string>
+    <string name="edit_today_guard">Set this week\'s guard schedule</string>
+    <string name="guard_schedule">Guard schedule</string>
     
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>

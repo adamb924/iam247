@@ -2,10 +2,13 @@ package iam.applications;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -18,11 +21,9 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 /**
- * This <code>ListActivity</code> displays a checked list of houses/groups, with
- * an option to add a house/group. Unchecking the activity means that no call
- * around is expected from that house.
+ * 
  */
-public class HouseList extends ListActivity {
+public class GuardList extends ListActivity {
 
 	/** The database interface. */
 	private DbAdapter mDbHelper;
@@ -36,9 +37,7 @@ public class HouseList extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.house_list);
-
-		getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		setContentView(R.layout.guard_list);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
@@ -76,25 +75,15 @@ public class HouseList extends ListActivity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		Cursor housesCur = mDbHelper.fetchAllHouses();
-		startManagingCursor(housesCur);
+		Cursor c = mDbHelper.fetchAllGuards();
+		startManagingCursor(c);
 
-		String[] from = new String[] { DbAdapter.KEY_NAME };
-		int[] to = new int[] { R.id.item };
+		String[] from = new String[] { DbAdapter.KEY_NAME, DbAdapter.KEY_NUMBER };
+		int[] to = new int[] { R.id.text1, R.id.text2 };
 
 		SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
-				R.layout.checked_textview_item, housesCur, from, to);
+				R.layout.twolinelistitem, c, from, to);
 		setListAdapter(notes);
-
-		housesCur.moveToFirst();
-		for (int i = 0; i < housesCur.getCount(); i++) {
-			getListView().setItemChecked(
-					i,
-					housesCur.getLong(housesCur
-							.getColumnIndex(DbAdapter.KEY_ACTIVE)) == 0 ? false
-							: true);
-			housesCur.moveToNext();
-		}
 	}
 
 	/*
@@ -105,8 +94,7 @@ public class HouseList extends ListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.houses_menu, menu);
-
+		inflater.inflate(R.menu.guard_options, menu);
 		return true;
 	}
 
@@ -118,8 +106,8 @@ public class HouseList extends ListActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.newHouse:
-			newHouse();
+		case R.id.newGuard:
+			newGuard();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -137,8 +125,7 @@ public class HouseList extends ListActivity {
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		MenuInflater inflater = getMenuInflater();
-		// just re-using this
-		inflater.inflate(R.menu.houses_context, menu);
+		inflater.inflate(R.menu.guard_context, menu);
 	}
 
 	/*
@@ -148,112 +135,124 @@ public class HouseList extends ListActivity {
 	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
+		long guardId = info == null ? -1 : info.id;
 
 		switch (item.getItemId()) {
+		case R.id.call_number:
+			callNumber(guardId);
+			return true;
+		case R.id.edit_name:
+			editName(guardId);
+			return true;
+		case R.id.edit_phone:
+			editPhone(guardId);
+			return true;
 		case R.id.delete:
-			deleteHouse(info.id);
-			return true;
-		case R.id.edit:
-			editHouse(info.id);
-			return true;
-		case R.id.guard_today:
-			editTodaysGuardSchedule(info.id);
-			return true;
-		case R.id.guard_normal:
-			editTypicalGuardSchedule(info.id);
-			return true;
+			mDbHelper.deleteGuard(guardId);
+			fillData();
 		default:
 			return super.onContextItemSelected(item);
 		}
 	}
 
 	/**
-	 * @param id
-	 */
-	private void editTypicalGuardSchedule(long id) {
-		Intent i = new Intent(this, GuardScheduleActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra(GuardScheduleActivity.SET_DEFAULT, true);
-		i.putExtra(DbAdapter.KEY_HOUSEID, id);
-		startActivity(i);
-	}
-
-	/**
-	 * @param id
-	 */
-	private void editTodaysGuardSchedule(long id) {
-		Intent i = new Intent(this, GuardScheduleActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra(GuardScheduleActivity.SET_DEFAULT, false);
-		i.putExtra(DbAdapter.KEY_HOUSEID, id);
-		startActivity(i);
-	}
-
-	/**
-	 * Deletes the house associated with the item
+	 * Prompts the user to edit the guard's name, and saves the result.
 	 * 
-	 * @param item
-	 *            The clicked menu item.
+	 * @param guard_id
 	 */
-	private void deleteHouse(final long item) {
-		mDbHelper.deleteHouse(item);
-		fillData();
-	}
-
-	/**
-	 * Prompts the user to edit the name of the house associated with the menu
-	 * item.
-	 * 
-	 * @param item
-	 *            The clicked menu item.
-	 */
-	private void editHouse(final long item) {
-		AlertDialog.Builder alert = new AlertDialog.Builder(HouseList.this);
-
-		// Set an EditText view to get user input
-		final EditText input = new EditText(HouseList.this);
-		input.setText(mDbHelper.getHouseName(item));
-		alert.setView(input);
-
+	private void editName(final long guard_id) {
+		AlertDialog.Builder alert;
+		final EditText editinput;
+		alert = new AlertDialog.Builder(GuardList.this);
+		alert.setTitle(getString(R.string.name));
+		editinput = new EditText(GuardList.this);
+		editinput.setText(mDbHelper.getGuardName(guard_id));
+		alert.setView(editinput);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = input.getText().toString();
+				String value = editinput.getText().toString();
 				if (value.length() > 0) {
-					mDbHelper.setHouseName(item, value);
+					mDbHelper.setGuardName(guard_id, value);
 					fillData();
 				}
 			}
 		});
-
 		alert.setNegativeButton("Cancel", null);
 		alert.show();
 	}
 
 	/**
-	 * Prompts the user to enter the name of a new house, and adds that house to
+	 * Prompts the user to edit the guard's phone number, and saves the result.
+	 * 
+	 * @param guard_id
+	 */
+	private void editPhone(final long guard_id) {
+		AlertDialog.Builder alert;
+		final EditText editinput;
+		alert = new AlertDialog.Builder(GuardList.this);
+		alert.setTitle(getString(R.string.number));
+		editinput = new EditText(GuardList.this);
+		editinput.setText(mDbHelper.getContactNumber(guard_id));
+		alert.setView(editinput);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int whichButton) {
+				String value = editinput.getText().toString();
+				if (value.length() > 0) {
+					mDbHelper.setGuardNumber(guard_id, value);
+					fillData();
+				}
+			}
+		});
+		alert.setNegativeButton("Cancel", null);
+		alert.show();
+	}
+
+	/**
+	 * Prompts the user to enter the name of a new guard, and adds that guard to
 	 * the database.
 	 */
-	private void newHouse() {
-		AlertDialog.Builder alert = new AlertDialog.Builder(HouseList.this);
-
-		// Set an EditText view to get user input
-		final EditText input = new EditText(HouseList.this);
-		alert.setView(input);
-
+	private void newGuard() {
+		AlertDialog.Builder alert;
+		final EditText editinput;
+		alert = new AlertDialog.Builder(GuardList.this);
+		editinput = new EditText(GuardList.this);
+		alert.setView(editinput);
+		alert.setTitle(getString(R.string.name));
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = input.getText().toString();
+				String value = editinput.getText().toString();
 				if (value.length() > 0) {
-					mDbHelper.addHouse(value);
+					mDbHelper.addGuard(value);
+					long id = mDbHelper.lastInsertId();
+					editPhone(id);
 					fillData();
 				}
 			}
 		});
 		alert.setNegativeButton("Cancel", null);
 		alert.show();
+	}
+
+	/**
+	 * Calls the first phone number associated with the guard.
+	 * 
+	 * @param guard_id
+	 */
+	private void callNumber(final long guard_id) {
+		try {
+			String number = mDbHelper.getGuardNumber(guard_id);
+			if (number != null) {
+				Intent callIntent = new Intent(Intent.ACTION_CALL);
+				callIntent.setData(Uri.parse("tel:" + number));
+				startActivity(callIntent);
+			}
+		} catch (ActivityNotFoundException activityException) {
+			Log.e("Calling a Phone Number", "Call failed", activityException);
+		}
 	}
 }

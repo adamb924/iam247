@@ -79,6 +79,14 @@
             android:paddingBottom="20sp"
             android:text="@string/home_houses" />
 
+        <TextView
+            android:id="@+id/home_guards"
+            style="@style/fatButtonLike"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="20sp"
+            android:text="@string/guards" />
+
         <LinearLayout
             android:id="@+id/message_errors"
             android:layout_width="match_parent"

@@ -103,6 +103,8 @@ public class UnsentMessageList extends ListActivity {
 	 */
 	protected void fillData() {
 		mReportCur = mDbHelper.fetchUnsentUndeliveredMessages();
+		// refactor this class name, since ListAdapter is an Android API class
+		// as well
 		ListAdapter listAdapter = new ListAdapter(this, mReportCur);
 		setListAdapter(listAdapter);
 	}

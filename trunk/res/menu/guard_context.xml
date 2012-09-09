@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/call_number"
+        android:title="@string/call_number">
+    </item>
+    <item
+        android:id="@+id/edit_name"
+        android:title="@string/edit_name">
+    </item>
+    <item
+        android:id="@+id/edit_phone"
+        android:title="@string/edit_phone">
+    </item>
+    <item
+        android:id="@+id/delete"
+        android:title="@string/delete">
+    </item>
+
+</menu>

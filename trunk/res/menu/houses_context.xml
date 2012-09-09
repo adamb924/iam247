@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/edit"
+        android:title="@string/edit_name">
+    </item>
+    <item
+        android:id="@+id/guard_normal"
+        android:title="@string/edit_default_guard">
+    </item>
+    <item
+        android:id="@+id/guard_today"
+        android:title="@string/edit_today_guard">
+    </item>
+    <item
+        android:id="@+id/delete"
+        android:title="@string/delete">
+    </item>
+
+</menu>

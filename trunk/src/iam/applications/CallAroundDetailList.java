@@ -225,6 +225,10 @@ public class CallAroundDetailList extends ListActivity implements
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.callaround_detail_menu, menu);
 
+		if (!mDay.equals(Time.iso8601Date())) {
+			menu.removeItem(R.id.call_guard);
+		}
+
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 		long callaround_id = info.id;
 		long house_id = mDbHelper.getHouseIdFromCallaround(callaround_id);
@@ -256,6 +260,9 @@ public class CallAroundDetailList extends ListActivity implements
 		switch (item.getItemId()) {
 		case R.id.call_number:
 			callNumber(house_id);
+			return true;
+		case R.id.call_guard:
+			callGuard(house_id);
 			return true;
 		case R.id.delete_callaround:
 			mDbHelper.deleteCallaround(callaround_id);
@@ -324,6 +331,20 @@ public class CallAroundDetailList extends ListActivity implements
 		});
 		mAlert.setNegativeButton("Cancel", null);
 		mAlert.show();
+	}
+
+	/**
+	 * Calls the number of the guard for the day.
+	 * 
+	 * @param house_id
+	 *            The _id of the house for which to display numbers.
+	 */
+	private void callGuard(long house_id) {
+		String number = mDbHelper.getGuardNumberFromDate(house_id, mDay);
+
+		Intent callIntent = new Intent(Intent.ACTION_CALL);
+		callIntent.setData(Uri.parse("tel:" + number));
+		startActivity(callIntent);
 	}
 
 	/**
