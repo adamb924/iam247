@@ -202,9 +202,11 @@ public class SmsHandler {
 			unresolveCallaround();
 		} else if (messageMatches(R.string.re_checkin_back)) {
 			resolveCheckin();
-		} else if (messageMatches(R.string.re_startcheckin_nocheckin)) {
-			// this condition must come before that of R.string.re_startcheckin
-			addCheckin(false);
+			// I'm removing this feature till I can recall what it was for.
+			// } else if (messageMatches(R.string.re_startcheckin_nocheckin)) {
+			// // this condition must come before that of
+			// R.string.re_startcheckin
+			// addCheckin(false);
 		} else if (messageMatches(R.string.re_startcheckin)) {
 			addCheckin(true);
 		} else if (messageMatches(R.string.re_permission)) {
