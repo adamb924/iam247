@@ -339,6 +339,8 @@ public class DbAdapter {
 	/** The Constant KEY_LON. */
 	public static final String KEY_LON = "lon";
 
+	public static final String KEY_KEYWORD = "keyword";
+
 	/** Log message types. */
 	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
 
@@ -583,14 +585,18 @@ public class DbAdapter {
 	 *            the label of the new location
 	 * @param allowed
 	 *            whether the location is permitted for travel
+	 * @param keyword
+	 *            the keyword for the location
 	 * @return the _id of the inserted row
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public long addLocation(String label, boolean allowed) throws SQLException {
+	public long addLocation(String label, boolean allowed, String keyword)
+			throws SQLException {
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_LABEL, label);
 		initialValues.put(KEY_ALLOWED, allowed ? 1 : 0);
+		initialValues.put(KEY_KEYWORD, keyword);
 		return mDb.insert(DATABASE_TABLE_LOCATIONS, null, initialValues);
 	}
 
@@ -977,7 +983,7 @@ public class DbAdapter {
 
 	/**
 	 * Return a cursor with all locations. Columns: KEY_ROWID, KEY_LABEL,
-	 * KEY_ALLOWED
+	 * KEY_ALLOWED, KEY_KEYWORD
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -985,7 +991,8 @@ public class DbAdapter {
 	 */
 	public Cursor fetchAllLocations() throws SQLException {
 		return mDb.query(DATABASE_TABLE_LOCATIONS, new String[] { KEY_ROWID,
-				KEY_LABEL, KEY_ALLOWED }, null, null, null, null, KEY_LABEL);
+				KEY_LABEL, KEY_ALLOWED, KEY_KEYWORD }, null, null, null, null,
+				KEY_LABEL);
 	}
 
 	/**
@@ -2290,6 +2297,24 @@ public class DbAdapter {
 	public void setLocationName(long rowId, String name) throws SQLException {
 		ContentValues args = new ContentValues();
 		args.put(KEY_LABEL, name);
+		mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(rowId) });
+	}
+
+	/**
+	 * Sets a location's keyword.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @param keyword
+	 *            the new keyword
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setLocationKeyword(long rowId, String keyword)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_KEYWORD, keyword);
 		mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "= ?",
 				new String[] { String.valueOf(rowId) });
 	}
