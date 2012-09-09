@@ -13,6 +13,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class DbAdapter. Provides access functions for the app's SQL database.
  */
@@ -57,6 +58,8 @@ public class DbAdapter {
 			db.execSQL(DATABASE_CREATE_LOCATION_LOG);
 			db.execSQL(DATABASE_CREATE_PENDING_SENT);
 			db.execSQL(DATABASE_CREATE_PENDING_DELIVERED);
+			db.execSQL(DATABASE_CREATE_GUARDS);
+			db.execSQL(DATABASE_CREATE_GUARD_CHECKINS);
 		}
 
 		/*
@@ -83,6 +86,8 @@ public class DbAdapter {
 			db.execSQL(DROP_TABLE_LOCATION_LOG);
 			db.execSQL(DROP_TABLE_PENDING_SENT);
 			db.execSQL(DROP_TABLE_PENDING_DELIVERED);
+			db.execSQL(DROP_TABLE_GUARDS);
+			db.execSQL(DROP_TABLE_GUARD_CHECKIN);
 
 			onCreate(db);
 		}
@@ -116,10 +121,10 @@ public class DbAdapter {
 	public static int NOTIFY_INACTIVE = 4;
 
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 12;
+	private static final int DATABASE_VERSION = 14;
 
 	/** Create Table Commands. */
-	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, allowed integer default 0);";
+	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
 
 	/** The Constant DATABASE_CREATE_CHECKINS. */
 	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, timedue string not null, timereceived string, outstanding integer default 1, checkinrequest integer default 1);";
@@ -137,7 +142,7 @@ public class DbAdapter {
 	private static final String DATABASE_CREATE_CONTACTEMAILS = "create table contactemails ( _id integer primary key autoincrement , contact_id integer not null, email text not null, integer precedence default 1 )";
 
 	/** The Constant DATABASE_CREATE_HOUSES. */
-	private static final String DATABASE_CREATE_HOUSES = "create table houses ( _id integer primary key autoincrement , name text not null, active int default 1 )";
+	private static final String DATABASE_CREATE_HOUSES = "create table houses ( _id integer primary key autoincrement , name text not null, active int default 1, sunday_guard int default -1, monday_guard int default -1, tuesday_guard int default -1, wednesday_guard int default -1, thursday_guard int default -1, friday_guard int default -1, saturday_guard int default -1 , typical_sunday_guard int default -1, typical_monday_guard int default -1, typical_tuesday_guard int default -1, typical_wednesday_guard int default -1, typical_thursday_guard int default -1, typical_friday_guard int default -1, typical_saturday_guard int default -1 )";
 
 	/** The Constant DATABASE_CREATE_HOUSEMEMBERS. */
 	private static final String DATABASE_CREATE_HOUSEMEMBERS = "create table housemembers ( _id integer primary key autoincrement , house_id integer not null, contact_id integer not null, unique(contact_id) on conflict ignore )";
@@ -156,6 +161,12 @@ public class DbAdapter {
 
 	/** The Constant DATABASE_CREATE_PENDING_DELIVERED. */
 	private static final String DATABASE_CREATE_PENDING_DELIVERED = "create table pendingdelivered ( _id integer primary key autoincrement, number text not null, message text not null, time text not null )";
+
+	/** The Constant DATABASE_CREATE_GUARDS. */
+	private static final String DATABASE_CREATE_GUARDS = "create table guards ( _id integer primary key autoincrement , name text not null , number text )";
+
+	/** The Constant DATABASE_CREATE_GUARD_CHECKINS. */
+	private static final String DATABASE_CREATE_GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text, response int default 0 )";
 
 	/** Drop Table Commands. */
 	private static final String DROP_TABLE_LOCATIONS = "DROP TABLE IF EXISTS locations;";
@@ -195,6 +206,12 @@ public class DbAdapter {
 
 	/** The Constant DROP_TABLE_PENDING_DELIVERED. */
 	private static final String DROP_TABLE_PENDING_DELIVERED = "DROP TABLE IF EXISTS pendingdelivered;";
+
+	/** The Constant DROP_TABLE_GUARDS. */
+	private static final String DROP_TABLE_GUARDS = "DROP TABLE IF EXISTS guards;";
+
+	/** The Constant DROP_TABLE_GUARD_CHECKIN. */
+	private static final String DROP_TABLE_GUARD_CHECKIN = "DROP TABLE IF EXISTS guardscheckin;";
 
 	/** The Constant DATABASE_NAME. */
 	private static final String DATABASE_NAME = "thedatabase";
@@ -237,6 +254,12 @@ public class DbAdapter {
 
 	/** The Constant DATABASE_TABLE_PENDING_DELIVERED. */
 	private static final String DATABASE_TABLE_PENDING_DELIVERED = "pendingdelivered";
+
+	/** The Constant DATABASE_TABLE_GUARDS. */
+	private static final String DATABASE_TABLE_GUARDS = "guards";
+
+	/** The Constant DATABASE_TABLE_GUARDS_CHECKINS. */
+	private static final String DATABASE_TABLE_GUARDS_CHECKINS = "guardscheckins";
 
 	/** SQL column names constants. */
 	public static final String KEY_ROWID = "_id";
@@ -330,6 +353,48 @@ public class DbAdapter {
 
 	/** The application context. */
 	private final Context mContext;
+
+	/** The Constant SUNDAY_GUARD. */
+	public static final String SUNDAY_GUARD = "sunday_guard";
+
+	/** The Constant SUNDAY_GUARD_DEFAULT. */
+	public static final String SUNDAY_GUARD_DEFAULT = "typical_sunday_guard";
+
+	/** The Constant MONDAY_GUARD. */
+	public static final String MONDAY_GUARD = "monday_guard";
+
+	/** The Constant MONDAY_GUARD_DEFAULT. */
+	public static final String MONDAY_GUARD_DEFAULT = "typical_monday_guard";
+
+	/** The Constant TUESDAY_GUARD. */
+	public static final String TUESDAY_GUARD = "tuesday_guard";
+
+	/** The Constant TUESDAY_GUARD_DEFAULT. */
+	public static final String TUESDAY_GUARD_DEFAULT = "typical_tuesday_guard";
+
+	/** The Constant WEDNESDAY_GUARD. */
+	public static final String WEDNESDAY_GUARD = "wednesday_guard";
+
+	/** The Constant WEDNESDAY_GUARD_DEFAULT. */
+	public static final String WEDNESDAY_GUARD_DEFAULT = "typical_wednesday_guard";
+
+	/** The Constant THURSDAY_GUARD. */
+	public static final String THURSDAY_GUARD = "thursday_guard";
+
+	/** The Constant THURSDAY_GUARD_DEFAULT. */
+	public static final String THURSDAY_GUARD_DEFAULT = "typical_thursday_guard";
+
+	/** The Constant FRIDAY_GUARD. */
+	public static final String FRIDAY_GUARD = "friday_guard";
+
+	/** The Constant FRIDAY_GUARD_DEFAULT. */
+	public static final String FRIDAY_GUARD_DEFAULT = "typical_friday_guard";
+
+	/** The Constant SATURDAY_GUARD. */
+	public static final String SATURDAY_GUARD = "saturday_guard";
+
+	/** The Constant SATURDAY_GUARD_DEFAULT. */
+	public static final String SATURDAY_GUARD_DEFAULT = "typical_saturday_guard";
 
 	/**
 	 * Instantiates a new db adapter.
@@ -481,6 +546,20 @@ public class DbAdapter {
 			initialValues2.put(KEY_NUMBER, number);
 			mDb.insert(DATABASE_TABLE_CONTACTPHONES, null, initialValues2);
 		}
+	}
+
+	/**
+	 * Adds a guard to the database.
+	 * 
+	 * @param name
+	 *            the name of the guard
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void addGuard(String name) throws SQLException {
+		ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_NAME, name);
+		mDb.insert(DATABASE_TABLE_GUARDS, null, initialValues);
 	}
 
 	/**
@@ -704,6 +783,8 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_LOCATION_LOG, null, null);
 		mDb.delete(DATABASE_TABLE_PENDING_SENT, null, null);
 		mDb.delete(DATABASE_TABLE_PENDING_DELIVERED, null, null);
+		mDb.delete(DATABASE_CREATE_GUARDS, null, null);
+		mDb.delete(DATABASE_CREATE_GUARD_CHECKINS, null, null);
 	}
 
 	/**
@@ -787,6 +868,19 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Delete a guard from the database.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @return the number of rows deleted.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long deleteGuard(long rowId) throws SQLException {
+		return mDb.delete(DATABASE_TABLE_GUARDS, KEY_ROWID + "=" + rowId, null);
+	}
+
+	/**
 	 * Delete a location from the database.
 	 * 
 	 * @param rowId
@@ -844,9 +938,10 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Delete all unsent and undelivered messages from the database
+	 * Delete all unsent and undelivered messages from the database.
 	 * 
 	 * @throws SQLException
+	 *             the sQL exception
 	 */
 	public void deleteUnsentUndelivered() throws SQLException {
 		mDb.delete(DATABASE_TABLE_PENDING_SENT, null, null);
@@ -994,6 +1089,19 @@ public class DbAdapter {
 				.rawQuery(
 						"select contactphones._id,name,number from contacts,housemembers,contactphones on contacts._id=contactphones.contact_id and contacts._id=housemembers.contact_id where house_id='"
 								+ String.valueOf(house_id) + "';", null);
+	}
+
+	/**
+	 * Return a cursor with all of the guards. Columns: KEY_ROWID, KEY_NAME,
+	 * KEY_NUMBER
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public Cursor fetchAllGuards() throws SQLException {
+		return mDb.query(DATABASE_TABLE_GUARDS, new String[] { KEY_ROWID,
+				KEY_NAME, KEY_NUMBER }, null, null, null, null, KEY_NAME);
 	}
 
 	/**
@@ -1334,6 +1442,44 @@ public class DbAdapter {
 		Cursor c = mDb.rawQuery(
 				"select number from contactphones where contact_id=? limit 1;",
 				new String[] { String.valueOf(contactId) });
+		if (c.moveToFirst()) {
+			return c.getString(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns the name of the guard.
+	 * 
+	 * @param guardId
+	 *            the guard id
+	 * @return the guard name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getGuardName(long guardId) throws SQLException {
+		Cursor c = mDb.rawQuery("select name from guards where _id=?;",
+				new String[] { String.valueOf(guardId) });
+		if (c.moveToFirst()) {
+			return c.getString(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns the number of the guard.
+	 * 
+	 * @param guardId
+	 *            the guard id
+	 * @return the guard number
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getGuardNumber(long guardId) throws SQLException {
+		Cursor c = mDb.rawQuery("select number from guards where _id=?;",
+				new String[] { String.valueOf(guardId) });
 		if (c.moveToFirst()) {
 			return c.getString(0);
 		} else {
@@ -1909,6 +2055,41 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Sets the name of a guard.
+	 * 
+	 * @param guard_id
+	 *            the guard's id
+	 * @param newname
+	 *            the new name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setGuardName(long guard_id, String newname) throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_NAME, newname);
+		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(guard_id) });
+	}
+
+	/**
+	 * Sets the phone number of a guard.
+	 * 
+	 * @param guard_id
+	 *            the guard's id
+	 * @param newnumber
+	 *            the new name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setGuardNumber(long guard_id, String newnumber)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_NUMBER, newnumber);
+		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(guard_id) });
+	}
+
+	/**
 	 * Sets the specified contact's specified permission.
 	 * 
 	 * @param contact_id
@@ -2150,6 +2331,64 @@ public class DbAdapter {
 			throws SQLException {
 		return setContactPermission(contact_id, preferenceId,
 				!getContactPermission(contact_id, preferenceId));
+	}
+
+	/**
+	 * Sets the guard.
+	 * 
+	 * @param house_id
+	 *            the id of the house to change
+	 * @param guard_id
+	 *            the id of the guard to assign
+	 * @param which
+	 *            one of SUNDAY_GUARD, SUNDAY_GUARD_DEFAULT, etc. from DbAdapter
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void setGuard(long house_id, long guard_id, String which)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(which, guard_id);
+		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(house_id) });
+	}
+
+	/**
+	 * Returns the ID of the guard given the house_id and the 'which' parameter.
+	 * 
+	 * @param house_id
+	 *            the house_id
+	 * @param which
+	 *            the which
+	 * @return the guard
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public long getGuard(long house_id, String which) throws SQLException {
+		Cursor c = mDb.rawQuery(
+				"select " + which + " from houses where _id=?;",
+				new String[] { String.valueOf(house_id) });
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Gets the scheduled guard's phone number for the day of the week of the
+	 * given date.
+	 * 
+	 * @param house_id
+	 *            the house_id
+	 * @param date
+	 *            the date
+	 * @return the guard number from date
+	 */
+	public String getGuardNumberFromDate(long house_id, String date) {
+		String dayOfWeek = Time.dayOfWeek(date).toLowerCase();
+		long guardId = getGuard(house_id, dayOfWeek + "_guard");
+		return getGuardNumber(guardId);
 	}
 
 }

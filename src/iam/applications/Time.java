@@ -331,4 +331,59 @@ public class Time {
 		}
 	}
 
+	/**
+	 * Returns a full day of the week (Sunday, Monday, ...) for the given time
+	 * string (which can be either yyyy-MM-dd or yyyy-MM-dd HH:mm).
+	 * 
+	 * @param d
+	 *            the date
+	 * @return the day of the week
+	 */
+	static public String dayOfWeek(String d) {
+		try {
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			return dayOfWeek(format.parse(d));
+		} catch (ParseException e) {
+			try {
+				SimpleDateFormat format = new SimpleDateFormat(
+						"yyyy-MM-dd HH:mm");
+				return dayOfWeek(format.parse(d));
+			} catch (ParseException e2) {
+				e.printStackTrace();
+				e2.printStackTrace();
+				return null;
+			}
+		}
+	}
+
+	// TODO this returns a three-day abbreviation
+	/**
+	 * Returns a full day of the week (Sunday, Monday, ...) for the given Date.
+	 * 
+	 * @param d
+	 *            the date
+	 * @return the day of the week
+	 */
+	static public String dayOfWeek(Date d) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(d);
+		int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+		switch (dayOfWeek) {
+		case 1:
+			return "Sunday";
+		case 2:
+			return "Monday";
+		case 3:
+			return "Tuesday";
+		case 4:
+			return "Wednesday";
+		case 5:
+			return "Thursday";
+		case 6:
+			return "Friday";
+		case 7:
+			return "Saturday";
+		}
+		return "";
+	}
 }

@@ -107,6 +107,15 @@ public class HomeActivity extends Activity {
 			}
 		});
 
+		TextView guardsButton = (TextView) findViewById(R.id.home_guards);
+		guardsButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent i = new Intent(HomeActivity.this, GuardList.class);
+				startActivity(i);
+			}
+		});
+
 		LinearLayout messageerrorsButton = (LinearLayout) findViewById(R.id.message_errors);
 		messageerrorsButton.setOnClickListener(new View.OnClickListener() {
 			@Override

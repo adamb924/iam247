@@ -52,6 +52,10 @@
             android:label="@string/home_houses" >
         </activity>
         <activity
+            android:name=".GuardList"
+            android:label="@string/guards" >
+        </activity>
+        <activity
             android:name=".SelectGroups"
             android:label="@string/callaround_groups" >
         </activity>
@@ -91,7 +95,10 @@
             android:name=".UnsentMessageList"
             android:label="@string/msgerror" >
         </activity>
-        
+        <activity
+            android:name=".GuardScheduleActivity"
+            android:label="@string/guard_schedule" >
+        </activity>
         <receiver android:name=".SmsReceiver" >
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />

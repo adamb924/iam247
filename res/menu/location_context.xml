@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/location_edit"
-        android:title="@string/edit">
+        android:title="@string/edit_name">
     </item>
     <item
         android:id="@+id/location_delete"
