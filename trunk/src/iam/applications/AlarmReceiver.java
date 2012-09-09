@@ -82,11 +82,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		} else if (action.equals(ALERT_ADD_CALLAROUNDS)) {
 			addCallarounds();
 		} else if (action.equals(ALERT_CHECKIN_REMINDER)) {
-			checkinReminder(intent);
+			checkCheckinReminder(intent);
 		} else if (action.equals(ALERT_CALLAROUND_DUE)) {
-			callaroundDue();
+			checkCallaroundDue();
 		} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
-			delayedCallaroundDue();
+			checkDelayedCallaroundDue();
 		}
 
 		mDbHelper.close();
@@ -97,7 +97,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
 	 * alert.
 	 */
-	private void callaroundDue() {
+	private void checkCallaroundDue() {
 		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
 			mDbHelper.close();
 
@@ -110,14 +110,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * Checks of the check-in specified in the intent parameter is still
+	 * Checks if the check-in specified in the intent parameter is still
 	 * outstanding, and if so, sends the reminder text message.
 	 * 
 	 * @param intent
 	 *            An intent object with the extra ALERT_CHECKIN_REMINDER, which
 	 *            has the _id of the checkin.
 	 */
-	private void checkinReminder(Intent intent) {
+	private void checkCheckinReminder(Intent intent) {
 		long checkinId = intent.getLongExtra(ALERT_CHECKIN_REMINDER, -1);
 		if (mDbHelper.getCheckinOutstanding(checkinId)) {
 			SmsHandler.sendSms(mContext,
@@ -131,7 +131,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
 	 * alert.
 	 */
-	private void delayedCallaroundDue() {
+	private void checkDelayedCallaroundDue() {
 		if (mDbHelper.getNumberOfDueCallaroundsIncludingDelayed() > 0) {
 			mDbHelper.close();
 

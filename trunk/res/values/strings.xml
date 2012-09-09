@@ -220,4 +220,5 @@
     <string name="sms_report_checkins">Outstanding check-ins: %s</string>
     <string name="sms_callaround_not_timely">24/7 says: Sorry, but it\'s either too early or too late for today\'s callaround. Contact the RTL if you have questions.</string>
     <string name="sms_callaround_delay_confirmation">24/7 says:  Your call around time has been delayed until %s. You can call around before then if you wish.</string>
+    <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a location keyword with your location.</string>
 </resources>
