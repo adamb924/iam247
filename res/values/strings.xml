@@ -149,10 +149,13 @@
     <string name="newGuard">New guard</string>
     <string name="guards">Guards</string>
     <string name="name">Name</string>
+    <string name="keyword">Keyword</string>
     <string name="number">Number</string>
     <string name="edit_default_guard">Set typical guard schedule</string>
     <string name="edit_today_guard">Set this week\'s guard schedule</string>
     <string name="guard_schedule">Guard schedule</string>
+    <string name="house_label_keyword" formatted="false">%s (%s)</string>
+    <string name="edit_keyword">Edit keyword</string>
     
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>

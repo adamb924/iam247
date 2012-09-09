@@ -2,19 +2,23 @@ package iam.applications;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.ResourceCursorAdapter;
+import android.widget.TextView;
 
 /**
  * This <code>ListActivity</code> produces a list of locations in the database.
@@ -83,13 +87,17 @@ public class LocationsList extends ListActivity {
 	private void fillData() {
 		Cursor locationsCur = mDbHelper.fetchAllLocations();
 		startManagingCursor(locationsCur);
-
-		String[] from = new String[] { DbAdapter.KEY_LABEL };
-		int[] to = new int[] { R.id.item };
-
-		SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
-				R.layout.checked_textview_item, locationsCur, from, to);
-		setListAdapter(notes);
+		/*
+		 * String[] from = new String[] { DbAdapter.KEY_LABEL }; int[] to = new
+		 * int[] { R.id.item };
+		 * 
+		 * SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
+		 * R.layout.checked_textview_item, locationsCur, from, to);
+		 * setListAdapter(notes);
+		 */
+		LocationItemAdapter adapter = new LocationItemAdapter(this,
+				locationsCur);
+		setListAdapter(adapter);
 
 		locationsCur.moveToFirst();
 		for (int i = 0; i < locationsCur.getCount(); i++) {
@@ -182,6 +190,29 @@ public class LocationsList extends ListActivity {
 			alert.setNegativeButton("Cancel", null);
 			alert.show();
 			return true;
+		case R.id.location_edit_keyword:
+			final AdapterContextMenuInfo info3 = (AdapterContextMenuInfo) item
+					.getMenuInfo();
+			AlertDialog.Builder alert2 = new AlertDialog.Builder(
+					LocationsList.this);
+			final EditText input2 = new EditText(LocationsList.this);
+			input2.setText(mDbHelper.getLocationName(info3.id));
+			alert2.setView(input2);
+			alert2.setPositiveButton("Ok",
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+							String value = input2.getText().toString();
+							if (value.length() > 0) {
+								mDbHelper.setLocationKeyword(info3.id, value);
+								fillData();
+							}
+						}
+					});
+			alert2.setNegativeButton("Cancel", null);
+			alert2.show();
+			return true;
 		default:
 			return super.onContextItemSelected(item);
 		}
@@ -193,24 +224,89 @@ public class LocationsList extends ListActivity {
 	 */
 	private void newLocation() {
 		AlertDialog.Builder alert = new AlertDialog.Builder(LocationsList.this);
-
-		// Set an EditText view to get user input
 		final EditText input = new EditText(LocationsList.this);
 		alert.setView(input);
-
+		alert.setTitle(R.string.name);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int whichButton) {
 				String value = input.getText().toString();
 				if (value.length() > 0) {
-					mDbHelper.addLocation(value, true);
-					fillData();
+					final String label = value;
+
+					AlertDialog.Builder alert2 = new AlertDialog.Builder(
+							LocationsList.this);
+					final EditText input2 = new EditText(LocationsList.this);
+					alert2.setView(input2);
+					alert2.setTitle(R.string.keyword);
+					alert2.setPositiveButton("Ok",
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+									String value = input2.getText().toString();
+									if (value.length() > 0) {
+										mDbHelper.addLocation(label, true,
+												value);
+										fillData();
+									}
+								}
+							});
+					alert2.setNegativeButton("Cancel", null);
+					alert2.show();
 				}
 			}
 		});
-
 		alert.setNegativeButton("Cancel", null);
-
 		alert.show();
+	}
+
+	/**
+	 * The custom adapter is needed to format the time strings.
+	 */
+	private class LocationItemAdapter extends ResourceCursorAdapter {
+
+		/**
+		 * Instantiates a new adapter for formatting location items.
+		 * 
+		 * @param context
+		 *            the context
+		 * @param cur
+		 *            the cur
+		 */
+		public LocationItemAdapter(Context context, Cursor cur) {
+			super(context, R.layout.checked_textview_item, cur);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.widget.ResourceCursorAdapter#newView(android.content.Context,
+		 * android.database.Cursor, android.view.ViewGroup)
+		 */
+		@Override
+		public View newView(Context context, Cursor cur, ViewGroup parent) {
+			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			return li.inflate(R.layout.checked_textview_item, parent, false);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.widget.CursorAdapter#bindView(android.view.View,
+		 * android.content.Context, android.database.Cursor)
+		 */
+		@Override
+		public void bindView(View view, Context context, Cursor cur) {
+			String label = cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_LABEL));
+			String keyword = cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_KEYWORD));
+
+			((TextView) view.findViewById(R.id.item)).setText(String.format(
+					context.getString(R.string.house_label_keyword), label,
+					keyword));
+		}
 	}
 }
