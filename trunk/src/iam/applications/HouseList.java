@@ -5,6 +5,7 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -152,6 +153,9 @@ public class HouseList extends ListActivity {
 				.getMenuInfo();
 
 		switch (item.getItemId()) {
+		case R.id.call_guard:
+			callGuard(info.id);
+			return true;
 		case R.id.delete:
 			deleteHouse(info.id);
 			return true;
@@ -255,5 +259,20 @@ public class HouseList extends ListActivity {
 		});
 		alert.setNegativeButton("Cancel", null);
 		alert.show();
+	}
+
+	/**
+	 * Calls the number of the guard for the day.
+	 * 
+	 * @param house_id
+	 *            The _id of the house for which to display numbers.
+	 */
+	private void callGuard(long house_id) {
+		String number = mDbHelper.getGuardNumberFromDate(house_id,
+				Time.iso8601Date());
+
+		Intent callIntent = new Intent(Intent.ACTION_CALL);
+		callIntent.setData(Uri.parse("tel:" + number));
+		startActivity(callIntent);
 	}
 }
