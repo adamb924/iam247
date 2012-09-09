@@ -57,6 +57,8 @@ public class CallAroundDetailList extends ListActivity implements
 	/** The number of missed callarounds for the present day. */
 	private long mMissedCallarounds;
 
+	private boolean mIncludeDelayed;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -75,6 +77,10 @@ public class CallAroundDetailList extends ListActivity implements
 		Bundle extras = getIntent().getExtras();
 		mDay = extras != null ? extras.getString(DbAdapter.KEY_DUEBY) : null;
 
+		if (extras.containsKey(DbAdapter.KEY_DELAYED)) {
+			mIncludeDelayed = true;
+		}
+
 		setContentView(R.layout.callaround_detail);
 
 		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
@@ -90,7 +96,9 @@ public class CallAroundDetailList extends ListActivity implements
 		// if the intent tells us that a call around is (over)due, check that,
 		// and if it's true sound the alarm
 		if (getIntent().hasExtra(AlarmReceiver.ALERT_CALLAROUND_DUE)) {
-			mMissedCallarounds = mDbHelper.getNumberOfDueCallarounds();
+			mMissedCallarounds = mIncludeDelayed ? mDbHelper
+					.getNumberOfDueCallaroundsIncludingDelayed() : mDbHelper
+					.getNumberOfDueCallarounds();
 			if (mMissedCallarounds > 0) {
 				Intent checkIntent = new Intent();
 				checkIntent
@@ -145,7 +153,9 @@ public class CallAroundDetailList extends ListActivity implements
 				Log.e("Debug", "Language is not available.");
 			}
 
-			mMissedCallarounds = mDbHelper.getNumberOfDueCallarounds();
+			mMissedCallarounds = mIncludeDelayed ? mDbHelper
+					.getNumberOfDueCallaroundsIncludingDelayed() : mDbHelper
+					.getNumberOfDueCallarounds();
 
 			if (mMissedCallarounds == 1) {
 				mTts.speak(getString(R.string.tts_missedcallaround),
@@ -387,6 +397,11 @@ public class CallAroundDetailList extends ListActivity implements
 		public void bindView(View view, Context context, Cursor cur) {
 			String houseName = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_NAME));
+
+			if (cur.getInt(cur.getColumnIndex(DbAdapter.KEY_DELAYED)) > 0) {
+				houseName = houseName
+						+ context.getString(R.string.delayed_suffix);
+			}
 
 			String dateLabel = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_TIMERECEIVED));

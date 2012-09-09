@@ -112,6 +112,8 @@ public class SmsHandler {
 
 	static public String MESSAGE = "MESSAGE";
 
+	private SharedPreferences mSettings;
+
 	/**
 	 * Instantiates a new sms handler.
 	 * 
@@ -132,6 +134,8 @@ public class SmsHandler {
 		mMessage = text.trim();
 		mContactId = mDbHelper.getContactId(number);
 		mHouseId = mDbHelper.getHouseId(mContactId);
+
+		mSettings = PreferenceManager.getDefaultSharedPreferences(mContext);
 
 		// ignore blocked numbers
 		if (mDbHelper.getNumberIsBlocked(mPhoneNumber)) {
@@ -156,10 +160,7 @@ public class SmsHandler {
 		if (mContactId == -1) {
 			// perhaps he is identifying himself
 			if (messageMatches(R.string.re_thisis)) {
-				// check whether we are accepting "this is" messages
-				SharedPreferences settings = PreferenceManager
-						.getDefaultSharedPreferences(mContext);
-				boolean thisisAllowed = settings.getBoolean(
+				boolean thisisAllowed = mSettings.getBoolean(
 						HomeActivity.PREFERENCES_PERMIT_THISIS, false);
 				if (!thisisAllowed) {
 					sendSms(R.string.sms_this_disabled_notification);
@@ -223,6 +224,8 @@ public class SmsHandler {
 					DbAdapter.USER_PERMISSION_REPORT)) {
 				sendSms(mDbHelper.getReport());
 			}
+		} else if (messageMatches(R.string.re_delay)) {
+			delayCallaround();
 		} else {
 			yourError();
 		}
@@ -285,6 +288,30 @@ public class SmsHandler {
 						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
 			AlarmReceiver.setCheckinReminderAlert(mContext, time,
 					mDbHelper.lastInsertId());
+		}
+	}
+
+	/**
+	 * Delays callaround for the user.
+	 */
+	private void delayCallaround() {
+		if (mHouseId == -1) {
+			sendSms(R.string.sms_callaround_nohouse);
+			return;
+		}
+
+		int ret = mDbHelper.setCallaroundDelayed(mHouseId, true);
+		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+			String time = Time.iso8601Time(Time.timeFromSimpleTime(mSettings
+					.getString(
+							HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
+							"23:59")));
+			String message = String.format(mContext
+					.getString(R.string.sms_callaround_delay_confirmation),
+					time);
+			sendSms(message);
+		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+			ourError();
 		}
 	}
 
@@ -422,6 +449,8 @@ public class SmsHandler {
 			sendSms(R.string.sms_callaround_unnecessary);
 		} else if (ret == DbAdapter.NOTIFY_INACTIVE) {
 			sendSms(R.string.sms_callaround_is_disabled);
+		} else if (ret == DbAdapter.NOTIFY_UNTIMELY) {
+			sendSms(R.string.sms_callaround_not_timely);
 		}
 	}
 

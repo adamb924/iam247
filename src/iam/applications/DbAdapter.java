@@ -120,8 +120,10 @@ public class DbAdapter {
 	/** Return value to indicate that call around is currently inactive. */
 	public static int NOTIFY_INACTIVE = 4;
 
+	public static int NOTIFY_UNTIMELY = 5;
+
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 14;
+	private static final int DATABASE_VERSION = 15;
 
 	/** Create Table Commands. */
 	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
@@ -130,7 +132,7 @@ public class DbAdapter {
 	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, timedue string not null, timereceived string, outstanding integer default 1, checkinrequest integer default 1);";
 
 	/** The Constant DATABASE_CREATE_CALLAROUNDS. */
-	private static final String DATABASE_CREATE_CALLAROUNDS = "create table if not exists callarounds (_id integer primary key autoincrement, house_id integer not null, duefrom string not null, dueby string not null, timereceived string, outstanding integer default 1, unique(house_id,dueby) on conflict ignore );";
+	private static final String DATABASE_CREATE_CALLAROUNDS = "create table if not exists callarounds (_id integer primary key autoincrement, house_id integer not null, duefrom string not null, dueby string not null, timereceived string, outstanding integer default 1, delayed integer default 0, unique(house_id,dueby) on conflict ignore );";
 
 	/** The Constant DATABASE_CREATE_CONTACTS. */
 	private static final String DATABASE_CREATE_CONTACTS = "create table contacts ( _id integer primary key autoincrement , name text not null , preferences int default 0 , permissions int default 0 )";
@@ -211,7 +213,7 @@ public class DbAdapter {
 	private static final String DROP_TABLE_GUARDS = "DROP TABLE IF EXISTS guards;";
 
 	/** The Constant DROP_TABLE_GUARD_CHECKIN. */
-	private static final String DROP_TABLE_GUARD_CHECKIN = "DROP TABLE IF EXISTS guardscheckin;";
+	private static final String DROP_TABLE_GUARD_CHECKIN = "DROP TABLE IF EXISTS guardcheckins;";
 
 	/** The Constant DATABASE_NAME. */
 	private static final String DATABASE_NAME = "thedatabase";
@@ -341,6 +343,8 @@ public class DbAdapter {
 
 	public static final String KEY_KEYWORD = "keyword";
 
+	public static final String KEY_DELAYED = "delayed";
+
 	/** Log message types. */
 	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
 
@@ -409,40 +413,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Adds the callaround for today.
-	 * 
-	 * @param house_id
-	 *            the house_id
-	 * @throws SQLException
-	 *             the sQL exception
-	 */
-	public void addCallaroundForToday(long house_id) throws SQLException {
-		SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(mContext);
-		String settings_dueby = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		Date dueby_date = Time.timeFromSimpleTime(settings_dueby);
-		Date today_dueby = new Date();
-		today_dueby.setHours(dueby_date.getHours());
-		today_dueby.setMinutes(dueby_date.getMinutes());
-
-		String settings_duefrom = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "00:00");
-		Date duefrom_date = Time.timeFromSimpleTime(settings_duefrom);
-
-		Date today_duefrom = new Date();
-		today_duefrom.setHours(duefrom_date.getHours());
-		today_duefrom.setMinutes(duefrom_date.getMinutes());
-
-		mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
-				+ String.valueOf(house_id)
-				+ "','"
-				+ Time.iso8601DateTime(today_dueby)
-				+ "','"
-				+ Time.iso8601DateTime(today_duefrom) + "');");
-	}
-
-	/**
 	 * Adds call arounds to <code>Callarounds</code> for today.
 	 * 
 	 * @throws SQLException
@@ -451,6 +421,7 @@ public class DbAdapter {
 	public void addCallarounds() throws SQLException {
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
+
 		String settings_dueby = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
 		Date dueby_date = Time.timeFromSimpleTime(settings_dueby);
@@ -458,8 +429,16 @@ public class DbAdapter {
 		today_dueby.setHours(dueby_date.getHours());
 		today_dueby.setMinutes(dueby_date.getMinutes());
 
+		String settings_delayed_dueby = settings.getString(
+				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
+		Date dueby_delayed_date = Time
+				.timeFromSimpleTime(settings_delayed_dueby);
+		Date today_delayed_dueby = new Date();
+		today_delayed_dueby.setHours(dueby_delayed_date.getHours());
+		today_delayed_dueby.setMinutes(dueby_delayed_date.getMinutes());
+
 		String settings_duefrom = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "00:00");
+				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "17:00");
 		Date duefrom_date = Time.timeFromSimpleTime(settings_duefrom);
 
 		Date today_duefrom = new Date();
@@ -467,6 +446,7 @@ public class DbAdapter {
 		today_duefrom.setMinutes(duefrom_date.getMinutes());
 
 		AlarmReceiver.setCallaroundDueAlarm(mContext, today_dueby);
+		AlarmReceiver.setDelayedCallaroundAlarm(mContext, today_delayed_dueby);
 
 		mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) select _id,'"
 				+ Time.iso8601DateTime(today_dueby)
@@ -1033,7 +1013,7 @@ public class DbAdapter {
 	 * Returns a cursor with the call around report for one day. KEY_NAME is the
 	 * name of the house. KEY_TIMERECEIVED is empty or null if the call around
 	 * has not been resolved. Columns: KEY_ROWID, KEY_NAME, KEY_TIMERECEIVED,
-	 * KEY_OUTSTANDING, KEY_DUEFROM, KEY_DUEBY
+	 * KEY_OUTSTANDING, KEY_DUEFROM, KEY_DUEBY, KEY_DELAYED
 	 * 
 	 * @param isoday
 	 *            the requested day, in ISO 8601 format (2012-06-18)
@@ -1045,7 +1025,7 @@ public class DbAdapter {
 			throws SQLException {
 		return mDb
 				.rawQuery(
-						"select callarounds._id as _id,name,timereceived,outstanding,duefrom,dueby from callarounds,houses where date(dueby)='"
+						"select callarounds._id as _id,name,timereceived,outstanding,duefrom,dueby,delayed from callarounds,houses where date(dueby)='"
 								+ isoday
 								+ "' and callarounds.house_id=houses._id order by outstanding asc;",
 						null);
@@ -1196,6 +1176,29 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public boolean getCallaroundOutstanding(long house_id) throws SQLException {
+		Cursor c = mDb.rawQuery(
+				"select count(_id) as count from callarounds where house_id='"
+						+ String.valueOf(house_id) + "' and outstanding='1';",
+				null);
+
+		if (c.moveToFirst()) {
+			return c.getLong(0) > 0 ? true : false;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Returns true if a current call around is outstanding and is eligible to
+	 * be resolved at the current moment, otherwise false.
+	 * 
+	 * @param house_id
+	 *            the house_id of the call around
+	 * @return True if the call around is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCallaroundTimely(long house_id) throws SQLException {
 		String now = Time.iso8601DateTime();
 
 		Cursor c = mDb.rawQuery(
@@ -1631,6 +1634,25 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns whether the callaround is delayed or not.
+	 * 
+	 * @param the
+	 *            house id
+	 * @return True if the callaround is delayed, otherwise false.
+	 * @throws SQLException
+	 */
+	public boolean getCallaroundDelayed(long rowId) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CALLAROUNDS,
+				new String[] { KEY_DELAYED }, KEY_HOUSEID + "= ?",
+				new String[] { String.valueOf(rowId) }, null, null, null);
+		if (c.moveToFirst()) {
+			return c.getInt(0) == 1 ? true : false;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Returns the name of the location.
 	 * 
 	 * @param rowId
@@ -1713,13 +1735,34 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the number of call arounds that are due.
+	 * Returns the number of call arounds that are due, excluding delayed
+	 * callarounds.
 	 * 
 	 * @return the number of due call arounds
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public long getNumberOfDueCallarounds() throws SQLException {
+		Cursor c = mDb.rawQuery(
+				"select count(_id) as count from callarounds where date(dueby)='"
+						+ Time.iso8601Date()
+						+ "' and outstanding='1' and delayed='0';", null);
+		if (c.moveToFirst()) {
+			return c.getLong(c.getColumnIndex(KEY_COUNT));
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * Returns the number of call arounds that are due, including delayed
+	 * callarounds.
+	 * 
+	 * @return the number of due call arounds
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long getNumberOfDueCallaroundsIncludingDelayed() throws SQLException {
 		Cursor c = mDb.rawQuery(
 				"select count(_id) as count from callarounds where date(dueby)='"
 						+ Time.iso8601Date() + "' and outstanding='1';", null);
@@ -1887,7 +1930,7 @@ public class DbAdapter {
 			throws SQLException {
 		// add today's, or remove it
 		if (active) {
-			addCallaroundForToday(house_id);
+			addCallarounds();
 		} else {
 			String now = Time.iso8601DateTime();
 			mDb.delete(DATABASE_TABLE_CALLAROUNDS, "datetime('" + now
@@ -1900,6 +1943,29 @@ public class DbAdapter {
 		args.put(KEY_ACTIVE, active ? 1 : 0);
 		if (mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "=" + house_id,
 				null) > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
+
+	/**
+	 * Sets whether the callaround is delayed or not.
+	 * 
+	 * @param house_id
+	 *            the house id
+	 * @param delayed
+	 *            whether the callaround should be delayed or... un-delayed
+	 * @return either NOTIFY_SUCCESS or NOTIFY_FAILURE
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public int setCallaroundDelayed(long house_id, boolean delayed)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_DELAYED, delayed ? 1 : 0);
+		if (mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_HOUSEID + "="
+				+ house_id, null) > 0) {
 			return NOTIFY_SUCCESS;
 		} else {
 			return NOTIFY_FAILURE;
@@ -1927,6 +1993,10 @@ public class DbAdapter {
 		if (!active) {
 			return NOTIFY_INACTIVE;
 		}
+		// if it's not a timely callaround
+		if (!getCallaroundTimely(house_id)) {
+			return NOTIFY_UNTIMELY;
+		}
 		// if this is already in effect
 		if (outstanding == !resolved) {
 			return NOTIFY_ALREADY;
@@ -1934,7 +2004,6 @@ public class DbAdapter {
 
 		String sOutstanding = resolved ? "0" : "1";
 		String now = Time.iso8601DateTime();
-
 		mDb.execSQL("update callarounds set outstanding='" + sOutstanding
 				+ "',timereceived='" + now + "' where datetime('" + now
 				+ "') >= datetime(duefrom) and datetime('" + now
@@ -1949,8 +2018,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Sets whether an existing call around is resolved or not, for whatever
-	 * call arounds can be resolved.
+	 * Sets whether an existing call around is resolved or not.
 	 * 
 	 * @param callaround_id
 	 *            the callaround_id

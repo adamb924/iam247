@@ -47,7 +47,12 @@
             android:key="PREFERENCES_CALLAROUND_DUE_FROM"
             android:summary="@string/callaround_earliest_summary"
             android:title="@string/callaround_earliest" />
-
+        <iam.applications.TimePreferenceDialog
+            android:defaultValue="23:59"
+            android:key="PREFERENCES_CALLAROUND_DELAYED_TIME"
+            android:summary="@string/callaround_delayed_time_summary"
+            android:title="@string/callaround_delayed_time" />
+        
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="PREFERENCES_CALLAROUNDS_SHOW_FUTURE"
