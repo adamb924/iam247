@@ -2,6 +2,7 @@ package iam.applications;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -9,7 +10,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -55,6 +58,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 */
 	public static String ALERT_CHECKIN_REMINDER = "ALERT_CHECKIN_REMINDER";
 
+	/**
+	 * An Intent action string alerting the application to perform a guard
+	 * check.
+	 */
+	public static String ALERT_GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
+
+	public static String GUARD_ID = "GUARD_ID";
+
 	/** The database interface */
 	private DbAdapter mDbHelper;
 
@@ -69,6 +80,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		mContext = context;
+
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext);
+		boolean disabled = settings.getBoolean(
+				HomeActivity.PREFERENCES_DISABLE_247, false);
+		if (disabled) {
+			return;
+		}
 
 		mDbHelper = new DbAdapter(mContext);
 		mDbHelper.open();
@@ -87,9 +106,27 @@ public class AlarmReceiver extends BroadcastReceiver {
 			checkCallaroundDue();
 		} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
 			checkDelayedCallaroundDue();
+		} else if (action.equals(ALERT_GUARD_CHECKIN)) {
+			requestGuardCheckin(intent.getLongExtra(GUARD_ID, -1));
 		}
 
 		mDbHelper.close();
+	}
+
+	/**
+	 * Send the specified guard a message requesting a checkin.
+	 * 
+	 * @param guard_id
+	 */
+	private void requestGuardCheckin(long guard_id) {
+		if (guard_id == -1) {
+			return;
+		}
+		String number = mDbHelper.getGuardNumber(guard_id);
+
+		SmsHandler.sendSms(mContext, number,
+				mContext.getString(R.string.sms_guard_checkin));
+		mDbHelper.addGuardCheckin(guard_id, Time.iso8601DateTime());
 	}
 
 	/**
@@ -255,6 +292,95 @@ public class AlarmReceiver extends BroadcastReceiver {
 		am.cancel(sender);
 		am.setRepeating(AlarmManager.RTC_WAKEUP, thisdate.getTime(),
 				AlarmManager.INTERVAL_DAY, sender);
+	}
+
+	// TODO this should just add the alarm to add the checkins, not actually add
+	// the checkin
+	static public void setAddGuardCheckinAlarms(Context context) {
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+
+		int fewestCheckins = Long.valueOf(
+				settings.getString(
+						HomeActivity.PREFERENCES_FEWEST_GUARD_CHECKS, "3"))
+				.intValue();
+		int randomCheckins = Long.valueOf(
+				settings.getString(
+						HomeActivity.PREFERENCES_RANDOM_GUARD_CHECKS, "3"))
+				.intValue();
+
+		String startTimeString = settings.getString(
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
+		String endTimeString = settings.getString(
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_END, "06:00");
+
+		Date startTime = Time.todayAtGivenTime(startTimeString);
+		Date endTime = Time.tomorrowAtGivenTime(endTimeString);
+
+		Random r = new Random();
+
+		Log.i("Debug", "Start: " + startTime.toLocaleString());
+		Log.i("Debug", "End: " + endTime.toLocaleString());
+
+		// int ought to be at least 32-bits, which provides more way more than
+		// 24 hours in milliseconds
+		int range = (int) (endTime.getTime() - startTime.getTime());
+
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+
+		Cursor c = dbHelper.fetchAllGuards();
+
+		if (!c.moveToFirst()) {
+			return;
+		}
+
+		// cycle through the guards
+		do {
+			long guard_id = c.getLong(0);
+
+			// the fixed checkins
+			for (int i = 0; i < fewestCheckins; i++) {
+				Date checkinTime = new Date(startTime.getTime()
+						+ r.nextInt(range));
+				Log.i("Debug", checkinTime.toLocaleString());
+				createGuardCheckin(context, guard_id, checkinTime);
+			}
+
+			// the random checkins
+			for (int i = 0; i < randomCheckins; i++) {
+				if (r.nextBoolean()) {
+					Date checkinTime = new Date(startTime.getTime()
+							+ r.nextInt(range));
+					Log.i("Debug", checkinTime.toLocaleString());
+					createGuardCheckin(context, guard_id, checkinTime);
+				}
+			}
+
+		} while (c.moveToNext());
+
+		dbHelper.close();
+	}
+
+	/**
+	 * Creates a checkin alarm for the given guard and checkin time.
+	 * 
+	 * @param guard_id
+	 * @param checkinTime
+	 */
+	private static void createGuardCheckin(Context context, long guard_id,
+			Date checkinTime) {
+		Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(ALERT_GUARD_CHECKIN);
+		intent.putExtra(GUARD_ID, guard_id);
+
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) checkinTime.getTime(), intent,
+				PendingIntent.FLAG_ONE_SHOT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.set(AlarmManager.RTC_WAKEUP, checkinTime.getTime(), sender);
 	}
 
 	/**

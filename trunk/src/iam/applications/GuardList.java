@@ -202,7 +202,8 @@ public class GuardList extends ListActivity {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				String value = editinput.getText().toString();
 				if (value.length() > 0) {
-					mDbHelper.setGuardNumber(guard_id, value);
+					mDbHelper.setGuardNumber(guard_id, SmsHandler
+							.getNormalizedPhoneNumber(GuardList.this, value));
 					fillData();
 				}
 			}

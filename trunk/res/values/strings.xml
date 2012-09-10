@@ -109,7 +109,7 @@
     <string name="unblock_number">Unblock number</string>
     <string name="number_blocking">Number blocking</string>
     <string name="customization">Preferences</string>
-    <string name="thisis_enabled">Permit &quot;This is&quot;</string>
+    <string name="thisis_enabled">Permit "This is"</string>
     <string name="thisis_enabled_summary">Allow new users to add themselves to the system</string>
     <string name="callaround_reminder_enabled">Send all around reminder</string>
     <string name="no_blocked_numbers">There are currently no blocked numbers</string>
@@ -159,10 +159,21 @@
     <string name="house_label_keyword" formatted="false">%s (%s)</string>
     <string name="edit_keyword">Edit keyword</string>
     <string name="delayed_suffix">—Delayed</string>
+    <string name="guard_preferences">Guard Preferences</string>
+    <string name="fewest_calls">Fewest calls</string>
+    <string name="fewest_calls_summary">Every guard will get at least this many calls.</string>
+    <string name="random_calls">Random extra calls</string>
+    <string name="random_calls_summary">Randomly add up to n calls. The probability of all n calls being made is 0.5^n.</string>
+    <string name="guard_checkin_start">Beginning of checkin times</string>
+    <string name="guard_checkin_end">End of checkin times</string>
+    <string name="guard_response_window">Response window</string>
+    <string name="guard_response_window_summary">Time in minutes that the guard has to respond</string>
     
+
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>
     <string name="loc_gmt_offset">GMT+04:30</string>
+    <string name="loc_first_day_of_week">6</string>
 
     <!-- Regular expressions for parsing messages -->
     <string name="re_turnoncallaround">(?:turn\\s*on\\s*call\\s*around|turn\\s*call\\s*around\\s*on)</string>
@@ -221,4 +232,8 @@
     <string name="sms_callaround_not_timely">24/7 says: Sorry, but it\'s either too early or too late for today\'s callaround. Contact the RTL if you have questions.</string>
     <string name="sms_callaround_delay_confirmation">24/7 says:  Your call around time has been delayed until %s. You can call around before then if you wish.</string>
     <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a location keyword with your location.</string>
+    <string name="sms_guard_checkin">daftara mist kal ko. Missed call the office.</string>
+    <string name="sms_guard_checkin_confirmation">Tashakur. Thank you.</string>
+    <string name="sms_guard_checkin_rejection">yA wakht bArE checkin nEs, yA wakhtesh tEr shuda. Either it is not the time for checkin, or the time has passed.</string>
+    
 </resources>

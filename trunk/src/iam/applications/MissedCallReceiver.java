@@ -83,12 +83,45 @@ public class MissedCallReceiver extends PhoneStateListener {
 
 			// if the phone is no longer ringing
 			if (telephonyManager.getCallState() == TelephonyManager.CALL_STATE_IDLE) {
-				// not proud of this, but it seems the most efficient way
-				new SmsHandler(mContext, mNumber,
-						mContext.getString(R.string.sms_permission_default),
-						true);
+				processMissedCall();
 			}
 		}
 	};
+
+	/**
+	 * Process a missed call by interpreting it either as a guard's checkin, or
+	 * a request for location restrictions.
+	 */
+	private void processMissedCall() {
+		DbAdapter dbHelper = new DbAdapter(mContext);
+		dbHelper.open();
+		long putative_guard_id = dbHelper.getGuardIdFromNumber(mNumber);
+
+		if (putative_guard_id == -1) {
+			// if it's not a recognized guard, process it like any other call
+			new SmsHandler(mContext, mNumber,
+					mContext.getString(R.string.sms_permission_default), true);
+		} else {
+			tryToResolveGuardCheckin(dbHelper, putative_guard_id);
+		}
+		dbHelper.close();
+	}
+
+	/**
+	 * @param dbHelper
+	 * @param guard_id
+	 */
+	private void tryToResolveGuardCheckin(DbAdapter dbHelper, long guard_id) {
+
+		int ret = dbHelper.setGuardCheckinResolved(mContext, guard_id);
+		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+			SmsHandler
+					.sendSms(mContext, mNumber, mContext
+							.getString(R.string.sms_guard_checkin_confirmation));
+		} else {
+			SmsHandler.sendSms(mContext, mNumber,
+					mContext.getString(R.string.sms_guard_checkin_rejection));
+		}
+	}
 
 }
