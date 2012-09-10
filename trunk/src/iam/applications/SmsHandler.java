@@ -424,8 +424,10 @@ public class SmsHandler {
 	}
 
 	private void needLegitimateKeyword() {
-		// TODO eventually it will be nice to have a list of possible keywords
-		sendSms(R.string.sms_need_location_keyword);
+		String msg = String.format(
+				mContext.getString(R.string.sms_need_location_keyword),
+				mDbHelper.getLocationKeywords());
+		sendSms(msg);
 	}
 
 	/**
