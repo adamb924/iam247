@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-     <CheckBoxPreference
+    <CheckBoxPreference
         android:defaultValue="false"
         android:key="PREFERENCES_DISABLE_247"
         android:summary="@string/disable_247_summary"
         android:title="@string/disable_247" />
-    
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="PREFERENCES_PERMIT_THISIS"
@@ -27,6 +26,7 @@
             android:inputType="phone"
             android:summary="@string/block_number_summary"
             android:title="@string/block_number" />
+
         <Preference
             android:key="unblock_number"
             android:title="@string/unblock_number" />
@@ -52,12 +52,43 @@
             android:key="PREFERENCES_CALLAROUND_DELAYED_TIME"
             android:summary="@string/callaround_delayed_time_summary"
             android:title="@string/callaround_delayed_time" />
-        
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="PREFERENCES_CALLAROUNDS_SHOW_FUTURE"
             android:summary="@string/show_future_summary"
             android:title="@string/show_future" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/guard_preferences" >
+        <EditTextPreference
+            android:defaultValue="3"
+            android:inputType="number"
+            android:key="PREFERENCES_FEWEST_GUARD_CHECKS"
+            android:summary="@string/fewest_calls_summary"
+            android:title="@string/fewest_calls" >
+        </EditTextPreference>
+        <EditTextPreference
+            android:defaultValue="3"
+            android:inputType="number"
+            android:key="PREFERENCES_RANDOM_GUARD_CHECKS"
+            android:summary="@string/random_calls_summary"
+            android:title="@string/random_calls" >
+        </EditTextPreference>
+        <EditTextPreference
+            android:defaultValue="5"
+            android:inputType="number"
+            android:key="PREFERENCES_GUARD_CHECKIN_WINDOW"
+            android:summary="@string/guard_response_window_summary"
+            android:title="@string/guard_response_window" >
+        </EditTextPreference>
+                <iam.applications.TimePreferenceDialog
+            android:defaultValue="22:00"
+            android:key="PREFERENCES_GUARD_CHECKIN_START"
+            android:title="@string/guard_checkin_start" />
+        <iam.applications.TimePreferenceDialog
+            android:defaultValue="06:00"
+            android:key="PREFERENCES_GUARD_CHECKIN_END"
+            android:title="@string/guard_checkin_end" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/database" >
         <Preference
@@ -78,7 +109,7 @@
             android:key="clear_oneweek"
             android:summary="@string/clear_oneweek_summary"
             android:title="@string/clear_oneweek" />
-            <Preference
+        <Preference
             android:key="clear_log"
             android:summary="@string/clear_log_summary"
             android:title="@string/clear_log" />

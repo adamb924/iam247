@@ -13,7 +13,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class DbAdapter. Provides access functions for the app's SQL database.
  */
@@ -261,7 +260,7 @@ public class DbAdapter {
 	private static final String DATABASE_TABLE_GUARDS = "guards";
 
 	/** The Constant DATABASE_TABLE_GUARDS_CHECKINS. */
-	private static final String DATABASE_TABLE_GUARDS_CHECKINS = "guardscheckins";
+	private static final String DATABASE_TABLE_GUARD_CHECKINS = "guardcheckins";
 
 	/** SQL column names constants. */
 	public static final String KEY_ROWID = "_id";
@@ -344,6 +343,10 @@ public class DbAdapter {
 	public static final String KEY_KEYWORD = "keyword";
 
 	public static final String KEY_DELAYED = "delayed";
+
+	public static final String KEY_GUARDID = "guard_id";
+
+	public static final String KEY_RESPONSE = "response";
 
 	/** Log message types. */
 	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
@@ -542,6 +545,22 @@ public class DbAdapter {
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_NAME, name);
 		mDb.insert(DATABASE_TABLE_GUARDS, null, initialValues);
+	}
+
+	/**
+	 * Adds a guard checkin for the given guard at the given time.
+	 * 
+	 * @param guard_id
+	 *            the id of the guard
+	 * @param time
+	 *            the time of the checkin
+	 * @throws SQLException
+	 */
+	public void addGuardCheckin(long guard_id, String time) throws SQLException {
+		ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_GUARDID, guard_id);
+		initialValues.put(KEY_TIME, time);
+		mDb.insert(DATABASE_TABLE_GUARD_CHECKINS, null, initialValues);
 	}
 
 	/**
@@ -1494,6 +1513,16 @@ public class DbAdapter {
 			return c.getString(0);
 		} else {
 			return null;
+		}
+	}
+
+	public long getGuardIdFromNumber(String number) throws SQLException {
+		Cursor c = mDb.rawQuery("select _id from guards where number=?;",
+				new String[] { number });
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
 		}
 	}
 
@@ -2504,4 +2533,50 @@ public class DbAdapter {
 		return getGuardNumber(guardId);
 	}
 
+	public String getGuardCheckinTime(long guard_id) {
+		// this query should select the most recent checkin time for the guard
+		Cursor c = mDb
+				.rawQuery(
+						"select time from guardcheckins where guard_id=? order by time desc limit 1;",
+						new String[] { String.valueOf(guard_id) });
+		if (c.moveToFirst()) {
+			return c.getString(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @param guard_id
+	 * @param iso8601DateTime
+	 * @return
+	 */
+	public int setGuardCheckinResolved(Context context, long guard_id) {
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext);
+		int window = Long.valueOf(
+				settings.getString(
+						HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"))
+				.intValue();
+
+		String checkinTime = getGuardCheckinTime(guard_id);
+		if (checkinTime == null) {
+			return NOTIFY_FAILURE;
+		}
+
+		String dueTime = Time.nMinutesAfter(checkinTime, window);
+
+		Log.i("Debug", checkinTime);
+		Log.i("Debug", dueTime);
+
+		ContentValues args = new ContentValues();
+		args.put(KEY_RESPONSE, 1);
+		if (mDb.update(DATABASE_TABLE_GUARD_CHECKINS, args, KEY_GUARDID
+				+ "=? and strftime('%s','" + dueTime + "')",
+				new String[] { String.valueOf(guard_id) }) > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
 }

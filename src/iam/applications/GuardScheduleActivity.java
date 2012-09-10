@@ -3,8 +3,11 @@
  */
 package iam.applications;
 
+import java.util.Calendar;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -13,8 +16,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 /**
  * @author Adam
@@ -25,23 +30,16 @@ public class GuardScheduleActivity extends Activity {
 
 	static public String SET_DEFAULT = "SET_DEFAULT";
 
+	static public String[] DAYS = { "Sunday", "Monday", "Tuesday", "Wednesday",
+			"Thursday", "Friday", "Saturday" };
+
 	/** The database interface. */
 	private DbAdapter mDbHelper;
 
 	private boolean mSetDefault;
 	private long mHouseId;
 
-	private Spinner mSunday;
-	private Spinner mMonday;
-	private Spinner mTuesday;
-	private Spinner mWednesday;
-	private Spinner mThursday;
-	private Spinner mFriday;
-	private Spinner mSaturday;
-
-	private SimpleCursorAdapter mAdapter;
-
-	private Cursor mCur;
+	private Spinner[] mSpinners;
 
 	/*
 	 * (non-Javadoc)
@@ -63,120 +61,61 @@ public class GuardScheduleActivity extends Activity {
 
 		setTitle(mDbHelper.getHouseName(mHouseId));
 
-		mSunday = (Spinner) findViewById(R.id.sunday);
-		mMonday = (Spinner) findViewById(R.id.monday);
-		mTuesday = (Spinner) findViewById(R.id.tuesday);
-		mWednesday = (Spinner) findViewById(R.id.wednesday);
-		mThursday = (Spinner) findViewById(R.id.thursday);
-		mFriday = (Spinner) findViewById(R.id.friday);
-		mSaturday = (Spinner) findViewById(R.id.saturday);
+		LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
 
-		mSunday.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View view,
-					int position, long id) {
-				mDbHelper.setGuard(mHouseId, id,
-						mSetDefault ? DbAdapter.SUNDAY_GUARD_DEFAULT
-								: DbAdapter.SUNDAY_GUARD);
+		mSpinners = new Spinner[7];
+
+		if (mSetDefault) {
+			// for the default configuration, just list a typical weekly
+			// schedule
+
+			// get the localized first day of the week
+			int first = Long.valueOf(getString(R.string.loc_first_day_of_week))
+					.intValue();
+
+			for (int i = 0; i < 7; i++) {
+				int day = (first + i) % 7;
+
+				// TODO replace this with something more localizable
+				TextView label = new TextView(this);
+				label.setText(DAYS[day]);
+				layout.addView(label);
+
+				mSpinners[i] = new GuardSpinner(this, mDbHelper, getColumnName(
+						day, mSetDefault), mHouseId);
+				layout.addView(mSpinners[i]);
+			}
+		} else {
+			// if you're setting it for particular days, make it different
+
+			// let today be the first day displayed
+			Calendar c = Calendar.getInstance();
+			int first = c.get(Calendar.DAY_OF_WEEK);
+
+			for (int i = 0; i < 7; i++) {
+				int day = (first + i) % 7;
+
+				TextView label = new TextView(this);
+				label.setText(Time.prettyDate(this, c.getTime()));
+				layout.addView(label);
+
+				mSpinners[i] = new GuardSpinner(this, mDbHelper, getColumnName(
+						day, mSetDefault), mHouseId);
+				layout.addView(mSpinners[i]);
+
+				c.add(Calendar.DATE, 1);
 			}
 
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
+		}
 
-		mMonday.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View view,
-					int position, long id) {
-				mDbHelper.setGuard(mHouseId, id,
-						mSetDefault ? DbAdapter.MONDAY_GUARD_DEFAULT
-								: DbAdapter.MONDAY_GUARD);
-			}
+	}
 
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
-
-		mTuesday.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View view,
-					int position, long id) {
-				mDbHelper.setGuard(mHouseId, id,
-						mSetDefault ? DbAdapter.TUESDAY_GUARD_DEFAULT
-								: DbAdapter.TUESDAY_GUARD);
-
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
-
-		mWednesday
-				.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-					@Override
-					public void onItemSelected(AdapterView<?> arg0, View view,
-							int position, long id) {
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.WEDNESDAY_GUARD_DEFAULT
-										: DbAdapter.WEDNESDAY_GUARD);
-
-					}
-
-					@Override
-					public void onNothingSelected(AdapterView<?> arg0) {
-					}
-				});
-
-		mThursday
-				.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-					@Override
-					public void onItemSelected(AdapterView<?> arg0, View view,
-							int position, long id) {
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.THURSDAY_GUARD_DEFAULT
-										: DbAdapter.THURSDAY_GUARD);
-
-					}
-
-					@Override
-					public void onNothingSelected(AdapterView<?> arg0) {
-					}
-				});
-
-		mFriday.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> arg0, View view,
-					int position, long id) {
-				mDbHelper.setGuard(mHouseId, id,
-						mSetDefault ? DbAdapter.FRIDAY_GUARD_DEFAULT
-								: DbAdapter.FRIDAY_GUARD);
-
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> arg0) {
-			}
-		});
-
-		mSaturday
-				.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-					@Override
-					public void onItemSelected(AdapterView<?> arg0, View view,
-							int position, long id) {
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.SATURDAY_GUARD_DEFAULT
-										: DbAdapter.SATURDAY_GUARD);
-					}
-
-					@Override
-					public void onNothingSelected(AdapterView<?> arg0) {
-					}
-				});
-
-		fillData();
+	static private String getColumnName(int i, boolean default_column) {
+		if (default_column) {
+			return DAYS[i].toLowerCase() + "_guard";
+		} else {
+			return "typical_" + DAYS[i].toLowerCase() + "_guard";
+		}
 	}
 
 	/*
@@ -188,55 +127,6 @@ public class GuardScheduleActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 		mDbHelper.close();
-	}
-
-	private void fillData() {
-		mCur = mDbHelper.fetchAllGuards();
-		startManagingCursor(mCur);
-
-		String[] from = new String[] { DbAdapter.KEY_NAME };
-		int[] to = new int[] { android.R.id.text1 };
-
-		mAdapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_spinner_item, mCur, from, to);
-
-		mSunday.setAdapter(mAdapter);
-		mMonday.setAdapter(mAdapter);
-		mTuesday.setAdapter(mAdapter);
-		mWednesday.setAdapter(mAdapter);
-		mThursday.setAdapter(mAdapter);
-		mFriday.setAdapter(mAdapter);
-		mSaturday.setAdapter(mAdapter);
-
-		setCurrent(mSunday, mSetDefault ? DbAdapter.SUNDAY_GUARD_DEFAULT
-				: DbAdapter.SUNDAY_GUARD);
-		setCurrent(mMonday, mSetDefault ? DbAdapter.MONDAY_GUARD_DEFAULT
-				: DbAdapter.MONDAY_GUARD);
-		setCurrent(mTuesday, mSetDefault ? DbAdapter.TUESDAY_GUARD_DEFAULT
-				: DbAdapter.TUESDAY_GUARD);
-		setCurrent(mWednesday, mSetDefault ? DbAdapter.WEDNESDAY_GUARD_DEFAULT
-				: DbAdapter.WEDNESDAY_GUARD);
-		setCurrent(mThursday, mSetDefault ? DbAdapter.THURSDAY_GUARD_DEFAULT
-				: DbAdapter.THURSDAY_GUARD);
-		setCurrent(mFriday, mSetDefault ? DbAdapter.FRIDAY_GUARD_DEFAULT
-				: DbAdapter.FRIDAY_GUARD);
-		setCurrent(mSaturday, mSetDefault ? DbAdapter.SATURDAY_GUARD_DEFAULT
-				: DbAdapter.SATURDAY_GUARD);
-	}
-
-	private void setCurrent(Spinner s, String label) {
-		if (!mCur.moveToFirst()) {
-			return;
-		}
-
-		int position = 0;
-		do {
-			if (mCur.getLong(0) == mDbHelper.getGuard(mHouseId, label)) {
-				s.setSelection(position);
-				break;
-			}
-			position++;
-		} while (mCur.moveToNext());
 	}
 
 	/*
@@ -274,34 +164,74 @@ public class GuardScheduleActivity extends Activity {
 				new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int item) {
-						mCur.moveToPosition(item);
-						long id = mCur.getLong(0);
-
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.SUNDAY_GUARD_DEFAULT
-										: DbAdapter.SUNDAY_GUARD);
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.MONDAY_GUARD_DEFAULT
-										: DbAdapter.MONDAY_GUARD);
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.TUESDAY_GUARD_DEFAULT
-										: DbAdapter.TUESDAY_GUARD);
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.WEDNESDAY_GUARD_DEFAULT
-										: DbAdapter.WEDNESDAY_GUARD);
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.THURSDAY_GUARD_DEFAULT
-										: DbAdapter.THURSDAY_GUARD);
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.FRIDAY_GUARD_DEFAULT
-										: DbAdapter.FRIDAY_GUARD);
-						mDbHelper.setGuard(mHouseId, id,
-								mSetDefault ? DbAdapter.SATURDAY_GUARD_DEFAULT
-										: DbAdapter.SATURDAY_GUARD);
-
-						fillData();
+						for (int i = 0; i < 7; i++) {
+							mSpinners[i].setSelection(item);
+						}
 					}
 				}, DbAdapter.KEY_NAME);
 		alert.show();
+	}
+
+	private class GuardSpinner extends Spinner {
+
+		private final DbAdapter mDbHelper;
+		private final String mColumn;
+		private final long mHouseId;
+		private final Cursor mCur;
+		private final long mGuard;
+
+		/**
+		 * @param context
+		 */
+		public GuardSpinner(Context context, DbAdapter db, String column,
+				long house_id) {
+			super(context);
+
+			mDbHelper = db;
+			mColumn = column;
+			mHouseId = house_id;
+
+			mGuard = mDbHelper.getGuard(mHouseId, mColumn);
+
+			mCur = mDbHelper.fetchAllGuards();
+			startManagingCursor(mCur);
+
+			String[] from = new String[] { DbAdapter.KEY_NAME };
+			int[] to = new int[] { android.R.id.text1 };
+
+			SimpleCursorAdapter adapter = new SimpleCursorAdapter(context,
+					android.R.layout.simple_spinner_item, mCur, from, to);
+			setAdapter(adapter);
+
+			setCurrent();
+
+			setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+				@Override
+				public void onItemSelected(AdapterView<?> arg0, View view,
+						int position, long id) {
+					mDbHelper.setGuard(mHouseId, id, mColumn);
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> arg0) {
+				}
+			});
+		}
+
+		private void setCurrent() {
+			if (mGuard == -1 || !mCur.moveToFirst()) {
+				return;
+			}
+
+			int position = 0;
+			do {
+				if (mCur.getLong(0) == mGuard) {
+					setSelection(position);
+					break;
+				}
+				position++;
+			} while (mCur.moveToNext());
+		}
+
 	}
 }

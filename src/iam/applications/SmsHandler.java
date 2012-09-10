@@ -40,8 +40,6 @@ public class SmsHandler {
 	 * @param message
 	 *            the message
 	 */
-	// static public void sendSms(final Context context, String phoneNumber,
-	// String message) {
 	static public void sendSms(final Context context, String phoneNumber,
 			String message) {
 		// this application context is required because it's not allowed to

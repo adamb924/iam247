@@ -386,4 +386,64 @@ public class Time {
 		}
 		return "";
 	}
+
+	/**
+	 * Returns a Date object at today's date, and with the time specified by the
+	 * supplied simple time.
+	 * 
+	 * @param simpleTime
+	 *            the simple time
+	 * @return the date
+	 */
+	static public Date todayAtGivenTime(String simpleTime) {
+		Date targetTime = Time.timeFromSimpleTime(simpleTime);
+		Date today = new Date();
+
+		today.setHours(targetTime.getHours());
+		today.setMinutes(targetTime.getMinutes());
+
+		return today;
+	}
+
+	/**
+	 * Returns a Date object at tomorrow's date, and with the time specified by
+	 * the supplied simple time.
+	 * 
+	 * @param simpleTime
+	 *            the simple time
+	 * @return the date
+	 */
+	static public Date tomorrowAtGivenTime(String simpleTime) {
+		Date targetTime = Time.timeFromSimpleTime(simpleTime);
+
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DATE, 1);
+
+		Date tomorrow = c.getTime();
+		tomorrow.setHours(targetTime.getHours());
+		tomorrow.setMinutes(targetTime.getMinutes());
+		return tomorrow;
+	}
+
+	/**
+	 * Returns the ISO 8601 time stamp of the time n minutes before the time
+	 * indicated.
+	 * 
+	 * @param isoTime
+	 * @param n
+	 * @return
+	 */
+	static public String nMinutesAfter(String isoTime, int n) {
+		try {
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+			Date initialTime = format.parse(isoTime);
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(initialTime);
+			cal.add(Calendar.MINUTE, n);
+			return Time.iso8601DateTime(cal.getTime());
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }

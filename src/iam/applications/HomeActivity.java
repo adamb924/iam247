@@ -34,6 +34,11 @@ public class HomeActivity extends Activity {
 	static public String PREFERENCES_CALLAROUNDS_SHOW_FUTURE = "PREFERENCES_CALLAROUNDS_SHOW_FUTURE";
 	static public String PREFERENCES_DISABLE_247 = "PREFERENCES_DISABLE_247";
 	static public String PREFERENCES_CALLAROUND_DELAYED_TIME = "PREFERENCES_CALLAROUND_DELAYED_TIME";
+	static public String PREFERENCES_GUARD_CHECKIN_START = "PREFERENCES_GUARD_CHECKIN_START";
+	static public String PREFERENCES_GUARD_CHECKIN_END = "PREFERENCES_GUARD_CHECKIN_END";
+	static public String PREFERENCES_FEWEST_GUARD_CHECKS = "PREFERENCES_FEWEST_GUARD_CHECKS";
+	static public String PREFERENCES_RANDOM_GUARD_CHECKS = "PREFERENCES_RANDOM_GUARD_CHECKS";
+	static public String PREFERENCES_GUARD_CHECKIN_WINDOW = "PREFERENCES_GUARD_CHECKIN_WINDOW";
 
 	/** The database interface. */
 	private DbAdapter mDbHelper;
@@ -58,6 +63,8 @@ public class HomeActivity extends Activity {
 
 		// add these two alarms for managing call arounds
 		AlarmReceiver.setAddCallaroundAlarm(this);
+
+		AlarmReceiver.setAddGuardCheckinAlarms(this);
 
 		setContentView(R.layout.home_activity);
 
