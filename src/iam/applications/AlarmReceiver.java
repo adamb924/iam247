@@ -332,6 +332,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Cursor c = dbHelper.fetchAllGuards();
 
 		if (!c.moveToFirst()) {
+			dbHelper.close();
 			return;
 		}
 

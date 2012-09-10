@@ -1598,6 +1598,27 @@ public class DbAdapter {
 		}
 	}
 
+	public String getLocationKeywords() throws SQLException {
+		Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS,
+				new String[] { KEY_KEYWORD }, null, null, null, null,
+				KEY_KEYWORD);
+		if (cursor.moveToFirst()) {
+			String r = "";
+			for (int i = 0; i < cursor.getCount(); i++) {
+				r += cursor.getString(cursor
+						.getColumnIndexOrThrow(DbAdapter.KEY_KEYWORD));
+				if (!cursor.isLast()) {
+					r += ", ";
+				}
+				cursor.moveToNext();
+			}
+			cursor.close();
+			return r;
+		} else {
+			return null;
+		}
+	}
+
 	/**
 	 * Returns the _id of the house associated with the contact.
 	 * 
