@@ -53,3 +53,7 @@ Turn off reminders (see “turn on reminders”)
 report
 }}}
 Request an SMS report of outstanding check-ins and call arounds
+{{{
+delay
+}}}
+Delays the callaround requirement to a preset time
