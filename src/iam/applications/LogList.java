@@ -83,8 +83,7 @@ public class LogList extends ListActivity {
 		 *            the cur
 		 */
 		public LogAdapter(Context context, Cursor cur) {
-			// TODO should this be log_item?
-			super(context, R.layout.checkin_item, cur);
+			super(context, R.layout.log_item, cur);
 		}
 
 		/*
@@ -97,8 +96,7 @@ public class LogList extends ListActivity {
 		@Override
 		public View newView(Context context, Cursor cur, ViewGroup parent) {
 			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			// TODO should this be log_item?
-			return li.inflate(R.layout.checkin_item, parent, false);
+			return li.inflate(R.layout.log_item, parent, false);
 		}
 
 		/*
