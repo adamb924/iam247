@@ -356,7 +356,6 @@ public class Time {
 		}
 	}
 
-	// TODO this returns a three-day abbreviation
 	/**
 	 * Returns a full day of the week (Sunday, Monday, ...) for the given Date.
 	 * 

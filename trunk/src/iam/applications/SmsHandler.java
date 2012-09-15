@@ -262,8 +262,17 @@ public class SmsHandler {
 			return;
 		}
 
-		if (!hasLegitimateLocationKeyword(place)) {
+		// check that there is a real location keyword
+		String keyword = parseLocationKeyword(place);
+		if (keyword == null) {
 			needLegitimateKeyword();
+			mDbHelper.close();
+			return;
+		}
+
+		// send a message if the person is not allowed to go there
+		if (!mDbHelper.getLocationKeywordPermitted(keyword)) {
+			sendSms(R.string.sms_refuse_permission);
 			mDbHelper.close();
 			return;
 		}
@@ -295,17 +304,29 @@ public class SmsHandler {
 		}
 	}
 
-	private boolean hasLegitimateLocationKeyword(String place) {
+	/**
+	 * Takes the last word from the place string, returning the place string if
+	 * it is a legitimate keyword, or otherwise returning a null pointer.
+	 * 
+	 * @param place
+	 *            The place string
+	 * @return The place string, if it is legitimate, otherwise null.
+	 */
+	private String parseLocationKeyword(String place) {
 		place = place.trim();
 
 		int space = place.lastIndexOf(" ");
 
 		if (space == -1 || space == place.length()) {
-			return false;
+			return null;
 		}
 		String putativeKeyword = place.substring(space + 1);
 
-		return mDbHelper.getLocationKeywordExists(putativeKeyword);
+		if (mDbHelper.getLocationKeywordExists(putativeKeyword)) {
+			return putativeKeyword;
+		} else {
+			return null;
+		}
 	}
 
 	/**
