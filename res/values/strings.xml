@@ -235,5 +235,5 @@
     <string name="sms_guard_checkin">daftara mist kal ko. Missed call the office.</string>
     <string name="sms_guard_checkin_confirmation">Tashakur. Thank you.</string>
     <string name="sms_guard_checkin_rejection">yA wakht bArE checkin nEs, yA wakhtesh tEr shuda. Either it is not the time for checkin, or the time has passed.</string>
-    
+    <string name="sms_refuse_permission">24/7 says: You are currently not allowed to go there. You can missed-call 24/7 to get a list of forbidden locations.</string>
 </resources>
