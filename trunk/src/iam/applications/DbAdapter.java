@@ -13,10 +13,15 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class DbAdapter. Provides access functions for the app's SQL database.
  */
 
+/**
+ * @author Adam
+ * 
+ */
 public class DbAdapter {
 	/**
 	 * This is the interface class for the SQL database. Typical usage would be
@@ -119,6 +124,7 @@ public class DbAdapter {
 	/** Return value to indicate that call around is currently inactive. */
 	public static int NOTIFY_INACTIVE = 4;
 
+	/** The notify untimely. */
 	public static int NOTIFY_UNTIMELY = 5;
 
 	/** The version of the current database. */
@@ -340,12 +346,16 @@ public class DbAdapter {
 	/** The Constant KEY_LON. */
 	public static final String KEY_LON = "lon";
 
+	/** The Constant KEY_KEYWORD. */
 	public static final String KEY_KEYWORD = "keyword";
 
+	/** The Constant KEY_DELAYED. */
 	public static final String KEY_DELAYED = "delayed";
 
+	/** The Constant KEY_GUARDID. */
 	public static final String KEY_GUARDID = "guard_id";
 
+	/** The Constant KEY_RESPONSE. */
 	public static final String KEY_RESPONSE = "response";
 
 	/** Log message types. */
@@ -555,6 +565,7 @@ public class DbAdapter {
 	 * @param time
 	 *            the time of the checkin
 	 * @throws SQLException
+	 *             the sQL exception
 	 */
 	public void addGuardCheckin(long guard_id, String time) throws SQLException {
 		ContentValues initialValues = new ContentValues();
@@ -969,6 +980,32 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Fetch all contacts' numbers. Columns: KEY_NUMBER
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public Cursor fetchAllContactNumbers() throws SQLException {
+		return mDb.rawQuery("select number from contactphones;", null);
+	}
+
+	/**
+	 * Fetch contacts' numbers who are associated with houses receiving an
+	 * active call around. Columns: KEY_NUMBER
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public Cursor fetchActiveContactNumbers() throws SQLException {
+		return mDb
+				.rawQuery(
+						"select contactphones.number from contactphones,housemembers,houses on houses.active='1' and housemembers.house_id=houses._id and housemembers.contact_id=contactphones.contact_id;",
+						null);
+	}
+
+	/**
 	 * Return a cursor with all houses. Columns: KEY_ROWID, KEY_NAME, KEY_ACTIVE
 	 * 
 	 * @return the cursor
@@ -1355,6 +1392,15 @@ public class DbAdapter {
 		return r == 1 ? true : false;
 	}
 
+	/**
+	 * Gets the current checkin for contact.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @return the current checkin for contact
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
 	public long getCurrentCheckinForContact(long contact_id)
 			throws SQLException {
 		Cursor c = mDb.rawQuery("select _id from checkins where contact_id='"
@@ -1550,6 +1596,15 @@ public class DbAdapter {
 		}
 	}
 
+	/**
+	 * Gets the guard id from number.
+	 * 
+	 * @param number
+	 *            the number
+	 * @return the guard id from number
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
 	public long getGuardIdFromNumber(String number) throws SQLException {
 		Cursor c = mDb.rawQuery("select _id from guards where number=?;",
 				new String[] { number });
@@ -1632,6 +1687,13 @@ public class DbAdapter {
 		}
 	}
 
+	/**
+	 * Gets the location keywords.
+	 * 
+	 * @return the location keywords
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
 	public String getLocationKeywords() throws SQLException {
 		Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS,
 				new String[] { KEY_KEYWORD }, null, null, null, null,
@@ -1720,10 +1782,11 @@ public class DbAdapter {
 	/**
 	 * Returns whether the callaround is delayed or not.
 	 * 
-	 * @param the
-	 *            house id
+	 * @param rowId
+	 *            the row id
 	 * @return True if the callaround is delayed, otherwise false.
 	 * @throws SQLException
+	 *             the sQL exception
 	 */
 	public boolean getCallaroundDelayed(long rowId) throws SQLException {
 		Cursor c = mDb.query(DATABASE_TABLE_CALLAROUNDS,
@@ -1761,9 +1824,11 @@ public class DbAdapter {
 	 * otherwise returns false.
 	 * 
 	 * @param keyword
+	 *            the keyword
 	 * @return true if the given location keyword exists in the database,
 	 *         otherwise false
 	 * @throws SQLException
+	 *             the sQL exception
 	 */
 	public boolean getLocationKeywordExists(String keyword) throws SQLException {
 		Cursor c = mDb.rawQuery(
@@ -1781,9 +1846,11 @@ public class DbAdapter {
 	 * otherwise returns false.
 	 * 
 	 * @param keyword
+	 *            the keyword
 	 * @return true if the given location keyword exists in the database,
 	 *         otherwise false
 	 * @throws SQLException
+	 *             the sQL exception
 	 */
 	public boolean getLocationKeywordPermitted(String keyword)
 			throws SQLException {
@@ -2609,6 +2676,13 @@ public class DbAdapter {
 		return getGuardNumber(guardId);
 	}
 
+	/**
+	 * Gets the guard checkin time.
+	 * 
+	 * @param guard_id
+	 *            the guard_id
+	 * @return the guard checkin time
+	 */
 	public String getGuardCheckinTime(long guard_id) {
 		// this query should select the most recent checkin time for the guard
 		Cursor c = mDb
@@ -2623,9 +2697,13 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Sets the guard checkin resolved.
+	 * 
+	 * @param context
+	 *            the context
 	 * @param guard_id
-	 * @param iso8601DateTime
-	 * @return
+	 *            the guard_id
+	 * @return the int
 	 */
 	public int setGuardCheckinResolved(Context context, long guard_id) {
 		SharedPreferences settings = PreferenceManager

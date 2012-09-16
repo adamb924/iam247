@@ -124,6 +124,16 @@ public class HomeActivity extends Activity {
 			}
 		});
 
+		TextView broadcastButton = (TextView) findViewById(R.id.home_broadcast);
+		broadcastButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent i = new Intent(HomeActivity.this,
+						BroadcastActivity.class);
+				startActivity(i);
+			}
+		});
+
 		LinearLayout messageerrorsButton = (LinearLayout) findViewById(R.id.message_errors);
 		messageerrorsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
