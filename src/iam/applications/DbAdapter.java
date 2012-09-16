@@ -1148,6 +1148,24 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Get a report of a guard's check-ins that were due before the present
+	 * time. Columns: KEY_ID, KEY_TIME, KEY_RESPONSE
+	 * 
+	 * @param guard_id
+	 * @return a cursor with the report
+	 * @throws SQLException
+	 */
+	public Cursor fetchGuardCheckinReport(long guard_id) throws SQLException {
+		return mDb
+				.rawQuery(
+						"select _id,time,response from guardcheckins where guard_id=? and datetime(time) <= datetime('now','localtime') order by time desc;",
+						new String[] { String.valueOf(guard_id) });
+
+		// create table guardcheckins ( _id integer primary key autoincrement ,
+		// guard_id int not null , time text, response int default 0 )
+	}
+
+	/**
 	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
 	 * KEY_LOCATION, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING
 	 * 

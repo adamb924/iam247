@@ -174,7 +174,7 @@
     <string name="broadcast_to_all">All team members</string>
     <string name="broadcast_forbidden"> The place(s) that are currently off-limits are: %s</string>
     <string name="broadcast_result">Broadcast to %s number(s)</string>
-    
+    <string name="no_guard_checkins">This guard has no check-ins at this time.</string>
     
     <string-array name="broadcast_options_array">
         <item>@string/broadcast_to_active</item>
