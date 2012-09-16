@@ -191,7 +191,7 @@
     <string name="re_turnoncallaround">.*(?:turn\\s*on\\s*call\\s*around|turn\\s*call\\s*around\\s*on).*</string>
     <string name="re_turnoffcallaround">.*(?:turn\\s*off\\s*call\\s*around|turn\\s*call\\s*around\\s*off).*</string>
     <string name="re_callaround_ok">.*(?:all in|777).*</string>
-    <string name="re_checkin_back">.*back.*</string>
+    <string name="re_checkin_back">.*(?:back|arrived).*</string>
     <string name="re_distress">.*help|666.*</string>
     <string name="re_thisis">.*this\\s*is\\s*(.*)</string>
     <string name="re_startcheckin">.*going\\s*to\\s*(.*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
