@@ -235,10 +235,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @param date
 	 *            the date/time at which the check-in is due
 	 */
-	static public void setCheckinReminderAlert(Context context, Date date,
-			long checkin_id) {
+	static public void setCheckinReminderAlert(Context context, long checkin_id) {
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		String duetime = dbHelper.getCheckinTime(checkin_id);
+		dbHelper.close();
+
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
+		cal.setTime(Time.iso8601Date(duetime));
 
 		// read the reminder offset from the system preferences, and calculate
 		// the new time based on that offset

@@ -303,7 +303,7 @@ public class SmsHandler {
 		if (ret != DbAdapter.NOTIFY_FAILURE
 				&& mDbHelper.getContactPreference(mContactId,
 						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
-			AlarmReceiver.setCheckinReminderAlert(mContext, time,
+			AlarmReceiver.setCheckinReminderAlert(mContext,
 					mDbHelper.lastInsertId());
 		}
 	}
@@ -570,6 +570,15 @@ public class SmsHandler {
 				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_on_confirm);
+
+			// add a check-in reminder for the person, if they have an active
+			// check-in
+			long current_checkin = mDbHelper
+					.getCurrentCheckinForContact(mContactId);
+			if (current_checkin != -1) {
+				AlarmReceiver
+						.setCheckinReminderAlert(mContext, current_checkin);
+			}
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
 			ourError();
 		} else if (ret == DbAdapter.NOTIFY_ALREADY) {

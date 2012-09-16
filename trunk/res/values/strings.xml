@@ -223,7 +223,7 @@
     <string name="sms_checkin_resolved_foryou">24/7 says: This is a notification that the RTL has resolved your check-in. If you feel this is a mistake, send another check-in request or contact the RTL.</string>
     <string name="sms_this_disabled_notification">24/7 says: New users are currently not being accepted. Please contact the RTL if you need help.</string>
     <string name="sms_checkin_reminder">24/7 says: This is a reminder that you have a check-in due in about three minutes.</string>
-    <string name="sms_checkin_reminder_on_confirm">24/7 says: Okay, we\'ll send you a reminder three minutes before your check-in is due. (This will take effect for the next check-in request you send.)</string>
+    <string name="sms_checkin_reminder_on_confirm">24/7 says: Okay, we\'ll send you a reminder three minutes before your check-in is due.</string>
     <string name="sms_checkin_reminder_off_confirm">24/7 says: Okay, we won\'t send any reminders about check-in. (If you have a current check-in, you\'ll get a reminder for one last one.)</string>
     <string name="sms_already">24/7 says: Thanks. That\'s actually the setting we already had for you.</string>
     <string name="sms_report" formatted="false">24/7 says: %s. %s</string>
