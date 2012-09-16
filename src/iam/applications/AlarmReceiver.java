@@ -19,6 +19,10 @@ import android.util.Log;
  * appropriate corresponding activities in response. It also has static methods
  * for creating alerts.
  */
+/**
+ * @author Adam
+ * 
+ */
 public class AlarmReceiver extends BroadcastReceiver {
 
 	/**
@@ -59,17 +63,18 @@ public class AlarmReceiver extends BroadcastReceiver {
 	public static String ALERT_CHECKIN_REMINDER = "ALERT_CHECKIN_REMINDER";
 
 	/**
+	 * An Intent action string alerting the application to add the guards'
+	 * check-ins.
+	 */
+	public static String ALERT_ADD_GUARD_CHECKINS = "ALERT_ADD_GUARD_CHECKINS";
+
+	/**
 	 * An Intent action string alerting the application to perform a guard
 	 * check.
 	 */
 	public static String ALERT_GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
 
 	public static String GUARD_ID = "GUARD_ID";
-
-	/** The database interface */
-	private DbAdapter mDbHelper;
-
-	private Context mContext;
 
 	/*
 	 * (non-Javadoc)
@@ -106,6 +111,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 			checkCallaroundDue();
 		} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
 			checkDelayedCallaroundDue();
+		} else if (action.equals(ALERT_ADD_GUARD_CHECKINS)) {
+			addGuardCheckins();
 		} else if (action.equals(ALERT_GUARD_CHECKIN)) {
 			requestGuardCheckin(intent.getLongExtra(GUARD_ID, -1));
 		}
@@ -114,94 +121,144 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * Send the specified guard a message requesting a checkin.
+	 * Creates a checkin alarm for the given guard and checkin time.
 	 * 
 	 * @param guard_id
+	 * @param checkinTime
 	 */
-	private void requestGuardCheckin(long guard_id) {
-		if (guard_id == -1) {
-			return;
-		}
-		String number = mDbHelper.getGuardNumber(guard_id);
+	private static void createGuardCheckin(Context context, long guard_id,
+			Date checkinTime) {
+		Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(ALERT_GUARD_CHECKIN);
+		intent.putExtra(GUARD_ID, guard_id);
 
-		SmsHandler.sendSms(mContext, number,
-				mContext.getString(R.string.sms_guard_checkin));
-		mDbHelper.addGuardCheckin(guard_id, Time.iso8601DateTime());
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) checkinTime.getTime(), intent,
+				PendingIntent.FLAG_ONE_SHOT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.set(AlarmManager.RTC_WAKEUP, checkinTime.getTime(), sender);
 	}
 
 	/**
-	 * Checks if there are due call arounds, and if so, starts a
-	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
-	 * alert.
-	 */
-	private void checkCallaroundDue() {
-		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
-			mDbHelper.close();
-
-			Intent i = new Intent(mContext, CallAroundDetailList.class);
-			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			i.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
-			i.putExtra(ALERT_CALLAROUND_DUE, ALERT_CALLAROUND_DUE);
-			mContext.startActivity(i);
-		}
-	}
-
-	/**
-	 * Checks if the check-in specified in the intent parameter is still
-	 * outstanding, and if so, sends the reminder text message.
+	 * Cancel all guard check-in alarms.
 	 * 
-	 * @param intent
-	 *            An intent object with the extra ALERT_CHECKIN_REMINDER, which
-	 *            has the _id of the checkin.
+	 * @param context
 	 */
-	private void checkCheckinReminder(Intent intent) {
-		long checkinId = intent.getLongExtra(ALERT_CHECKIN_REMINDER, -1);
-		if (mDbHelper.getCheckinOutstanding(checkinId)) {
-			SmsHandler.sendSms(mContext,
-					mDbHelper.getNumberForCheckin(checkinId),
-					mContext.getString(R.string.sms_checkin_reminder));
-		}
+	static public void removeGuardCheckins(Context context) {
+		Intent toCancel = new Intent(AlarmReceiver.ALERT_GUARD_CHECKIN);
+		PendingIntent pendingToCancel = PendingIntent.getBroadcast(context, 0,
+				toCancel, PendingIntent.FLAG_CANCEL_CURRENT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.cancel(pendingToCancel);
 	}
 
 	/**
-	 * Checks if there are due delayed call arounds, and if so, starts a
-	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
-	 * alert.
+	 * Send an alert that activities should refresh their screens. Currently
+	 * this is called only in the constructor of SmsHandler. Any activity which
+	 * has SMS-dependent information should update in response to this message.
+	 * This method is not particularly needed here, but it included as it's a
+	 * scheduling-related task.
+	 * 
+	 * @param context
+	 *            the application context
 	 */
-	private void checkDelayedCallaroundDue() {
-		if (mDbHelper.getNumberOfDueCallaroundsIncludingDelayed() > 0) {
-			mDbHelper.close();
-
-			Intent i = new Intent(mContext, CallAroundDetailList.class);
-			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			i.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
-			i.putExtra(DbAdapter.KEY_DELAYED, DbAdapter.KEY_DELAYED);
-			i.putExtra(ALERT_CALLAROUND_DUE, ALERT_CALLAROUND_DUE);
-			mContext.startActivity(i);
-		}
+	static public void sendRefreshAlert(Context context) {
+		Intent intent = new Intent(AlarmReceiver.ALERT_REFRESH);
+		context.sendBroadcast(intent);
 	}
 
 	/**
-	 * Calls DbAdapter.addCallarounds() to add the day's call arounds, and sends
-	 * a signal for activities to refres their data.
+	 * Sets a recurring alarm, which when triggered will prompt the application
+	 * to add all of the active houses to the day's call around list
+	 * 
+	 * @param context
+	 *            the application context
 	 */
-	private void addCallarounds() {
-		mDbHelper.addCallarounds();
-		sendRefreshAlert(mContext);
+	static public void setAddCallaroundAlarm(Context context) {
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		String old = settings.getString(
+				HomeActivity.PREFERENCES_CALLAROUND_ADD, "06:00");
+
+		Date targetdate = Time.timeFromSimpleTime(old);
+		Date thisdate = new Date();
+		thisdate.setHours(targetdate.getHours());
+		thisdate.setMinutes(targetdate.getMinutes());
+
+		Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(ALERT_ADD_CALLAROUNDS);
+		intent.putExtra("TIME", ALERT_ADD_CALLAROUNDS); // 9/16/2012: I don't
+														// understand this line
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) thisdate.getTime(), intent,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.cancel(sender);
+		am.setRepeating(AlarmManager.RTC_WAKEUP, thisdate.getTime(),
+				AlarmManager.INTERVAL_DAY, sender);
 	}
 
 	/**
-	 * Checks if there is a check-in due, and if so, starts the
-	 * <code>CheckinList</code> activity with a flag to sound the audio alert.
+	 * Sets a recurring alarm, which when triggered will prompt the application
+	 * to add random checks for the current guards.
+	 * 
+	 * @param context
 	 */
-	private void checkinDue() {
-		if (mDbHelper.getNumberOfDueCheckins() > 0) {
-			mDbHelper.close();
-			Intent i = new Intent(mContext, CheckinList.class);
-			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			i.putExtra(ALERT_CHECKIN_DUE, true);
-			mContext.startActivity(i);
-		}
+	static public void setAddGuardCheckinAlarms(Context context) {
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		String old = settings.getString(
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_END, "06:00");
+
+		Log.i("Debug", "Adding add-checkin alarm: " + old);
+
+		Date targetdate = Time.timeFromSimpleTime(old);
+		Date thisdate = new Date();
+		thisdate.setHours(targetdate.getHours());
+		thisdate.setMinutes(targetdate.getMinutes());
+
+		Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(ALERT_ADD_GUARD_CHECKINS);
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) thisdate.getTime(), intent,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.cancel(sender);
+		am.setRepeating(AlarmManager.RTC_WAKEUP, thisdate.getTime(),
+				AlarmManager.INTERVAL_DAY, sender);
+	}
+
+	/**
+	 * Sets a call around due alarm at the specified date. This alarm will later
+	 * be processed by the onReceive() method of this class.
+	 * 
+	 * @param context
+	 *            the application context
+	 */
+	static public void setCallaroundDueAlarm(Context context, Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+
+		Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(ALERT_CALLAROUND_DUE);
+		// this extra is there only so that several ALERT_CALLAROUND_DUE Intents
+		// don't overwrite one another
+		intent.putExtra("TIME", Time.iso8601DateTime(date));
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) cal.getTimeInMillis(), intent,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
 	}
 
 	/**
@@ -267,42 +324,48 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * Sets a recurring alarm, which when triggered will prompt the application
-	 * to add all of the active houses to the day's call around list
+	 * Sets a delayed call around due alarm. This alarm will later be processed
+	 * by the onReceive() method of this class.
 	 * 
 	 * @param context
 	 *            the application context
 	 */
-	static public void setAddCallaroundAlarm(Context context) {
-		SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		String old = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_ADD, "06:00");
-
-		Date targetdate = Time.timeFromSimpleTime(old);
-		Date thisdate = new Date();
-		thisdate.setHours(targetdate.getHours());
-		thisdate.setMinutes(targetdate.getMinutes());
+	static public void setDelayedCallaroundAlarm(Context context, Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_ADD_CALLAROUNDS);
-		intent.putExtra("TIME", ALERT_ADD_CALLAROUNDS);
+		intent.setAction(ALERT_DELAYED_CALLAROUND_DUE);
+		// this extra is there only so that several ALERT_DELAYED_CALLAROUND_DUE
+		// Intents
+		// don't overwrite one another
+		intent.putExtra("TIME", Time.iso8601DateTime(date));
 		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) thisdate.getTime(), intent,
+				(int) cal.getTimeInMillis(), intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		am.cancel(sender);
-		am.setRepeating(AlarmManager.RTC_WAKEUP, thisdate.getTime(),
-				AlarmManager.INTERVAL_DAY, sender);
+		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
 	}
 
-	// TODO this should just add the alarm to add the checkins, not actually add
-	// the checkin
-	static public void setAddGuardCheckinAlarms(Context context) {
+	/** The database interface */
+	private DbAdapter mDbHelper;
+
+	private Context mContext;
+
+	/**
+	 * Calls DbAdapter.addCallarounds() to add the day's call arounds, and sends
+	 * a signal for activities to refresh their data.
+	 */
+	private void addCallarounds() {
+		mDbHelper.addCallarounds();
+		sendRefreshAlert(mContext);
+	}
+
+	private void addGuardCheckins() {
 		SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(context);
+				.getDefaultSharedPreferences(mContext);
 
 		int fewestCheckins = Long.valueOf(
 				settings.getString(
@@ -330,7 +393,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		// 24 hours in milliseconds
 		int range = (int) (endTime.getTime() - startTime.getTime());
 
-		DbAdapter dbHelper = new DbAdapter(context);
+		DbAdapter dbHelper = new DbAdapter(mContext);
 		dbHelper.open();
 
 		Cursor c = dbHelper.fetchAllGuards();
@@ -349,7 +412,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 				Date checkinTime = new Date(startTime.getTime()
 						+ r.nextInt(range));
 				Log.i("Debug", checkinTime.toLocaleString());
-				createGuardCheckin(context, guard_id, checkinTime);
+				createGuardCheckin(mContext, guard_id, checkinTime);
 			}
 
 			// the random checkins
@@ -358,7 +421,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 					Date checkinTime = new Date(startTime.getTime()
 							+ r.nextInt(range));
 					Log.i("Debug", checkinTime.toLocaleString());
-					createGuardCheckin(context, guard_id, checkinTime);
+					createGuardCheckin(mContext, guard_id, checkinTime);
 				}
 			}
 
@@ -368,89 +431,84 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * Creates a checkin alarm for the given guard and checkin time.
+	 * Checks if there are due call arounds, and if so, starts a
+	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
+	 * alert.
+	 */
+	private void checkCallaroundDue() {
+		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
+			mDbHelper.close();
+
+			Intent i = new Intent(mContext, CallAroundDetailList.class);
+			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			i.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
+			i.putExtra(ALERT_CALLAROUND_DUE, ALERT_CALLAROUND_DUE);
+			mContext.startActivity(i);
+		}
+	}
+
+	/**
+	 * Checks if the check-in specified in the intent parameter is still
+	 * outstanding, and if so, sends the reminder text message.
+	 * 
+	 * @param intent
+	 *            An intent object with the extra ALERT_CHECKIN_REMINDER, which
+	 *            has the _id of the checkin.
+	 */
+	private void checkCheckinReminder(Intent intent) {
+		long checkinId = intent.getLongExtra(ALERT_CHECKIN_REMINDER, -1);
+		if (mDbHelper.getCheckinOutstanding(checkinId)) {
+			SmsHandler.sendSms(mContext,
+					mDbHelper.getNumberForCheckin(checkinId),
+					mContext.getString(R.string.sms_checkin_reminder));
+		}
+	}
+
+	/**
+	 * Checks if there are due delayed call arounds, and if so, starts a
+	 * <code>CallAroundDetailList</code> activity with a flag to do the audio
+	 * alert.
+	 */
+	private void checkDelayedCallaroundDue() {
+		if (mDbHelper.getNumberOfDueCallaroundsIncludingDelayed() > 0) {
+			mDbHelper.close();
+
+			Intent i = new Intent(mContext, CallAroundDetailList.class);
+			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			i.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
+			i.putExtra(DbAdapter.KEY_DELAYED, DbAdapter.KEY_DELAYED);
+			i.putExtra(ALERT_CALLAROUND_DUE, ALERT_CALLAROUND_DUE);
+			mContext.startActivity(i);
+		}
+	}
+
+	/**
+	 * Checks if there is a check-in due, and if so, starts the
+	 * <code>CheckinList</code> activity with a flag to sound the audio alert.
+	 */
+	private void checkinDue() {
+		if (mDbHelper.getNumberOfDueCheckins() > 0) {
+			mDbHelper.close();
+			Intent i = new Intent(mContext, CheckinList.class);
+			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			i.putExtra(ALERT_CHECKIN_DUE, true);
+			mContext.startActivity(i);
+		}
+	}
+
+	/**
+	 * Send the specified guard a message requesting a checkin.
 	 * 
 	 * @param guard_id
-	 * @param checkinTime
 	 */
-	private static void createGuardCheckin(Context context, long guard_id,
-			Date checkinTime) {
-		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_GUARD_CHECKIN);
-		intent.putExtra(GUARD_ID, guard_id);
+	private void requestGuardCheckin(long guard_id) {
+		if (guard_id == -1) {
+			return;
+		}
+		String number = mDbHelper.getGuardNumber(guard_id);
 
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) checkinTime.getTime(), intent,
-				PendingIntent.FLAG_ONE_SHOT);
-
-		AlarmManager am = (AlarmManager) context
-				.getSystemService(Context.ALARM_SERVICE);
-		am.set(AlarmManager.RTC_WAKEUP, checkinTime.getTime(), sender);
-	}
-
-	/**
-	 * Sets a call around due alarm at the specified date. This alarm will later
-	 * be processed by the onReceive() method of this class.
-	 * 
-	 * @param context
-	 *            the application context
-	 */
-	static public void setCallaroundDueAlarm(Context context, Date date) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-
-		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_CALLAROUND_DUE);
-		// this extra is there only so that several ALERT_CALLAROUND_DUE Intents
-		// don't overwrite one another
-		intent.putExtra("TIME", Time.iso8601DateTime(date));
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) cal.getTimeInMillis(), intent,
-				PendingIntent.FLAG_CANCEL_CURRENT);
-
-		AlarmManager am = (AlarmManager) context
-				.getSystemService(Context.ALARM_SERVICE);
-		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
-	}
-
-	/**
-	 * Sets a delayed call around due alarm. This alarm will later be processed
-	 * by the onReceive() method of this class.
-	 * 
-	 * @param context
-	 *            the application context
-	 */
-	static public void setDelayedCallaroundAlarm(Context context, Date date) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-
-		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_DELAYED_CALLAROUND_DUE);
-		// this extra is there only so that several ALERT_DELAYED_CALLAROUND_DUE
-		// Intents
-		// don't overwrite one another
-		intent.putExtra("TIME", Time.iso8601DateTime(date));
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) cal.getTimeInMillis(), intent,
-				PendingIntent.FLAG_CANCEL_CURRENT);
-
-		AlarmManager am = (AlarmManager) context
-				.getSystemService(Context.ALARM_SERVICE);
-		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
-	}
-
-	/**
-	 * Send an alert that activities should refresh their screens. Currently
-	 * this is called only in the constructor of SmsHandler. Any activity which
-	 * has SMS-dependent information should update in response to this message.
-	 * This method is not particularly needed here, but it included as it's a
-	 * scheduling-related task.
-	 * 
-	 * @param context
-	 *            the application context
-	 */
-	static public void sendRefreshAlert(Context context) {
-		Intent intent = new Intent(AlarmReceiver.ALERT_REFRESH);
-		context.sendBroadcast(intent);
+		SmsHandler.sendSms(mContext, number,
+				mContext.getString(R.string.sms_guard_checkin));
+		mDbHelper.addGuardCheckin(guard_id, Time.iso8601DateTime());
 	}
 }
