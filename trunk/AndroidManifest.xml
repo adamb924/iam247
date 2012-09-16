@@ -56,6 +56,10 @@
             android:label="@string/guards" >
         </activity>
         <activity
+            android:name=".GuardCheckinList"
+            android:label="@string/guards" >
+        </activity>
+        <activity
             android:name=".SelectGroups"
             android:label="@string/callaround_groups" >
         </activity>

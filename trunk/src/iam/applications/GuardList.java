@@ -67,8 +67,10 @@ public class GuardList extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		mDbHelper
-				.setCallaroundActive(id, getListView().isItemChecked(position));
+
+		Intent i = new Intent(this, GuardCheckinList.class);
+		i.putExtra(DbAdapter.KEY_ROWID, id);
+		startActivity(i);
 	}
 
 	/**
