@@ -99,6 +99,10 @@
             android:name=".GuardScheduleActivity"
             android:label="@string/guard_schedule" >
         </activity>
+        <activity
+            android:name=".BroadcastActivity"
+            android:label="@string/broadcast" >
+        </activity>
         <receiver android:name=".SmsReceiver" >
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />

@@ -168,6 +168,18 @@
     <string name="guard_checkin_end">End of checkin times</string>
     <string name="guard_response_window">Response window</string>
     <string name="guard_response_window_summary">Time in minutes that the guard has to respond</string>
+    <string name="broadcast">Broadcast</string>
+    <string name="broadcast_message">Broadcast message</string>
+    <string name="broadcast_to_active">Those with active callarounds</string>
+    <string name="broadcast_to_all">All team members</string>
+    <string name="broadcast_forbidden"> The place(s) that are currently off-limits are: %s</string>
+    <string name="broadcast_result">Broadcast to %s number(s)</string>
+    
+    
+    <string-array name="broadcast_options_array">
+        <item>@string/broadcast_to_active</item>
+        <item>@string/broadcast_to_all</item>
+    </string-array>
     
 
     <!-- Localization -->
