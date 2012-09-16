@@ -1347,10 +1347,44 @@ public class DbAdapter {
 		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
 				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }, null, null, null);
-		c.moveToFirst();
+		if (!c.moveToFirst()) {
+			return false;
+		}
 		long r = c.getLong(0);
 		c.close();
 		return r == 1 ? true : false;
+	}
+
+	public long getCurrentCheckinForContact(long contact_id)
+			throws SQLException {
+		Cursor c = mDb.rawQuery("select _id from checkins where contact_id='"
+				+ String.valueOf(contact_id) + "' and outstanding='1';", null);
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Returns the time that the checkin is due for the given checkin.
+	 * 
+	 * @param checkin_id
+	 *            the _id of the checkin
+	 * @return the time the checkin is due
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getCheckinTime(long checkin_id) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
+				new String[] { KEY_TIMEDUE }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }, null, null, null);
+		if (!c.moveToFirst()) {
+			return null;
+		}
+		String r = c.getString(0);
+		c.close();
+		return r;
 	}
 
 	/**
