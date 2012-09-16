@@ -63,7 +63,6 @@ public class HomeActivity extends Activity {
 
 		// add these two alarms for managing call arounds
 		AlarmReceiver.setAddCallaroundAlarm(this);
-
 		AlarmReceiver.setAddGuardCheckinAlarms(this);
 
 		setContentView(R.layout.home_activity);
