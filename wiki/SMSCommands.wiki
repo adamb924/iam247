@@ -26,7 +26,7 @@ turn on call around
 }}}
 Enable nightly callaround until further notice
 {{{
-back
+back   OR    arrived
 }}}
 Resolve current checkin
 {{{
