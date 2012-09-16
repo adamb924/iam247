@@ -199,8 +199,6 @@ public class SmsHandler {
 			resolveCallaround();
 		} else if (messageMatches(R.string.re_undocallaround)) {
 			unresolveCallaround();
-		} else if (messageMatches(R.string.re_checkin_back)) {
-			resolveCheckin();
 			// I'm removing this feature till I can recall what it was for.
 			// } else if (messageMatches(R.string.re_startcheckin_nocheckin)) {
 			// // this condition must come before that of
@@ -208,6 +206,12 @@ public class SmsHandler {
 			// addCheckin(false);
 		} else if (messageMatches(R.string.re_startcheckin)) {
 			addCheckin(true);
+		} else if (messageMatches(R.string.re_checkin_back)) {
+			// we must check R.string.re_startcheckin before
+			// R.string.re_checkin_back, since the "back" keyword would
+			// otherwise be caught. This would be resolved with improved
+			// parsing.
+			resolveCheckin();
 		} else if (messageMatches(R.string.re_permission)) {
 			sendForbiddenLocations(context);
 		} else if (messageMatches(R.string.re_turnoffreminders)) {
