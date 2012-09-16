@@ -253,6 +253,9 @@ public class HouseList extends ListActivity {
 				String value = input.getText().toString();
 				if (value.length() > 0) {
 					mDbHelper.addHouse(value);
+					// this call will not create duplicates, so it's convenient
+					// just to try to add them all
+					mDbHelper.addCallarounds();
 					fillData();
 				}
 			}
