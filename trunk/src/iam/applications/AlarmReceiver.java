@@ -364,6 +364,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	private void addGuardCheckins() {
+		// clear out old ones
+		removeGuardCheckins(mContext);
+
+		Log.i("Debug", "addGuardCheckins");
+
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
 
