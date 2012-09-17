@@ -198,6 +198,11 @@ public class CheckinList extends ListActivity implements OnInitListener {
 		} else {
 			menu.removeItem(R.id.resolve_checkin);
 		}
+		if (mDbHelper.getCheckinTripResolved(checkin_id)) {
+			menu.removeItem(R.id.unresolve_trip);
+		} else {
+			menu.removeItem(R.id.resolve_trip);
+		}
 	}
 
 	/*
@@ -232,6 +237,16 @@ public class CheckinList extends ListActivity implements OnInitListener {
 			return true;
 		case R.id.unresolve_checkin:
 			mDbHelper.setCheckinResolvedFromId(info.id, false);
+			fillData();
+			return true;
+		case R.id.resolve_trip:
+			mDbHelper.setCheckinTripResolvedFromId(info.id, true);
+			SmsHandler.sendSms(this, mDbHelper.getNumberForCheckin(info.id),
+					getString(R.string.sms_checkin_resolved_foryou));
+			fillData();
+			return true;
+		case R.id.unresolve_trip:
+			mDbHelper.setCheckinTripResolvedFromId(info.id, false);
 			fillData();
 			return true;
 		default:
@@ -289,11 +304,6 @@ public class CheckinList extends ListActivity implements OnInitListener {
 		 */
 		@Override
 		public void bindView(View view, Context context, Cursor cur) {
-			TextView name = (TextView) view.findViewById(R.id.checkin_name);
-			TextView location = (TextView) view
-					.findViewById(R.id.checkin_location);
-			TextView with = (TextView) view.findViewById(R.id.checkin_with);
-			TextView time = (TextView) view.findViewById(R.id.checkin_time);
 
 			Date returning = Time.iso8601DateTime(cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_TIMEDUE)));
@@ -303,16 +313,36 @@ public class CheckinList extends ListActivity implements OnInitListener {
 					: false;
 			boolean due = returning.before(new Date());
 
+			boolean tripresolved = cur.getLong(cur
+					.getColumnIndex(DbAdapter.KEY_TRIPRESOLVED)) == 1 ? true
+					: false;
+
 			String sWith = cur
 					.getString(cur.getColumnIndex(DbAdapter.KEY_WITH));
 
+			// get the UI items
+			TextView name = (TextView) view.findViewById(R.id.checkin_name);
+			TextView location = (TextView) view
+					.findViewById(R.id.checkin_location);
+			TextView with = (TextView) view.findViewById(R.id.checkin_with);
+			TextView time = (TextView) view.findViewById(R.id.checkin_time);
+
+			// set the text values, or hide if appropriate
 			name.setText(cur.getString(cur.getColumnIndex(DbAdapter.KEY_NAME)));
-			location.setText(String.format(context.getString(R.string.goneto),
-					cur.getString(cur.getColumnIndex(DbAdapter.KEY_LOCATION)),
-					cur.getString(cur.getColumnIndex(DbAdapter.KEY_KEYWORD))));
+			if (!tripresolved && outstanding) {
+				location.setText(String.format(context
+						.getString(R.string.enroute), cur.getString(cur
+						.getColumnIndex(DbAdapter.KEY_LOCATION)), cur
+						.getString(cur.getColumnIndex(DbAdapter.KEY_KEYWORD))));
+			} else {
+				location.setText(String.format(context
+						.getString(R.string.arrivedat), cur.getString(cur
+						.getColumnIndex(DbAdapter.KEY_LOCATION)), cur
+						.getString(cur.getColumnIndex(DbAdapter.KEY_KEYWORD))));
+			}
+
 			time.setText(String.format(context.getString(R.string.returning),
 					Time.timeTodayTomorrow(context, returning)));
-
 			if (sWith != null) {
 				with.setText(String.format(context.getString(R.string.with),
 						sWith));
@@ -320,7 +350,8 @@ public class CheckinList extends ListActivity implements OnInitListener {
 				with.setVisibility(View.GONE);
 			}
 
-			if (!outstanding) {
+			// set the colors as appropriate
+			if (tripresolved) {
 				name.setTextColor(Color.DKGRAY);
 				location.setTextColor(Color.DKGRAY);
 				time.setTextColor(Color.DKGRAY);

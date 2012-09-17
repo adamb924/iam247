@@ -29,15 +29,21 @@
     <string name="noCheckins">There are no outstanding check-ins.</string>
     <string name="callaround_enabled">Call around Enabled</string>
     <string name="editTeammember">Edit Teammember</string>
-    <string name="checkedout">Not checked in:</string>
-    <string name="checkedin">Checked in:</string>
+<!--     <string name="checkedout">Not checked in:</string> -->
+<!--     <string name="checkedin">Checked in:</string> -->
+    <string name="checkedout">Out:</string>
+    <string name="checkedin">In:</string>
     <string name="no_teammembers">No teammembers</string>
+    <string name="arrivedat" formatted="false">Arrived: %s (%s)</string>
+    <string name="enroute" formatted="false">En route: %s (%s)</string>
     <string name="goneto" formatted="false">To: %s (%s)</string>
-    <string name="returning">Returning: %s</string>
+    <string name="returning">Check-in by: %s</string>
     <string name="due">Due: %s</string>
     <string name="with">With: %s</string>
     <string name="resolve_checkin">Resolve checkin</string>
     <string name="unresolve_checkin">Unresolve checkin</string>
+    <string name="resolve_trip">Resolve trip</string>
+    <string name="unresolve_trip">Unresolve trip</string>
     <string name="resolve_callaround">Resolve call around</string>
     <string name="unresolve_callaround">Undo call around</string>
     <string name="settings">Settings</string>
@@ -50,9 +56,13 @@
     <string name="callaround_summary" formatted="false">%s called in, %s remaining</string>
     <string name="callaround_summary_allin">All in</string>
     <string name="callaround_summary_none">No call arounds are set</string>
-    <string name="checkin_summary_none" formatted="false">No pending check-ins</string>
-    <string name="checkin_summary_singular" formatted="false">1 pending check-in</string>
-    <string name="checkin_summary" formatted="false">%s pending check-ins</string>
+<!--     <string name="checkin_summary_none">No pending check-ins</string> -->
+<!--     <string name="checkin_summary_singular">1 pending check-in</string> -->
+<!--     <string name="checkin_summary" formatted="false">%s pending check-ins</string> -->
+        <string name="checkin_summary_none">No one out</string>
+    <string name="checkin_summary_singular">1 person out</string>
+    <string name="checkin_summary" formatted="false">%s people out</string>
+    
     <string name="noCallarounds">There are currently no call arounds.</string>
     <string name="callaround_title">Call arounds: %s</string>
     <string name="home_checkins">Check-ins</string>
@@ -177,6 +187,7 @@
     <string name="broadcast_forbidden"> The place(s) that are currently off-limits are: %s</string>
     <string name="broadcast_result">Broadcast to %s number(s)</string>
     <string name="no_guard_checkins">This guard has no check-ins at this time.</string>
+    <string name="home">Home</string>
     
     <string-array name="broadcast_options_array">
         <item>@string/broadcast_to_active</item>
@@ -193,7 +204,8 @@
     <string name="re_turnoncallaround">.*(?:turn\\s*on\\s*call\\s*around|turn\\s*call\\s*around\\s*on).*</string>
     <string name="re_turnoffcallaround">.*(?:turn\\s*off\\s*call\\s*around|turn\\s*call\\s*around\\s*off).*</string>
     <string name="re_callaround_ok">.*(?:all in|777).*</string>
-    <string name="re_checkin_back">.*(?:back|arrived).*</string>
+    <string name="re_checkin_back">.*back.*</string>
+    <string name="re_checkin_arrived">.*arrived.*</string>
     <string name="re_distress">.*help|666.*</string>
     <string name="re_thisis">.*this\\s*is\\s*(.*)</string>
     <string name="re_startcheckin">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
@@ -207,7 +219,7 @@
     <string name="re_report">.*report.*</string>
     <string name="re_delay">.*delay.*</string>
     <string name="re_keywords">.*keywords?.*</string>
-    <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
+    <string name="re_returning">.*returning\\s*by\\s*(.*)</string>
     
     <!-- TTS Messages -->
     <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>
@@ -227,10 +239,11 @@
     <string name="sms_callaround_enabled_already">24/7 says: Thanks. We\'re showing that call around was already enabled for you. To disable call around, text: turn off call around</string>
     <string name="sms_forbidden">24/7 says: The place(s) that are currently off-limits are: %s</string>
     <string name="sms_forbidden_none">24/7 says: There are currently no travel restrictions.</string>
-    <string name="sms_confirm_checkin_request" formatted="false">24/7 says: We understand that you are going to %s and will return by %s. If this is an error please send another request to correct it.</string>
+    <string name="sms_confirm_checkin_request" formatted="false">24/7 says: We understand that you are going to %s and will check in by %s. If this is an error please send another request to correct it.</string>
     <string name="sms_existing_checkin_resolved">(In setting this checkin we have resolved an existing one.)</string>
     <string name="sms_contact_exists">24/7 says: We already have a name associated with this phone number; you may just be already in the system. If you feel this is an error please contact the RTL.</string>
-    <string name="sms_acknowledge_checkin">24/7 says: Thank you for checking in.</string>
+    <string name="sms_acknowledge_arrived_checkin">24/7 says: Thank you for checking in. Don\'t forget to let us know when you leave.</string>
+    <string name="sms_acknowledge_trip_resolved_checkin">24/7 says: Welcome back. Thank you for checking in.</string>
     <string name="sms_callaround_is_disabled">24/7 says: Thanks, but we\'re showing that call around is currently disabled for you. To enable call around, text: turn on call around</string>
     <string name="sms_callaround_acknowledgement">24/7 says: Thanks for the call around. Have a good night!</string>
     <string name="sms_callaround_unnecessary">24/7 says: Thanks, but it looks like someone else has already checked in. If you feel this is an error please contact the RTL.</string>
@@ -248,10 +261,10 @@
     <string name="sms_report_checkins">Outstanding check-ins: %s</string>
     <string name="sms_callaround_not_timely">24/7 says: Sorry, but it\'s either too early or too late for today\'s callaround. Contact the RTL if you have questions.</string>
     <string name="sms_callaround_delay_confirmation">24/7 says:  Your call around time has been delayed until %s. You can call around before then if you wish.</string>
-<!--     <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a location keyword with your location. The possibilites are: %s</string> -->
     <string name="sms_location_keywords">24/7 says:  The location keywords are: %s</string>
     <string name="sms_guard_checkin">daftara mist kal ko. Missed call the office.</string>
     <string name="sms_guard_checkin_confirmation">Tashakur. Thank you.</string>
     <string name="sms_guard_checkin_rejection">yA wakht bArE checkin nEs, yA wakhtesh tEr shuda. Either it is not the time for checkin, or the time has passed.</string>
     <string name="sms_refuse_permission">24/7 says: You are currently not allowed to go there. You can missed-call 24/7 to get a list of forbidden locations.</string>
+	<string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
 </resources>

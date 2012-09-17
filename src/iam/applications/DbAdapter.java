@@ -982,7 +982,7 @@ public class DbAdapter {
 	public Cursor fetchAllCheckins() throws SQLException {
 		return mDb
 				.rawQuery(
-						"select checkins._id,location,keyword,timedue,name,outstanding,with,tripresolved from checkins,contacts where checkins.contact_id=contacts._id order by outstanding desc,timedue desc;",
+						"select checkins._id,location,keyword,timedue,name,outstanding,with,tripresolved from checkins,contacts where checkins.contact_id=contacts._id order by name,tripresolved asc,outstanding desc,timedue desc;",
 						null);
 	}
 
@@ -1105,7 +1105,7 @@ public class DbAdapter {
 	public Cursor fetchCheckedInPeople() throws SQLException {
 		return mDb
 				.rawQuery(
-						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id not in (select contact_id from checkins where outstanding='1');",
+						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id not in (select contact_id from checkins where tripresolved='0');",
 						null);
 	}
 
@@ -1120,7 +1120,7 @@ public class DbAdapter {
 	public Cursor fetchCheckedOutPeople() throws SQLException {
 		return mDb
 				.rawQuery(
-						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from checkins where outstanding='1');",
+						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from checkins where tripresolved='0');",
 						null);
 	}
 
@@ -1418,6 +1418,27 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns true if the check-in is trip-resolved, otherwise false.
+	 * 
+	 * @param checkin_id
+	 *            the checkin_id
+	 * @return true if the check-in is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCheckinTripResolved(long checkin_id) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
+				new String[] { KEY_TRIPRESOLVED }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }, null, null, null);
+		if (!c.moveToFirst()) {
+			return false;
+		}
+		long r = c.getLong(0);
+		c.close();
+		return r == 1 ? true : false;
+	}
+
+	/**
 	 * Gets the current checkin for contact.
 	 * 
 	 * @param contact_id
@@ -1466,8 +1487,10 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public String getCheckinSummary() throws SQLException {
-		Cursor c = mDb.rawQuery(
-				"select count(_id) from checkins where outstanding='1';", null);
+		Cursor c = mDb
+				.rawQuery(
+						"select count(contact_id) from (select distinct contact_id from checkins where tripresolved='0');",
+						null);
 		if (c.moveToFirst()) {
 			long outstanding = c.getLong(0);
 			if (outstanding == 0) {
@@ -2284,6 +2307,34 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Set the trip-resolution status of any check-ins associated with a given
+	 * contact. If the trip is resolved, the checkin is also marked as not
+	 * outstanding.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @param resolved
+	 *            the resolved
+	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public int setCheckinTripResolved(long contact_id, boolean resolved)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_TRIPRESOLVED, resolved ? 1 : 0);
+		if (resolved) {
+			args.put(KEY_OUTSTANDING, 0);
+		}
+		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "=?",
+				new String[] { String.valueOf(contact_id) }) > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
+
+	/**
 	 * Resolve a check-in, given its _id.
 	 * 
 	 * @param checkin_id
@@ -2298,6 +2349,29 @@ public class DbAdapter {
 			throws SQLException {
 		ContentValues args = new ContentValues();
 		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
+		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }) > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
+
+	/**
+	 * Trip-resolve a check-in, given its _id.
+	 * 
+	 * @param checkin_id
+	 *            the checkin_id
+	 * @param resolved
+	 *            the resolved
+	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public int setCheckinTripResolvedFromId(long checkin_id, boolean resolved)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_TRIPRESOLVED, resolved ? 0 : 1);
 		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }) > 0) {
 			return NOTIFY_SUCCESS;
