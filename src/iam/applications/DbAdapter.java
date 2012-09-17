@@ -128,13 +128,13 @@ public class DbAdapter {
 	public static int NOTIFY_UNTIMELY = 5;
 
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 15;
+	private static final int DATABASE_VERSION = 17;
 
 	/** Create Table Commands. */
 	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
 
 	/** The Constant DATABASE_CREATE_CHECKINS. */
-	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, timedue string not null, timereceived string, outstanding integer default 1, checkinrequest integer default 1);";
+	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, keyword string not null, timedue string not null, timereceived string, outstanding integer default 1, tripresolved integer default 0, checkinrequest integer default 1, with string );";
 
 	/** The Constant DATABASE_CREATE_CALLAROUNDS. */
 	private static final String DATABASE_CREATE_CALLAROUNDS = "create table if not exists callarounds (_id integer primary key autoincrement, house_id integer not null, duefrom string not null, dueby string not null, timereceived string, outstanding integer default 1, delayed integer default 0, unique(house_id,dueby) on conflict ignore );";
@@ -358,6 +358,9 @@ public class DbAdapter {
 	/** The Constant KEY_RESPONSE. */
 	public static final String KEY_RESPONSE = "response";
 
+	public static final String KEY_WITH = "with";
+	public static final String KEY_TRIPRESOLVED = "tripresolved";
+
 	/** Log message types. */
 	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
 
@@ -484,8 +487,8 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public int addCheckin(long contact_id, String place, Date time,
-			boolean requestCheckin) throws SQLException {
+	public int addCheckin(long contact_id, String place, String keyword,
+			Date time, String with) throws SQLException {
 		Cursor c = mDb.rawQuery(
 				"select count(_id) from checkins where outstanding='1' and contact_id='"
 						+ String.valueOf(contact_id) + "';", null);
@@ -500,9 +503,12 @@ public class DbAdapter {
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_CONTACTID, contact_id);
 		initialValues.put(KEY_LOCATION, place);
+		initialValues.put(KEY_KEYWORD, keyword);
 		initialValues.put(KEY_TIMEDUE, Time.iso8601DateTime(time));
 		initialValues.put(KEY_TIMERECEIVED, Time.iso8601DateTime());
-		initialValues.put(KEY_CHECKINREQUEST, requestCheckin ? 1 : 0);
+		if (with != null) {
+			initialValues.put(KEY_WITH, with);
+		}
 		boolean result = mDb.insert(DATABASE_TABLE_CHECKINS, null,
 				initialValues) > -1;
 
@@ -966,7 +972,8 @@ public class DbAdapter {
 
 	/**
 	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
-	 * KEY_LOCATION, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING
+	 * KEY_LOCATION, KEY_KEYWORD, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING,
+	 * KEY_WITH, KEY_TRIPRESOLVED
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -975,7 +982,7 @@ public class DbAdapter {
 	public Cursor fetchAllCheckins() throws SQLException {
 		return mDb
 				.rawQuery(
-						"select checkins._id,location,timedue,name,outstanding from checkins,contacts where checkins.contact_id=contacts._id order by outstanding desc,timedue desc;",
+						"select checkins._id,location,keyword,timedue,name,outstanding,with,tripresolved from checkins,contacts where checkins.contact_id=contacts._id order by outstanding desc,timedue desc;",
 						null);
 	}
 
@@ -2737,9 +2744,6 @@ public class DbAdapter {
 		}
 
 		String dueTime = Time.nMinutesAfter(checkinTime, window);
-
-		Log.i("Debug", checkinTime);
-		Log.i("Debug", dueTime);
 
 		ContentValues args = new ContentValues();
 		args.put(KEY_RESPONSE, 1);

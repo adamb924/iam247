@@ -32,8 +32,10 @@
     <string name="checkedout">Not checked in:</string>
     <string name="checkedin">Checked in:</string>
     <string name="no_teammembers">No teammembers</string>
-    <string name="goneto">Gone to: %s</string>
+    <string name="goneto" formatted="false">To: %s (%s)</string>
     <string name="returning">Returning: %s</string>
+    <string name="due">Due: %s</string>
+    <string name="with">With: %s</string>
     <string name="resolve_checkin">Resolve checkin</string>
     <string name="unresolve_checkin">Unresolve checkin</string>
     <string name="resolve_callaround">Resolve call around</string>
@@ -194,8 +196,9 @@
     <string name="re_checkin_back">.*(?:back|arrived).*</string>
     <string name="re_distress">.*help|666.*</string>
     <string name="re_thisis">.*this\\s*is\\s*(.*)</string>
-    <string name="re_startcheckin">.*going\\s*to\\s*(.*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
-    <string name="re_startcheckin_nocheckin">.*going\\s*to\\s*([^\\s]*)\\s*back\\s*(?:by|at)\\s*([^\\s]*)\\s*no\\s*checkin</string>
+    <string name="re_startcheckin">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
+    <string name="re_startcheckin_with">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*with\\s*(.*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
+<!--     <string name="re_startcheckin_nocheckin">.*going\\s*to\\s*([^\\s]*)\\s*back\\s*(?:by|at)\\s*([^\\s]*)\\s*no\\s*checkin</string> -->
     <string name="re_permission">.*permission|travel.*</string>
     <string name="re_time">^(\\d{1,2})?\\s?[\\p{Punct}]?\\s?(\\d{2}|)(a|p)?m?$</string>
     <string name="re_undocallaround">.*(?:undo|cancel)\\s*call\\s*around.*</string>
@@ -203,7 +206,9 @@
     <string name="re_turnonreminders">.*(?:turn\\s*on\\s*reminders|turn\\s*reminders\\s*on).*</string>
     <string name="re_report">.*report.*</string>
     <string name="re_delay">.*delay.*</string>
-
+    <string name="re_keywords">.*keywords?.*</string>
+    <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
+    
     <!-- TTS Messages -->
     <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>
     <string name="tts_missedcheckin">Attention! Someone has missed a check-in.</string>
@@ -243,7 +248,8 @@
     <string name="sms_report_checkins">Outstanding check-ins: %s</string>
     <string name="sms_callaround_not_timely">24/7 says: Sorry, but it\'s either too early or too late for today\'s callaround. Contact the RTL if you have questions.</string>
     <string name="sms_callaround_delay_confirmation">24/7 says:  Your call around time has been delayed until %s. You can call around before then if you wish.</string>
-    <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a location keyword with your location. The possibilites are: %s</string>
+<!--     <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a location keyword with your location. The possibilites are: %s</string> -->
+    <string name="sms_location_keywords">24/7 says:  The location keywords are: %s</string>
     <string name="sms_guard_checkin">daftara mist kal ko. Missed call the office.</string>
     <string name="sms_guard_checkin_confirmation">Tashakur. Thank you.</string>
     <string name="sms_guard_checkin_rejection">yA wakht bArE checkin nEs, yA wakhtesh tEr shuda. Either it is not the time for checkin, or the time has passed.</string>
