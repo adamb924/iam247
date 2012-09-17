@@ -216,7 +216,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		String old = settings.getString(
 				HomeActivity.PREFERENCES_GUARD_CHECKIN_END, "06:00");
 
-		Log.i("Debug", "Adding add-checkin alarm: " + old);
+		// Log.i("Debug", "Adding add-checkin alarm: " + old);
 
 		Date targetdate = Time.timeFromSimpleTime(old);
 		Date thisdate = new Date();

@@ -33,7 +33,7 @@ public class SmsHandler {
 	}
 
 	/**
-	 * Send an SMS message to the given phone number, witht the given message.
+	 * Send an SMS message to the given phone number, with the given message.
 	 * 
 	 * @param phoneNumber
 	 *            the phone number
@@ -209,13 +209,17 @@ public class SmsHandler {
 			// R.string.re_checkin_back, since the "back" keyword would
 			// otherwise be caught. This would be resolved with improved
 			// parsing.
-			resolveCheckin();
+			back();
+		} else if (messageMatches(R.string.re_checkin_arrived)) {
+			arrived();
 		} else if (messageMatches(R.string.re_permission)) {
 			sendForbiddenLocations(context);
 		} else if (messageMatches(R.string.re_turnoffreminders)) {
 			turnOffReminders();
 		} else if (messageMatches(R.string.re_turnonreminders)) {
 			turnOnReminders();
+		} else if (messageMatches(R.string.re_returning)) {
+			returning();
 		} else if (messageMatches(R.string.re_thisis)) {
 			// ignore extraneous thisis requests
 			sendSms(R.string.sms_contact_exists);
@@ -312,6 +316,34 @@ public class SmsHandler {
 						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
 			AlarmReceiver.setCheckinReminderAlert(mContext,
 					mDbHelper.lastInsertId());
+		}
+	}
+
+	/**
+	 * Process an "arrived" message by resolving the check-in.
+	 */
+	private void arrived() {
+		int ret = mDbHelper.setCheckinResolved(mContactId, true);
+		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+			sendSms(R.string.sms_acknowledge_arrived_checkin);
+		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+			ourError();
+		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+			sendSms(R.string.sms_alreadyin);
+		}
+	}
+
+	/**
+	 * Process a "back" message by resolving an entire trip.
+	 */
+	private void back() {
+		int ret = mDbHelper.setCheckinTripResolved(mContactId, true);
+		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+			sendSms(R.string.sms_acknowledge_trip_resolved_checkin);
+		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+			ourError();
+		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+			sendSms(R.string.sms_alreadyin);
 		}
 	}
 
@@ -486,16 +518,46 @@ public class SmsHandler {
 	}
 
 	/**
-	 * Resolve the user's check-in.
+	 * Records the user as being heading for home.
 	 */
-	private void resolveCheckin() {
-		int ret = mDbHelper.setCheckinResolved(mContactId, true);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
-			sendSms(R.string.sms_acknowledge_checkin);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+	private void returning() {
+		String[] matches = getMessageMatches(R.string.re_returning);
+		if (matches.length != 1) {
+			return;
+		}
+
+		Date time = Time.timeFromString(mContext, matches[0]);
+		if (time == null) {
+			yourError();
+			return;
+		}
+
+		String place = mContext.getString(R.string.home);
+
+		int ret = mDbHelper.addCheckin(mContactId, place, "--", time, null);
+
+		if (ret == DbAdapter.NOTIFY_FAILURE) {
 			ourError();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
-			sendSms(R.string.sms_alreadyin);
+		} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
+			String message = String.format(
+					mContext.getString(R.string.sms_confirm_checkin_request),
+					place, Time.timeTodayTomorrow(mContext, time))
+					+ " "
+					+ mContext
+							.getString(R.string.sms_existing_checkin_resolved);
+			sendSms(message);
+		} else {
+			String message = String.format(
+					mContext.getString(R.string.sms_confirm_checkin_request),
+					place, Time.timeTodayTomorrow(mContext, time));
+			sendSms(message);
+		}
+
+		if (ret != DbAdapter.NOTIFY_FAILURE
+				&& mDbHelper.getContactPreference(mContactId,
+						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
+			AlarmReceiver.setCheckinReminderAlert(mContext,
+					mDbHelper.lastInsertId());
 		}
 	}
 
