@@ -1163,13 +1163,16 @@ public class DbAdapter {
 	 * @throws SQLException
 	 */
 	public Cursor fetchGuardCheckinReport(long guard_id) throws SQLException {
+		// TODO restore commented version. this is just so I can get a better
+		// look at the database
 		return mDb
 				.rawQuery(
-						"select _id,time,response from guardcheckins where guard_id=? and datetime(time) <= datetime('now','localtime') order by time desc;",
+						"select _id,time,response from guardcheckins where guard_id=? order by time desc;",
 						new String[] { String.valueOf(guard_id) });
-
-		// create table guardcheckins ( _id integer primary key autoincrement ,
-		// guard_id int not null , time text, response int default 0 )
+		// return mDb
+		// .rawQuery(
+		// "select _id,time,response from guardcheckins where guard_id=? and datetime(time) <= datetime('now','localtime') order by time desc;",
+		// new String[] { String.valueOf(guard_id) });
 	}
 
 	/**

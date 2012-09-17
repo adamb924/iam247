@@ -327,6 +327,7 @@ public class Time {
 			Date r = new Date();
 			r.setHours(Integer.parseInt(pieces[0]));
 			r.setMinutes(Integer.parseInt(pieces[1]));
+			r.setSeconds(0);
 			return r;
 		}
 	}
@@ -400,6 +401,7 @@ public class Time {
 
 		today.setHours(targetTime.getHours());
 		today.setMinutes(targetTime.getMinutes());
+		today.setSeconds(targetTime.getSeconds());
 
 		return today;
 	}
@@ -421,6 +423,7 @@ public class Time {
 		Date tomorrow = c.getTime();
 		tomorrow.setHours(targetTime.getHours());
 		tomorrow.setMinutes(targetTime.getMinutes());
+		tomorrow.setSeconds(targetTime.getSeconds());
 		return tomorrow;
 	}
 
