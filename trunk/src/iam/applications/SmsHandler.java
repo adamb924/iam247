@@ -188,6 +188,7 @@ public class SmsHandler {
 			mDbHelper.close();
 			return;
 		}
+
 		// otherwise we can begin to parse the messages
 		// by now it is certain that it's not an emergency, and the contact id
 		// is known
@@ -199,13 +200,10 @@ public class SmsHandler {
 			resolveCallaround();
 		} else if (messageMatches(R.string.re_undocallaround)) {
 			unresolveCallaround();
-			// I'm removing this feature till I can recall what it was for.
-			// } else if (messageMatches(R.string.re_startcheckin_nocheckin)) {
-			// // this condition must come before that of
-			// R.string.re_startcheckin
-			// addCheckin(false);
-		} else if (messageMatches(R.string.re_startcheckin)) {
+		} else if (messageMatches(R.string.re_startcheckin_with)) {
 			addCheckin(true);
+		} else if (messageMatches(R.string.re_startcheckin)) {
+			addCheckin(false);
 		} else if (messageMatches(R.string.re_checkin_back)) {
 			// we must check R.string.re_startcheckin before
 			// R.string.re_checkin_back, since the "back" keyword would
@@ -228,6 +226,8 @@ public class SmsHandler {
 			}
 		} else if (messageMatches(R.string.re_delay)) {
 			delayCallaround();
+		} else if (messageMatches(R.string.re_keywords)) {
+			sendLocationKeywords();
 		} else {
 			yourError();
 		}
@@ -242,46 +242,53 @@ public class SmsHandler {
 	 * Adds a check-in to the database, handling the response values as
 	 * appropriate.
 	 * 
-	 * @param requestCheckin
-	 *            whether the user is requesting a checkin
+	 * @param with
+	 *            whether the user is adding a "with" keyword
 	 */
-	private void addCheckin(boolean requestCheckin) {
+	private void addCheckin(boolean with) {
 		String[] matches;
-		if (requestCheckin) {
-			matches = getMessageMatches(R.string.re_startcheckin);
+		String place, keyword, withwhom, by;
+		if (with) {
+			matches = getMessageMatches(R.string.re_startcheckin_with);
+			if (matches == null || matches.length < 4) {
+				yourError();
+				return;
+			}
+			place = matches[0];
+			keyword = matches[1];
+			withwhom = matches[2];
+			by = matches[3];
 		} else {
-			matches = getMessageMatches(R.string.re_startcheckin_nocheckin);
+			matches = getMessageMatches(R.string.re_startcheckin);
+			if (matches == null || matches.length < 3) {
+				yourError();
+				return;
+			}
+			place = matches[0];
+			keyword = matches[1];
+			withwhom = null;
+			by = matches[2];
 		}
 
-		if (matches == null || matches.length < 2) {
-			yourError();
-			mDbHelper.close();
-			return;
-		}
-		String place = matches[0];
-		Date time = Time.timeFromString(mContext, matches[1]);
+		Date time = Time.timeFromString(mContext, by);
 		if (time == null) {
 			yourError();
-			mDbHelper.close();
 			return;
 		}
 
-		// check that there is a real location keyword
-		String keyword = parseLocationKeyword(place);
-		if (keyword == null) {
+		if (!mDbHelper.getLocationKeywordExists(keyword)) {
 			needLegitimateKeyword();
-			mDbHelper.close();
 			return;
 		}
 
 		// send a message if the person is not allowed to go there
 		if (!mDbHelper.getLocationKeywordPermitted(keyword)) {
 			sendSms(R.string.sms_refuse_permission);
-			mDbHelper.close();
 			return;
 		}
 
-		int ret = mDbHelper.addCheckin(mContactId, place, time, requestCheckin);
+		int ret = mDbHelper.addCheckin(mContactId, place, keyword, time,
+				withwhom);
 
 		if (ret == DbAdapter.NOTIFY_FAILURE) {
 			ourError();
@@ -305,31 +312,6 @@ public class SmsHandler {
 						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
 			AlarmReceiver.setCheckinReminderAlert(mContext,
 					mDbHelper.lastInsertId());
-		}
-	}
-
-	/**
-	 * Takes the last word from the place string, returning the place string if
-	 * it is a legitimate keyword, or otherwise returning a null pointer.
-	 * 
-	 * @param place
-	 *            The place string
-	 * @return The place string, if it is legitimate, otherwise null.
-	 */
-	private String parseLocationKeyword(String place) {
-		place = place.trim();
-
-		int space = place.lastIndexOf(" ");
-
-		if (space == -1 || space == place.length()) {
-			return null;
-		}
-		String putativeKeyword = place.substring(space + 1);
-
-		if (mDbHelper.getLocationKeywordExists(putativeKeyword)) {
-			return putativeKeyword;
-		} else {
-			return null;
 		}
 	}
 
@@ -531,6 +513,16 @@ public class SmsHandler {
 					context.getString(R.string.sms_forbidden), forbidden);
 			sendSms(message);
 		}
+	}
+
+	/**
+	 * Send the user the list of location keywords.
+	 */
+	private void sendLocationKeywords() {
+		String msg = String.format(
+				mContext.getString(R.string.sms_location_keywords),
+				mDbHelper.getLocationKeywords());
+		sendSms(msg);
 	}
 
 	/**

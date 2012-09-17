@@ -173,13 +173,6 @@ public class CheckinList extends ListActivity implements OnInitListener {
 		Cursor oustandingCur = mDbHelper.fetchAllCheckins();
 		startManagingCursor(oustandingCur);
 
-		// String[] from = new String[] { DbAdapter.KEY_NAME,
-		// DbAdapter.KEY_LOCATION, DbAdapter.KEY_TIMEDUE };
-		// int[] to = new int[] { R.id.checkin_name, R.id.checkin_location,
-		// R.id.checkin_time };
-		// SimpleCursorAdapter mListAdapter = new SimpleCursorAdapter(this,
-		// R.layout.checkin_item, oustandingCur, from, to);
-
 		CheckinAdapter listAdapter = new CheckinAdapter(this, oustandingCur);
 		setListAdapter(listAdapter);
 	}
@@ -299,6 +292,7 @@ public class CheckinList extends ListActivity implements OnInitListener {
 			TextView name = (TextView) view.findViewById(R.id.checkin_name);
 			TextView location = (TextView) view
 					.findViewById(R.id.checkin_location);
+			TextView with = (TextView) view.findViewById(R.id.checkin_with);
 			TextView time = (TextView) view.findViewById(R.id.checkin_time);
 
 			Date returning = Time.iso8601DateTime(cur.getString(cur
@@ -309,22 +303,35 @@ public class CheckinList extends ListActivity implements OnInitListener {
 					: false;
 			boolean due = returning.before(new Date());
 
+			String sWith = cur
+					.getString(cur.getColumnIndex(DbAdapter.KEY_WITH));
+
 			name.setText(cur.getString(cur.getColumnIndex(DbAdapter.KEY_NAME)));
 			location.setText(String.format(context.getString(R.string.goneto),
-					cur.getString(cur.getColumnIndex(DbAdapter.KEY_LOCATION))));
+					cur.getString(cur.getColumnIndex(DbAdapter.KEY_LOCATION)),
+					cur.getString(cur.getColumnIndex(DbAdapter.KEY_KEYWORD))));
 			time.setText(String.format(context.getString(R.string.returning),
 					Time.timeTodayTomorrow(context, returning)));
+
+			if (sWith != null) {
+				with.setText(String.format(context.getString(R.string.with),
+						sWith));
+			} else {
+				with.setVisibility(View.GONE);
+			}
 
 			if (!outstanding) {
 				name.setTextColor(Color.DKGRAY);
 				location.setTextColor(Color.DKGRAY);
 				time.setTextColor(Color.DKGRAY);
+				with.setTextColor(Color.DKGRAY);
 			} else {
 				// it doesn't feel as though this should have to be here, but
 				// apparently so
 				name.setTextColor(Color.WHITE);
 				location.setTextColor(Color.WHITE);
 				time.setTextColor(Color.WHITE);
+				with.setTextColor(Color.WHITE);
 			}
 
 			if (due && outstanding) {
