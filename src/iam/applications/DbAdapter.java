@@ -13,7 +13,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class DbAdapter. Provides access functions for the app's SQL database.
  */
@@ -128,7 +127,7 @@ public class DbAdapter {
 	public static int NOTIFY_UNTIMELY = 5;
 
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 17;
+	private static final int DATABASE_VERSION = 18;
 
 	/** Create Table Commands. */
 	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
@@ -173,7 +172,7 @@ public class DbAdapter {
 	private static final String DATABASE_CREATE_GUARDS = "create table guards ( _id integer primary key autoincrement , name text not null , number text )";
 
 	/** The Constant DATABASE_CREATE_GUARD_CHECKINS. */
-	private static final String DATABASE_CREATE_GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text, response int default 0 )";
+	private static final String DATABASE_CREATE_GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text , response int default 0, unique(time) on conflict ignore ) )";
 
 	/** Drop Table Commands. */
 	private static final String DROP_TABLE_LOCATIONS = "DROP TABLE IF EXISTS locations;";
@@ -1163,16 +1162,10 @@ public class DbAdapter {
 	 * @throws SQLException
 	 */
 	public Cursor fetchGuardCheckinReport(long guard_id) throws SQLException {
-		// TODO restore commented version. this is just so I can get a better
-		// look at the database
 		return mDb
 				.rawQuery(
 						"select _id,time,response from guardcheckins where guard_id=? order by time desc;",
 						new String[] { String.valueOf(guard_id) });
-		// return mDb
-		// .rawQuery(
-		// "select _id,time,response from guardcheckins where guard_id=? and datetime(time) <= datetime('now','localtime') order by time desc;",
-		// new String[] { String.valueOf(guard_id) });
 	}
 
 	/**
@@ -2820,12 +2813,14 @@ public class DbAdapter {
 			return NOTIFY_FAILURE;
 		}
 
-		String dueTime = Time.nMinutesAfter(checkinTime, window);
-
 		ContentValues args = new ContentValues();
 		args.put(KEY_RESPONSE, 1);
-		if (mDb.update(DATABASE_TABLE_GUARD_CHECKINS, args, KEY_GUARDID
-				+ "=? and strftime('%s','" + dueTime + "')",
+
+		if (mDb.update(
+				DATABASE_TABLE_GUARD_CHECKINS,
+				args,
+				"guard_id=? and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
+						+ window + " minutes')",
 				new String[] { String.valueOf(guard_id) }) > 0) {
 			return NOTIFY_SUCCESS;
 		} else {

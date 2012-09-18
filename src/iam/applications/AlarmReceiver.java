@@ -184,23 +184,25 @@ public class AlarmReceiver extends BroadcastReceiver {
 		String old = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_ADD, "06:00");
 
-		Date targetdate = Time.timeFromSimpleTime(old);
-		Date thisdate = new Date();
-		thisdate.setHours(targetdate.getHours());
-		thisdate.setMinutes(targetdate.getMinutes());
+		// make sure that the time for the alarm is in the future, so that these
+		// events aren't really added every time you go to the home activity
+		Date timeToAddAt = Time.todayAtGivenTime(old);
+		if (timeToAddAt.before(new Date())) {
+			timeToAddAt = Time.tomorrowAtGivenTime(old);
+		}
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_ADD_CALLAROUNDS);
 		intent.putExtra("TIME", ALERT_ADD_CALLAROUNDS); // 9/16/2012: I don't
 														// understand this line
 		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) thisdate.getTime(), intent,
+				(int) timeToAddAt.getTime(), intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.cancel(sender);
-		am.setRepeating(AlarmManager.RTC_WAKEUP, thisdate.getTime(),
+		am.setRepeating(AlarmManager.RTC_WAKEUP, timeToAddAt.getTime(),
 				AlarmManager.INTERVAL_DAY, sender);
 	}
 
@@ -211,28 +213,36 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @param context
 	 */
 	static public void setAddGuardCheckinAlarms(Context context) {
+		// TODO HACK Test code
+		// Calendar cal = Calendar.getInstance();
+		// cal.add(Calendar.MINUTE, 1);
+		// Log.i("Debug", "Setting alerter: " + cal.getTime().toLocaleString());
+		// createGuardCheckin(context, 1, cal.getTime());
+
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		String old = settings.getString(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_END, "06:00");
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "06:00");
 
 		// Log.i("Debug", "Adding add-checkin alarm: " + old);
 
-		Date targetdate = Time.timeFromSimpleTime(old);
-		Date thisdate = new Date();
-		thisdate.setHours(targetdate.getHours());
-		thisdate.setMinutes(targetdate.getMinutes());
+		// make sure that the time for the alarm is in the future, so that these
+		// events aren't really added every time you go to the home activity
+		Date timeToAddAt = Time.todayAtGivenTime(old);
+		if (timeToAddAt.before(new Date())) {
+			timeToAddAt = Time.tomorrowAtGivenTime(old);
+		}
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_ADD_GUARD_CHECKINS);
 		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) thisdate.getTime(), intent,
+				(int) timeToAddAt.getTime(), intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.cancel(sender);
-		am.setRepeating(AlarmManager.RTC_WAKEUP, thisdate.getTime(),
+		am.setRepeating(AlarmManager.RTC_WAKEUP, timeToAddAt.getTime(),
 				AlarmManager.INTERVAL_DAY, sender);
 	}
 
@@ -429,7 +439,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 					createGuardCheckin(mContext, guard_id, checkinTime);
 				}
 			}
-
 		} while (c.moveToNext());
 
 		dbHelper.close();
