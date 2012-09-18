@@ -8,7 +8,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -115,18 +114,17 @@ public class GuardCheckinList extends ListActivity {
 		@Override
 		public void bindView(View view, Context context, Cursor cur) {
 			String day = cur.getString(cur.getColumnIndex(DbAdapter.KEY_TIME));
-			boolean missed = cur.getLong(cur
+			boolean response = cur.getLong(cur
 					.getColumnIndex(DbAdapter.KEY_RESPONSE)) == 1 ? true
 					: false;
 
 			TextView tv = (TextView) view.findViewById(android.R.id.text1);
 			tv.setText(Time.prettyDateTime(day));
 
-			if (missed) {
-				Log.i("Debug", "Missed!");
-				tv.setTextColor(Color.RED);
-			} else {
+			if (response) {
 				tv.setTextColor(Color.WHITE);
+			} else {
+				tv.setTextColor(Color.RED);
 			}
 		}
 	}
