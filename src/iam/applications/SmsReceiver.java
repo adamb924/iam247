@@ -15,9 +15,6 @@ import android.telephony.SmsMessage;
  * class also handles SMS sent and delivered messages.
  */
 public class SmsReceiver extends BroadcastReceiver {
-	public static String SMS_SENT = "iam.applications.SmsReceiver.SMS_SENT";
-	public static String SMS_DELIVERED = "iam.applications.SmsReceiver.SMS_DELIVERED";
-
 	/*
 	 * (non-Javadoc)
 	 * 

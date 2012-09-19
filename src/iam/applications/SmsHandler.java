@@ -13,15 +13,27 @@ import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 
+// TODO: Auto-generated Javadoc
 /**
  * This class processes SMS messages, and calls <code>DbAdapter</code> methods,
  * and sends response SMS messages, as appropriate.
  */
+/**
+ * @author Adam
+ * 
+ */
 public class SmsHandler {
+
 	/**
 	 * Returns a normalized phone number. If the number starts with zero, that
 	 * zero is replaced with the (localizable) resource string
 	 * R.string.loc_country_phonecode.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param old
+	 *            the old
+	 * @return the normalized phone number
 	 */
 	static public String getNormalizedPhoneNumber(Context context, String old) {
 		String r = old;
@@ -35,6 +47,8 @@ public class SmsHandler {
 	/**
 	 * Send an SMS message to the given phone number, with the given message.
 	 * 
+	 * @param context
+	 *            the context
 	 * @param phoneNumber
 	 *            the phone number
 	 * @param message
@@ -80,8 +94,8 @@ public class SmsHandler {
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, sentPIArray,
 				deliveredPIArray);
 
-		// add the message to SQL tables, to be deleted when confirmation of
-		// being sent and being delivered are received
+		// add the message to the "pending" SQL table, to be corrected when
+		// confirmation of its being sent and being delivered are received
 		DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 		dbHelper.addMessagePending(phoneNumber, message);
@@ -105,10 +119,13 @@ public class SmsHandler {
 	/** The database interface. */
 	private final DbAdapter mDbHelper;
 
+	/** The phone number. */
 	static public String PHONE_NUMBER = "PHONE_NUMBER";
 
+	/** The message. */
 	static public String MESSAGE = "MESSAGE";
 
+	/** The m settings. */
 	private SharedPreferences mSettings;
 
 	/**
@@ -120,6 +137,8 @@ public class SmsHandler {
 	 *            the phone number of the sms
 	 * @param text
 	 *            the text of the sms
+	 * @param failIfUnknown
+	 *            the fail if unknown
 	 */
 	SmsHandler(Context context, String number, String text,
 			boolean failIfUnknown) {
@@ -155,43 +174,8 @@ public class SmsHandler {
 
 		// is the user unknown?
 		if (mContactId == -1) {
-			// perhaps he is identifying himself
-			if (messageMatches(R.string.re_thisis)) {
-				boolean thisisAllowed = mSettings.getBoolean(
-						HomeActivity.PREFERENCES_PERMIT_THISIS, false);
-				if (!thisisAllowed) {
-					sendSms(R.string.sms_this_disabled_notification);
-					mDbHelper.close();
-					return;
-				}
-
-				String[] matches = getMessageMatches(R.string.re_thisis);
-				if (matches == null) {
-					yourError();
-					mDbHelper.close();
-					return;
-				}
-				String name = matches[0];
-				mDbHelper.addContact(name, mPhoneNumber);
-
-				String message = String.format(context
-						.getString(R.string.sms_requestid_acknowledgement),
-						name);
-				sendSms(message);
-
-			} else { // otherwise request that he identify himself
-				requestId();
-			}
-			// send a notification for any active activity to update
-			AlarmReceiver.sendRefreshAlert(context);
-			mDbHelper.close();
-			return;
-		}
-
-		// otherwise we can begin to parse the messages
-		// by now it is certain that it's not an emergency, and the contact id
-		// is known
-		if (messageMatches(R.string.re_turnoffcallaround)) {
+			processUnknownNumber();
+		} else if (messageMatches(R.string.re_turnoffcallaround)) {
 			disableCallaround();
 		} else if (messageMatches(R.string.re_turnoncallaround)) {
 			enableCallaround();
@@ -220,13 +204,9 @@ public class SmsHandler {
 		} else if (messageMatches(R.string.re_returning)) {
 			returning();
 		} else if (messageMatches(R.string.re_thisis)) {
-			// ignore extraneous thisis requests
 			sendSms(R.string.sms_contact_exists);
 		} else if (messageMatches(R.string.re_report)) {
-			if (mDbHelper.getContactPermission(mContactId,
-					DbAdapter.USER_PERMISSION_REPORT)) {
-				sendSms(mDbHelper.getReport());
-			}
+			requestReport();
 		} else if (messageMatches(R.string.re_delay)) {
 			delayCallaround();
 		} else if (messageMatches(R.string.re_keywords)) {
@@ -461,6 +441,9 @@ public class SmsHandler {
 		return m.matches();
 	}
 
+	/**
+	 * Need legitimate keyword.
+	 */
 	private void needLegitimateKeyword() {
 		String msg = String.format(
 				mContext.getString(R.string.sms_need_location_keyword),
@@ -473,6 +456,37 @@ public class SmsHandler {
 	 */
 	private void ourError() {
 		sendSms(R.string.sms_247_error);
+	}
+
+	/**
+	 * Handle the situation where the phone number is unrecognized.
+	 */
+	private void processUnknownNumber() {
+		// perhaps he is identifying himself
+		if (messageMatches(R.string.re_thisis)) {
+			boolean thisisAllowed = mSettings.getBoolean(
+					HomeActivity.PREFERENCES_PERMIT_THISIS, false);
+			if (!thisisAllowed) {
+				sendSms(R.string.sms_this_disabled_notification);
+				return;
+			}
+
+			String[] matches = getMessageMatches(R.string.re_thisis);
+			if (matches == null) {
+				yourError();
+				mDbHelper.close();
+			}
+			String name = matches[0];
+			mDbHelper.addContact(name, mPhoneNumber);
+
+			String message = String.format(
+					mContext.getString(R.string.sms_requestid_acknowledgement),
+					name);
+			sendSms(message);
+
+		} else { // otherwise request that he identify himself
+			requestId();
+		}
 	}
 
 	/**
@@ -491,6 +505,17 @@ public class SmsHandler {
 	 */
 	private void requestId() {
 		sendSms(R.string.sms_requestid);
+	}
+
+	/**
+	 * Respond to a request for a report. If the person has permission, send the
+	 * report.
+	 */
+	private void requestReport() {
+		if (mDbHelper.getContactPermission(mContactId,
+				DbAdapter.USER_PERMISSION_REPORT)) {
+			sendSms(mDbHelper.getReport());
+		}
 	}
 
 	/**
@@ -564,6 +589,7 @@ public class SmsHandler {
 	 * Sends the user the current list of forbidden locations.
 	 * 
 	 * @param context
+	 *            the context
 	 */
 	private void sendForbiddenLocations(Context context) {
 		String forbidden = mDbHelper.getForbiddenLocations();
@@ -606,6 +632,9 @@ public class SmsHandler {
 		sendSms(mContext, mPhoneNumber, message);
 	}
 
+	/**
+	 * Turn off checkin reminders for the user.
+	 */
 	private void turnOffReminders() {
 		int ret = mDbHelper.setContactPreference(mContactId,
 				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, false);
@@ -618,6 +647,9 @@ public class SmsHandler {
 		}
 	}
 
+	/**
+	 * Turn on checkin reminders for the user.
+	 */
 	private void turnOnReminders() {
 		int ret = mDbHelper.setContactPreference(mContactId,
 				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, true);

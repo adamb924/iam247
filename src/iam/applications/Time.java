@@ -254,6 +254,8 @@ public class Time {
 	 * time, or returns null. Parsing is determined by the regular expression in
 	 * R.string.re_time
 	 * 
+	 * @param context
+	 *            the context
 	 * @param timeString
 	 *            the string containing the time representation
 	 * @return a <code>Date</code> object with the corresponding time, or null.
@@ -428,12 +430,12 @@ public class Time {
 	}
 
 	/**
-	 * Returns the ISO 8601 time stamp of the time n minutes before the time
+	 * Returns the ISO 8601 time stamp of the time n minutes after the time
 	 * indicated.
 	 * 
 	 * @param isoTime
 	 * @param n
-	 * @return
+	 * @return a time object n minutes after the time indicated
 	 */
 	static public String nMinutesAfter(String isoTime, int n) {
 		try {

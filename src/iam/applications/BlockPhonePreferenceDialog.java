@@ -14,6 +14,14 @@ import android.util.AttributeSet;
  */
 public class BlockPhonePreferenceDialog extends EditTextPreference {
 
+	/**
+	 * Instantiates a new block phone preference dialog.
+	 * 
+	 * @param ctxt
+	 *            the ctxt
+	 * @param attrs
+	 *            the attrs
+	 */
 	public BlockPhonePreferenceDialog(Context ctxt, AttributeSet attrs) {
 		super(ctxt, attrs);
 
