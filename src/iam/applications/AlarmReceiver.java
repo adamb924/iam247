@@ -227,6 +227,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if (timeToAddAt.before(new Date())) {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
 		}
+		
+		Log.i("Debug","Add callaround alarm: " + Time.prettyDateTime(timeToAddAt));
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_ADD_CALLAROUNDS);
