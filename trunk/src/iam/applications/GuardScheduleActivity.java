@@ -3,6 +3,7 @@
  */
 package iam.applications;
 
+import java.text.DateFormatSymbols;
 import java.util.Calendar;
 
 import android.app.Activity;
@@ -76,9 +77,11 @@ public class GuardScheduleActivity extends Activity {
 			for (int i = 0; i < 7; i++) {
 				int day = (first + i) % 7;
 
-				// TODO replace this with something more localizable
+				DateFormatSymbols symbols = new DateFormatSymbols();
+				String[] dayNames = symbols.getWeekdays();
+
 				TextView label = new TextView(this);
-				label.setText(DAYS[day]);
+				label.setText(dayNames[day + 1]);
 				layout.addView(label);
 
 				mSpinners[i] = new GuardSpinner(this, mDbHelper, getColumnName(

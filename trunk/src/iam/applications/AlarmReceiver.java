@@ -74,7 +74,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 */
 	public static String ALERT_GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
 
-	public static String GUARD_ID = "GUARD_ID";
+	public static String ALERT_RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
 
 	/*
 	 * (non-Javadoc)
@@ -114,7 +114,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 		} else if (action.equals(ALERT_ADD_GUARD_CHECKINS)) {
 			addGuardCheckins();
 		} else if (action.equals(ALERT_GUARD_CHECKIN)) {
-			requestGuardCheckin(intent.getLongExtra(GUARD_ID, -1));
+			requestGuardCheckin(intent.getLongExtra(DbAdapter.KEY_HOUSEID, -1));
+		} else if (action.equals(ALERT_RESET_GUARD_SCHEDULE)) {
+			mDbHelper.resetGuardSchedule();
 		}
 
 		mDbHelper.close();
@@ -123,14 +125,15 @@ public class AlarmReceiver extends BroadcastReceiver {
 	/**
 	 * Creates a checkin alarm for the given guard and checkin time.
 	 * 
-	 * @param guard_id
+	 * @param house_id
 	 * @param checkinTime
 	 */
-	private static void createGuardCheckin(Context context, long guard_id,
+
+	private static void createGuardCheckin(Context context, long house_id,
 			Date checkinTime) {
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_GUARD_CHECKIN);
-		intent.putExtra(GUARD_ID, guard_id);
+		intent.putExtra(DbAdapter.KEY_HOUSEID, house_id);
 
 		PendingIntent sender = PendingIntent.getBroadcast(context,
 				(int) checkinTime.getTime(), intent,
@@ -169,6 +172,40 @@ public class AlarmReceiver extends BroadcastReceiver {
 	static public void sendRefreshAlert(Context context) {
 		Intent intent = new Intent(AlarmReceiver.ALERT_REFRESH);
 		context.sendBroadcast(intent);
+	}
+
+	/**
+	 * Sets a recurring alarm to reset the guards' schedules to their typical
+	 * schedule. This occurs at the end of the guards' check-in window (by
+	 * default 6am).
+	 * 
+	 * @param context
+	 *            the application context
+	 */
+	static public void setGuardScheduleResetAlarm(Context context) {
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		String old = settings.getString(
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_END, "06:00");
+
+		// make sure that the time for the alarm is in the future, so that these
+		// events aren't really added every time you go to the home activity
+		Date timeToAddAt = Time.todayAtGivenTime(old);
+		if (timeToAddAt.before(new Date())) {
+			timeToAddAt = Time.tomorrowAtGivenTime(old);
+		}
+
+		Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(ALERT_RESET_GUARD_SCHEDULE);
+		PendingIntent sender = PendingIntent.getBroadcast(context,
+				(int) timeToAddAt.getTime(), intent,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+
+		AlarmManager am = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		am.cancel(sender);
+		am.setRepeating(AlarmManager.RTC_WAKEUP, timeToAddAt.getTime(),
+				AlarmManager.INTERVAL_DAY, sender);
 	}
 
 	/**
@@ -213,12 +250,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @param context
 	 */
 	static public void setAddGuardCheckinAlarms(Context context) {
-		// TODO HACK Test code
-		// Calendar cal = Calendar.getInstance();
-		// cal.add(Calendar.MINUTE, 1);
-		// Log.i("Debug", "Setting alerter: " + cal.getTime().toLocaleString());
-		// createGuardCheckin(context, 1, cal.getTime());
-
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		String old = settings.getString(
@@ -411,7 +442,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		DbAdapter dbHelper = new DbAdapter(mContext);
 		dbHelper.open();
 
-		Cursor c = dbHelper.fetchAllGuards();
+		Cursor c = dbHelper.fetchAllHouses();
 
 		if (!c.moveToFirst()) {
 			dbHelper.close();
@@ -420,14 +451,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		// cycle through the guards
 		do {
-			long guard_id = c.getLong(0);
+			long house_id = c.getLong(0);
 
 			// the fixed checkins
 			for (int i = 0; i < fewestCheckins; i++) {
 				Date checkinTime = new Date(startTime.getTime()
 						+ r.nextInt(range));
 				Log.i("Debug", checkinTime.toLocaleString());
-				createGuardCheckin(mContext, guard_id, checkinTime);
+				createGuardCheckin(mContext, house_id, checkinTime);
 			}
 
 			// the random checkins
@@ -436,7 +467,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 					Date checkinTime = new Date(startTime.getTime()
 							+ r.nextInt(range));
 					Log.i("Debug", checkinTime.toLocaleString());
-					createGuardCheckin(mContext, guard_id, checkinTime);
+					createGuardCheckin(mContext, house_id, checkinTime);
 				}
 			}
 		} while (c.moveToNext());
@@ -515,10 +546,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * 
 	 * @param guard_id
 	 */
-	private void requestGuardCheckin(long guard_id) {
-		if (guard_id == -1) {
+	private void requestGuardCheckin(long house_id) {
+		if (house_id == -1) {
 			return;
 		}
+		long guard_id = mDbHelper.getGuardForHouse(house_id);
 		String number = mDbHelper.getGuardNumber(guard_id);
 
 		SmsHandler.sendSms(mContext, number,
