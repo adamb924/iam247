@@ -172,7 +172,7 @@ public class DbAdapter {
 	private static final String DATABASE_CREATE_GUARDS = "create table guards ( _id integer primary key autoincrement , name text not null , number text )";
 
 	/** The Constant DATABASE_CREATE_GUARD_CHECKINS. */
-	private static final String DATABASE_CREATE_GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text , response int default 0, unique(time) on conflict ignore ) )";
+	private static final String DATABASE_CREATE_GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text , response int default 0, unique(time) on conflict ignore )";
 
 	/** Drop Table Commands. */
 	private static final String DROP_TABLE_LOCATIONS = "DROP TABLE IF EXISTS locations;";
@@ -862,11 +862,9 @@ public class DbAdapter {
 	 * week from the current time.
 	 */
 	public void deleteDataBeforeOneWeek() {
-		String weekago = oneWeekAgo();
-		mDb.execSQL("delete from callarounds where strftime('%s',dueby) <= strftime('%s','"
-				+ weekago + "');");
-		mDb.execSQL("delete from checkins where strftime('%s',timereceived) <= strftime('%s','"
-				+ weekago + "');");
+		mDb.execSQL("delete from callarounds where dueby <= datetime('now','localtime','-7 days');");
+		mDb.execSQL("delete from checkins where timereceived <= datetime('now','localtime','-7 days');");
+		mDb.execSQL("delete from guardcheckins where time <= datetime('now','localtime','-7 days');");
 	}
 
 	/**
@@ -919,8 +917,7 @@ public class DbAdapter {
 	 * Deletes log events from before one week ago.
 	 */
 	public void deleteLogBeforeOneWeek() {
-		mDb.execSQL("delete from log where strftime('%s',time) <= strftime('%s','"
-				+ oneWeekAgo() + "');");
+		mDb.execSQL("delete from log where time <= datetime('now','localtime','-7 days');");
 	}
 
 	/**
@@ -2826,5 +2823,33 @@ public class DbAdapter {
 		} else {
 			return NOTIFY_FAILURE;
 		}
+	}
+
+	/**
+	 * Returns the id of the guard currently assigned to the specified house for
+	 * today.
+	 * 
+	 * @param house_id
+	 * @return
+	 */
+	public long getGuardForHouse(long house_id) {
+		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase();
+
+		Cursor c = mDb.rawQuery("select " + todaysDayOfWeek
+				+ "_guard from houses where _id=?;",
+				new String[] { String.valueOf(house_id) });
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Resets the guards' schedules for the day to whatever is set in the
+	 * typical fields.
+	 */
+	public void resetGuardSchedule() {
+		mDb.execSQL("sunday_guard=typical_sunday_guard,monday_guard=typical_monday_guard,tuesday_guard=typical_tuesday_guard,wednesday_guard=typical_wednesday_guard,thursday_guard=typical_thursday_guard,friday_guard=typical_friday_guard,saturday_guard=typical_saturday_guard;");
 	}
 }
