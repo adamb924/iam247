@@ -210,10 +210,21 @@ public class UnsentMessageList extends ListActivity {
 			long contactId = mDbHelper.getContactId(phoneNumber);
 			String recipient = contactId == -1 ? phoneNumber : mDbHelper
 					.getContactName(contactId);
+			boolean sent = cur.getLong(cur.getColumnIndex(DbAdapter.KEY_SENT)) == 1 ? true
+					: false;
+			boolean delivered = cur.getLong(cur
+					.getColumnIndex(DbAdapter.KEY_DELIVERED)) == 1 ? true
+					: false;
 
-			String type = cur.getString(cur.getColumnIndex(DbAdapter.KEY_TYPE))
-					.equals("Unsent") ? context.getString(R.string.unsent)
-					: context.getString(R.string.unconfirmed);
+			String type;
+			if (!sent) {
+				type = context.getString(R.string.unsent);
+			} else if (sent && !delivered) {
+				type = context.getString(R.string.unconfirmed);
+			} else {
+				// this condition should be impossible
+				type = "";
+			}
 
 			String time = Time.prettyDateTime(cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_TIME)));

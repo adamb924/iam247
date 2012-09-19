@@ -84,8 +84,7 @@ public class SmsHandler {
 		// being sent and being delivered are received
 		DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
-		dbHelper.addMessagePendingSent(phoneNumber, message);
-		dbHelper.addMessagePendingDelivered(phoneNumber, message);
+		dbHelper.addMessagePending(phoneNumber, message);
 		dbHelper.close();
 	}
 
