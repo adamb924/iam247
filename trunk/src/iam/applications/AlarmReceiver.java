@@ -255,7 +255,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		String old = settings.getString(
 				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "06:00");
 
-		// Log.i("Debug", "Adding add-checkin alarm: " + old);
+		Log.i("Debug", "Adding add-checkin alarm: " + old);
 
 		// make sure that the time for the alarm is in the future, so that these
 		// events aren't really added every time you go to the home activity

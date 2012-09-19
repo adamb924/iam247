@@ -59,8 +59,7 @@ public class DbAdapter {
 			db.execSQL(DATABASE_CREATE_BLOCKEDNUMBERS);
 			db.execSQL(DATABASE_CREATE_LOG);
 			db.execSQL(DATABASE_CREATE_LOCATION_LOG);
-			db.execSQL(DATABASE_CREATE_PENDING_SENT);
-			db.execSQL(DATABASE_CREATE_PENDING_DELIVERED);
+			db.execSQL(DATABASE_CREATE_PENDING);
 			db.execSQL(DATABASE_CREATE_GUARDS);
 			db.execSQL(DATABASE_CREATE_GUARD_CHECKINS);
 		}
@@ -87,8 +86,7 @@ public class DbAdapter {
 			db.execSQL(DROP_TABLE_BLOCKEDNUMBERS);
 			db.execSQL(DROP_TABLE_LOG);
 			db.execSQL(DROP_TABLE_LOCATION_LOG);
-			db.execSQL(DROP_TABLE_PENDING_SENT);
-			db.execSQL(DROP_TABLE_PENDING_DELIVERED);
+			db.execSQL(DROP_TABLE_PENDING);
 			db.execSQL(DROP_TABLE_GUARDS);
 			db.execSQL(DROP_TABLE_GUARD_CHECKIN);
 
@@ -127,7 +125,7 @@ public class DbAdapter {
 	public static int NOTIFY_UNTIMELY = 5;
 
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 18;
+	private static final int DATABASE_VERSION = 19;
 
 	/** Create Table Commands. */
 	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
@@ -162,11 +160,8 @@ public class DbAdapter {
 	/** The Constant DATABASE_CREATE_LOCATION_LOG. */
 	private static final String DATABASE_CREATE_LOCATION_LOG = "create table locationlog ( _id integer primary key autoincrement , contact_id integer not null, lat real not null, lon real not null, time text )";
 
-	/** The Constant DATABASE_CREATE_PENDING_SENT. */
-	private static final String DATABASE_CREATE_PENDING_SENT = "create table pendingsent ( _id integer primary key autoincrement , number text not null, message text not null, time text not null )";
-
-	/** The Constant DATABASE_CREATE_PENDING_DELIVERED. */
-	private static final String DATABASE_CREATE_PENDING_DELIVERED = "create table pendingdelivered ( _id integer primary key autoincrement, number text not null, message text not null, time text not null )";
+	/** The Constant DATABASE_CREATE_PENDING. */
+	private static final String DATABASE_CREATE_PENDING = "create table pending ( _id integer primary key autoincrement , number text not null, message text not null, time text not null , sent int default 0, delivered int default 0 )";
 
 	/** The Constant DATABASE_CREATE_GUARDS. */
 	private static final String DATABASE_CREATE_GUARDS = "create table guards ( _id integer primary key autoincrement , name text not null , number text )";
@@ -207,11 +202,8 @@ public class DbAdapter {
 	/** The Constant DROP_TABLE_LOCATION_LOG. */
 	private static final String DROP_TABLE_LOCATION_LOG = "DROP TABLE IF EXISTS locationlog;";
 
-	/** The Constant DROP_TABLE_PENDING_SENT. */
-	private static final String DROP_TABLE_PENDING_SENT = "DROP TABLE IF EXISTS pendingsent;";
-
-	/** The Constant DROP_TABLE_PENDING_DELIVERED. */
-	private static final String DROP_TABLE_PENDING_DELIVERED = "DROP TABLE IF EXISTS pendingdelivered;";
+	/** The Constant DROP_TABLE_PENDING. */
+	private static final String DROP_TABLE_PENDING = "DROP TABLE IF EXISTS pending;";
 
 	/** The Constant DROP_TABLE_GUARDS. */
 	private static final String DROP_TABLE_GUARDS = "DROP TABLE IF EXISTS guards;";
@@ -255,11 +247,8 @@ public class DbAdapter {
 	/** The Constant DATABASE_TABLE_LOCATION_LOG. */
 	private static final String DATABASE_TABLE_LOCATION_LOG = "locationlog";
 
-	/** The Constant DATABASE_TABLE_PENDING_SENT. */
-	private static final String DATABASE_TABLE_PENDING_SENT = "pendingsent";
-
-	/** The Constant DATABASE_TABLE_PENDING_DELIVERED. */
-	private static final String DATABASE_TABLE_PENDING_DELIVERED = "pendingdelivered";
+	/** The Constant DATABASE_TABLE_PENDING. */
+	private static final String DATABASE_TABLE_PENDING = "pending";
 
 	/** The Constant DATABASE_TABLE_GUARDS. */
 	private static final String DATABASE_TABLE_GUARDS = "guards";
@@ -359,6 +348,8 @@ public class DbAdapter {
 
 	public static final String KEY_WITH = "with";
 	public static final String KEY_TRIPRESOLVED = "tripresolved";
+	public static final String KEY_DELIVERED = "delivered";
+	public static final String KEY_SENT = "sent";
 
 	/** Log message types. */
 	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
@@ -658,8 +649,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Adds the message to the pendingdelivered table, to be deleted when
-	 * confirmation is received that the message was delivered.
+	 * Adds the message to the pending table.
 	 * 
 	 * @param number
 	 *            the phone number
@@ -668,33 +658,13 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             the SQL exception
 	 */
-	public void addMessagePendingDelivered(String number, String message)
+	public void addMessagePending(String number, String message)
 			throws SQLException {
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_NUMBER, number);
 		initialValues.put(KEY_MESSAGE, message);
 		initialValues.put(KEY_TIME, Time.iso8601DateTime());
-		mDb.insert(DATABASE_TABLE_PENDING_DELIVERED, null, initialValues);
-	}
-
-	/**
-	 * Adds the message to the pendingsent table, to be deleted when
-	 * confirmation is received that the message was sent.
-	 * 
-	 * @param number
-	 *            the phone number
-	 * @param message
-	 *            the message
-	 * @throws SQLException
-	 *             the SQL exception
-	 */
-	public void addMessagePendingSent(String number, String message)
-			throws SQLException {
-		ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_NUMBER, number);
-		initialValues.put(KEY_MESSAGE, message);
-		initialValues.put(KEY_TIME, Time.iso8601DateTime());
-		mDb.insert(DATABASE_TABLE_PENDING_SENT, null, initialValues);
+		mDb.insert(DATABASE_TABLE_PENDING, null, initialValues);
 	}
 
 	/**
@@ -802,8 +772,7 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_BLOCKEDNUMBERS, null, null);
 		mDb.delete(DATABASE_TABLE_LOG, null, null);
 		mDb.delete(DATABASE_TABLE_LOCATION_LOG, null, null);
-		mDb.delete(DATABASE_TABLE_PENDING_SENT, null, null);
-		mDb.delete(DATABASE_TABLE_PENDING_DELIVERED, null, null);
+		mDb.delete(DATABASE_TABLE_PENDING, null, null);
 		mDb.delete(DATABASE_CREATE_GUARDS, null, null);
 		mDb.delete(DATABASE_CREATE_GUARD_CHECKINS, null, null);
 	}
@@ -921,9 +890,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Deletes rows with the given phone number and message from
-	 * pendingdelivered (i.e., indicating that the message was successfully
-	 * sent).
+	 * Sets a message as having been delivered. Also deletes messages from the
+	 * database that are both sent and delivered.
 	 * 
 	 * @param number
 	 *            the phone number
@@ -932,15 +900,18 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             the SQL exception
 	 */
-	public void deleteMessagePendingDelivered(String number, String message)
+	public void setPendingMessageDelivered(String number, String message)
 			throws SQLException {
-		mDb.delete(DATABASE_TABLE_PENDING_DELIVERED, KEY_NUMBER + "=? and "
+		ContentValues args = new ContentValues();
+		args.put(KEY_DELIVERED, 1);
+		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
 				+ KEY_MESSAGE + "=?", new String[] { number, message });
+		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
 	}
 
 	/**
-	 * Deletes rows with the given phone number and message from pendingsent
-	 * (i.e., indicating that the message was successfully sent).
+	 * Sets a message as having been sent. Also deletes messages from the
+	 * database that are both sent and delivered.
 	 * 
 	 * @param number
 	 *            the phone number
@@ -949,10 +920,13 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             the SQL exception
 	 */
-	public void deleteMessagePendingSent(String number, String message)
+	public void setPendingMessageSent(String number, String message)
 			throws SQLException {
-		mDb.delete(DATABASE_TABLE_PENDING_SENT, KEY_NUMBER + "=? and "
+		ContentValues args = new ContentValues();
+		args.put(KEY_SENT, 1);
+		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
 				+ KEY_MESSAGE + "=?", new String[] { number, message });
+		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
 	}
 
 	/**
@@ -962,8 +936,7 @@ public class DbAdapter {
 	 *             the sQL exception
 	 */
 	public void deleteUnsentUndelivered() throws SQLException {
-		mDb.delete(DATABASE_TABLE_PENDING_SENT, null, null);
-		mDb.delete(DATABASE_TABLE_PENDING_DELIVERED, null, null);
+		mDb.delete(DATABASE_TABLE_PENDING, null, null);
 	}
 
 	/**
@@ -1196,15 +1169,14 @@ public class DbAdapter {
 
 	/**
 	 * Fetch unsent and undelivered messages. Columns KEY_ID, KEY_NUMBER,
-	 * KEY_MESSAGE, KEY_TIME, KEY_TYPE
+	 * KEY_MESSAGE, KEY_TIME, KEY_SENT, KEY_DELIVERED
 	 * 
 	 * @return the cursor
 	 */
 	public Cursor fetchUnsentUndeliveredMessages() {
-		return mDb
-				.rawQuery(
-						"select _id,number,message,time,'Unsent' as type from pendingsent union all select _id,number,message,time,'Undelivered' as type from pendingdelivered order by time desc;",
-						null);
+		return mDb.rawQuery(
+				"select _id,number,message,time,sent,delivered from pending;",
+				null);
 	}
 
 	/*
@@ -2034,11 +2006,8 @@ public class DbAdapter {
 	 *         database
 	 */
 	public int getNumberOfMessageErrors() {
-		Cursor c1 = mDb.rawQuery("select count(_id) from pendingsent;", null);
-		Cursor c2 = mDb.rawQuery("select count(_id) from pendingdelivered;",
-				null);
-		return (c1.moveToFirst() ? c1.getInt(0) : 0)
-				+ (c2.moveToFirst() ? c2.getInt(0) : 0);
+		Cursor c = mDb.rawQuery("select count(_id) from pending;", null);
+		return c.moveToFirst() ? c.getInt(0) : 0;
 	}
 
 	/**
@@ -2118,19 +2087,6 @@ public class DbAdapter {
 		} else {
 			return -1;
 		}
-	}
-
-	/**
-	 * Returns the ISO 8601 date/time string from one week before the present
-	 * time.
-	 * 
-	 * @return the ISO 8601 date/time string from one week before the present
-	 *         time
-	 */
-	private String oneWeekAgo() {
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, -7);
-		return Time.iso8601DateTime(cal.getTime());
 	}
 
 	/**
