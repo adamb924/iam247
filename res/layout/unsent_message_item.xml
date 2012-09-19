@@ -9,7 +9,6 @@
         android:id="@+id/messageRecipient"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Large Text"
         android:textAppearance="?android:attr/textAppearanceLarge" 
         android:textColor="@color/explanatory_text_color"/>
 
@@ -24,7 +23,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="10sp"
-            android:text="Small Text"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@color/darkGrey" />
 
@@ -33,7 +31,6 @@
             android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Small Text"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@color/darkGrey" />
     </LinearLayout>
@@ -43,7 +40,6 @@
         style="@style/textExplanationMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Medium Text"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="#ffffff" />
 
