@@ -116,6 +116,11 @@ public class PreferencesActivity extends PreferenceActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+
+		// I'm at a loss how else to make sure this gets called
+		mDbHelper.addCallarounds();
+		AlarmReceiver.sendRefreshAlert(this);
+
 		mDbHelper.close();
 	}
 

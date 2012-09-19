@@ -430,29 +430,32 @@ public class DbAdapter {
 
 		String settings_dueby = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		Date dueby_date = Time.timeFromSimpleTime(settings_dueby);
-		Date today_dueby = new Date();
-		today_dueby.setHours(dueby_date.getHours());
-		today_dueby.setMinutes(dueby_date.getMinutes());
+		Date today_dueby = Time.todayAtGivenTime(settings_dueby);
 
 		String settings_delayed_dueby = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
-		Date dueby_delayed_date = Time
-				.timeFromSimpleTime(settings_delayed_dueby);
-		Date today_delayed_dueby = new Date();
-		today_delayed_dueby.setHours(dueby_delayed_date.getHours());
-		today_delayed_dueby.setMinutes(dueby_delayed_date.getMinutes());
+		Date today_delayed_dueby = Time
+				.todayAtGivenTime(settings_delayed_dueby);
 
 		String settings_duefrom = settings.getString(
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "17:00");
-		Date duefrom_date = Time.timeFromSimpleTime(settings_duefrom);
-
-		Date today_duefrom = new Date();
-		today_duefrom.setHours(duefrom_date.getHours());
-		today_duefrom.setMinutes(duefrom_date.getMinutes());
+		Date today_duefrom = Time.todayAtGivenTime(settings_duefrom);
 
 		AlarmReceiver.setCallaroundDueAlarm(mContext, today_dueby);
 		AlarmReceiver.setDelayedCallaroundAlarm(mContext, today_delayed_dueby);
+
+		// if a callaround has already been resolved, update the due times so
+		// that a duplicate is not created by the insert time. this is
+		// admittedly clunky
+		ContentValues args = new ContentValues();
+		args.put(KEY_DUEBY, Time.iso8601DateTime(today_dueby));
+		args.put(KEY_DUEFROM, Time.iso8601DateTime(today_duefrom));
+		mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_OUTSTANDING + "='0'",
+				null);
+		// delete unresolved callarounds
+		mDb.delete(DATABASE_TABLE_CALLAROUNDS,
+				"date(dueby) = date('now','localtime') and outstanding='1'",
+				null);
 
 		mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) select _id,'"
 				+ Time.iso8601DateTime(today_dueby)
