@@ -17,6 +17,9 @@ import android.telephony.SignalStrength;
  */
 public class ServiceChangeReceiver extends PhoneStateListener {
 
+	/**
+	 * @param context
+	 */
 	public ServiceChangeReceiver(Context context) {
 		super();
 	}

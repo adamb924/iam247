@@ -216,14 +216,11 @@ public class UnsentMessageList extends ListActivity {
 					.getColumnIndex(DbAdapter.KEY_DELIVERED)) == 1 ? true
 					: false;
 
-			String type;
+			String type = new String();
 			if (!sent) {
 				type = context.getString(R.string.unsent);
 			} else if (sent && !delivered) {
 				type = context.getString(R.string.unconfirmed);
-			} else {
-				// this condition should be impossible
-				type = "";
 			}
 
 			String time = Time.prettyDateTime(cur.getString(cur

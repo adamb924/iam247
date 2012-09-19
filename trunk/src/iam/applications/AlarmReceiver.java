@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -74,6 +73,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 */
 	public static String ALERT_GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
 
+	/**
+	 * An Intent action string alerting the application set today's guard
+	 * schedule to their typical schedule.
+	 */
 	public static String ALERT_RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
 
 	/*
@@ -227,8 +230,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if (timeToAddAt.before(new Date())) {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
 		}
-		
-		Log.i("Debug","Add callaround alarm: " + Time.prettyDateTime(timeToAddAt));
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_ADD_CALLAROUNDS);
@@ -257,8 +258,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 		String old = settings.getString(
 				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "06:00");
 
-		Log.i("Debug", "Adding add-checkin alarm: " + old);
-
 		// make sure that the time for the alarm is in the future, so that these
 		// events aren't really added every time you go to the home activity
 		Date timeToAddAt = Time.todayAtGivenTime(old);
@@ -285,6 +284,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * 
 	 * @param context
 	 *            the application context
+	 * @param date
+	 *            the date for the callaround due alarm
 	 */
 	static public void setCallaroundDueAlarm(Context context, Date date) {
 		Calendar cal = Calendar.getInstance();
@@ -332,8 +333,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * 
 	 * @param context
 	 *            the application context
-	 * @param date
-	 *            the date/time at which the check-in is due
+	 * @param checkin_id
+	 *            the checkin for the user to be reminded about
 	 */
 	static public void setCheckinReminderAlert(Context context, long checkin_id) {
 		DbAdapter dbHelper = new DbAdapter(context);
@@ -372,6 +373,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * 
 	 * @param context
 	 *            the application context
+	 * @param date
+	 *            the date
 	 */
 	static public void setDelayedCallaroundAlarm(Context context, Date date) {
 		Calendar cal = Calendar.getInstance();
@@ -406,11 +409,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 		sendRefreshAlert(mContext);
 	}
 
+	/**
+	 * Adds guard checkins for today.
+	 */
 	private void addGuardCheckins() {
 		// clear out old ones
 		removeGuardCheckins(mContext);
-
-		Log.i("Debug", "addGuardCheckins");
 
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
@@ -434,9 +438,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Random r = new Random();
 
-		Log.i("Debug", "Start: " + startTime.toLocaleString());
-		Log.i("Debug", "End: " + endTime.toLocaleString());
-
 		// int ought to be at least 32-bits, which provides more way more than
 		// 24 hours in milliseconds
 		int range = (int) (endTime.getTime() - startTime.getTime());
@@ -459,7 +460,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 			for (int i = 0; i < fewestCheckins; i++) {
 				Date checkinTime = new Date(startTime.getTime()
 						+ r.nextInt(range));
-				Log.i("Debug", checkinTime.toLocaleString());
 				createGuardCheckin(mContext, house_id, checkinTime);
 			}
 
@@ -468,7 +468,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 				if (r.nextBoolean()) {
 					Date checkinTime = new Date(startTime.getTime()
 							+ r.nextInt(range));
-					Log.i("Debug", checkinTime.toLocaleString());
 					createGuardCheckin(mContext, house_id, checkinTime);
 				}
 			}

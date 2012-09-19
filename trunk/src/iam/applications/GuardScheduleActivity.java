@@ -22,24 +22,34 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+// TODO: Auto-generated Javadoc
 /**
+ * The Class GuardScheduleActivity.
+ * 
  * @author Adam
  * 
- *         There's a lot that could be done to make this class better. A lot.
+ *         An activity for setting the guard schedule for a house. This can be
+ *         the schedule for the day, or a default schedule, depending on a value
+ *         passed in the Bundle.
  */
 public class GuardScheduleActivity extends Activity {
 
+	/**
+	 * Static string used as an extra key, indicating whether this is the
+	 * default schedule or not.
+	 */
 	static public String SET_DEFAULT = "SET_DEFAULT";
-
-	static public String[] DAYS = { "Sunday", "Monday", "Tuesday", "Wednesday",
-			"Thursday", "Friday", "Saturday" };
 
 	/** The database interface. */
 	private DbAdapter mDbHelper;
 
+	/** The m set default. */
 	private boolean mSetDefault;
+
+	/** The m house id. */
 	private long mHouseId;
 
+	/** The m spinners. */
 	private Spinner[] mSpinners;
 
 	/*
@@ -113,11 +123,20 @@ public class GuardScheduleActivity extends Activity {
 
 	}
 
+	/**
+	 * Gets the column name.
+	 * 
+	 * @param i
+	 *            the i
+	 * @param default_column
+	 *            the default_column
+	 * @return the column name
+	 */
 	static private String getColumnName(int i, boolean default_column) {
 		if (default_column) {
-			return DAYS[i].toLowerCase() + "_guard";
+			return DbAdapter.DAYS[i] + "_guard";
 		} else {
-			return "typical_" + DAYS[i].toLowerCase() + "_guard";
+			return "typical_" + DbAdapter.DAYS[i] + "_guard";
 		}
 	}
 
@@ -160,6 +179,9 @@ public class GuardScheduleActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Sets the all.
+	 */
 	private void setAll() {
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(getString(R.string.unblock_number));
@@ -175,16 +197,37 @@ public class GuardScheduleActivity extends Activity {
 		alert.show();
 	}
 
+	/**
+	 * The Class GuardSpinner.
+	 */
 	private class GuardSpinner extends Spinner {
 
+		/** The m db helper. */
 		private final DbAdapter mDbHelper;
+
+		/** The m column. */
 		private final String mColumn;
+
+		/** The m house id. */
 		private final long mHouseId;
+
+		/** The m cur. */
 		private final Cursor mCur;
+
+		/** The m guard. */
 		private final long mGuard;
 
 		/**
+		 * Instantiates a new guard spinner.
+		 * 
 		 * @param context
+		 *            the context
+		 * @param db
+		 *            the db
+		 * @param column
+		 *            the column
+		 * @param house_id
+		 *            the house_id
 		 */
 		public GuardSpinner(Context context, DbAdapter db, String column,
 				long house_id) {
@@ -221,6 +264,9 @@ public class GuardScheduleActivity extends Activity {
 			});
 		}
 
+		/**
+		 * Sets the current.
+		 */
 		private void setCurrent() {
 			if (mGuard == -1 || !mCur.moveToFirst()) {
 				return;

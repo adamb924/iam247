@@ -106,12 +106,24 @@ public class TimePreferenceDialog extends DialogPreference {
 		return (a.getString(index));
 	}
 
+	/**
+	 * Returns the hour portion of a time formatted thusly: XX:XX
+	 * 
+	 * @param time
+	 * @return the hour part of the time
+	 */
 	public static int getHour(String time) {
 		String[] pieces = time.split(":");
 
 		return (Integer.parseInt(pieces[0]));
 	}
 
+	/**
+	 * Returns the minute portion of a time formatted thusly: XX:XX
+	 * 
+	 * @param time
+	 * @return the minute part of the time
+	 */
 	public static int getMinute(String time) {
 		String[] pieces = time.split(":");
 

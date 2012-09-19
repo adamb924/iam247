@@ -346,9 +346,16 @@ public class DbAdapter {
 	/** The Constant KEY_RESPONSE. */
 	public static final String KEY_RESPONSE = "response";
 
+	/** The Constant KEY_WITH. */
 	public static final String KEY_WITH = "with";
+
+	/** The Constant KEY_TRIPRESOLVED. */
 	public static final String KEY_TRIPRESOLVED = "tripresolved";
+
+	/** The Constant KEY_DELIVERED. */
 	public static final String KEY_DELIVERED = "delivered";
+
+	/** The Constant KEY_SENT. */
 	public static final String KEY_SENT = "sent";
 
 	/** Log message types. */
@@ -407,6 +414,13 @@ public class DbAdapter {
 
 	/** The Constant SATURDAY_GUARD_DEFAULT. */
 	public static final String SATURDAY_GUARD_DEFAULT = "typical_saturday_guard";
+
+	/**
+	 * The days of the week in lowercase, to be used to build database column
+	 * names.
+	 */
+	static public String[] DAYS = { "sunday", "monday", "tuesday", "wednesday",
+			"thursday", "friday", "saturday" };
 
 	/**
 	 * Instantiates a new db adapter.
@@ -471,10 +485,12 @@ public class DbAdapter {
 	 *            the contact_id of the person check-in in
 	 * @param place
 	 *            the place the to where the person is going
+	 * @param keyword
+	 *            the keyword
 	 * @param time
 	 *            the time by which the person will return
-	 * @param requestCheckin
-	 *            whether the person is requesting to be checked in on
+	 * @param with
+	 *            the with
 	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
 	 *         NOTIFY_EXISTING_CHECKIN_RESOLVED
 	 * @throws SQLException
@@ -840,6 +856,19 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Delete a guard from the database.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @return the number of rows deleted.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long deleteGuard(long rowId) throws SQLException {
+		return mDb.delete(DATABASE_TABLE_GUARDS, KEY_ROWID + "=" + rowId, null);
+	}
+
+	/**
 	 * Delete a house from the database, along with records of associated
 	 * tables.
 	 * 
@@ -856,19 +885,6 @@ public class DbAdapter {
 				new String[] { String.valueOf(rowId) });
 		return mDb.delete(DATABASE_TABLE_HOUSES, KEY_ROWID + "=?",
 				new String[] { String.valueOf(rowId) });
-	}
-
-	/**
-	 * Delete a guard from the database.
-	 * 
-	 * @param rowId
-	 *            the row id
-	 * @return the number of rows deleted.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public long deleteGuard(long rowId) throws SQLException {
-		return mDb.delete(DATABASE_TABLE_GUARDS, KEY_ROWID + "=" + rowId, null);
 	}
 
 	/**
@@ -893,46 +909,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Sets a message as having been delivered. Also deletes messages from the
-	 * database that are both sent and delivered.
-	 * 
-	 * @param number
-	 *            the phone number
-	 * @param message
-	 *            the message
-	 * @throws SQLException
-	 *             the SQL exception
-	 */
-	public void setPendingMessageDelivered(String number, String message)
-			throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(KEY_DELIVERED, 1);
-		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
-				+ KEY_MESSAGE + "=?", new String[] { number, message });
-		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
-	}
-
-	/**
-	 * Sets a message as having been sent. Also deletes messages from the
-	 * database that are both sent and delivered.
-	 * 
-	 * @param number
-	 *            the phone number
-	 * @param message
-	 *            the message
-	 * @throws SQLException
-	 *             the SQL exception
-	 */
-	public void setPendingMessageSent(String number, String message)
-			throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(KEY_SENT, 1);
-		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
-				+ KEY_MESSAGE + "=?", new String[] { number, message });
-		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
-	}
-
-	/**
 	 * Delete all unsent and undelivered messages from the database.
 	 * 
 	 * @throws SQLException
@@ -940,6 +916,21 @@ public class DbAdapter {
 	 */
 	public void deleteUnsentUndelivered() throws SQLException {
 		mDb.delete(DATABASE_TABLE_PENDING, null, null);
+	}
+
+	/**
+	 * Fetch contacts' numbers who are associated with houses receiving an
+	 * active call around. Columns: KEY_NUMBER
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public Cursor fetchActiveContactNumbers() throws SQLException {
+		return mDb
+				.rawQuery(
+						"select contactphones.number from contactphones,housemembers,houses on houses.active='1' and housemembers.house_id=houses._id and housemembers.contact_id=contactphones.contact_id;",
+						null);
 	}
 
 	/**
@@ -970,18 +961,16 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Fetch contacts' numbers who are associated with houses receiving an
-	 * active call around. Columns: KEY_NUMBER
+	 * Return a cursor with all of the guards. Columns: KEY_ROWID, KEY_NAME,
+	 * KEY_NUMBER
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public Cursor fetchActiveContactNumbers() throws SQLException {
-		return mDb
-				.rawQuery(
-						"select contactphones.number from contactphones,housemembers,houses on houses.active='1' and housemembers.house_id=houses._id and housemembers.contact_id=contactphones.contact_id;",
-						null);
+	public Cursor fetchAllGuards() throws SQLException {
+		return mDb.query(DATABASE_TABLE_GUARDS, new String[] { KEY_ROWID,
+				KEY_NAME, KEY_NUMBER }, null, null, null, null, KEY_NAME);
 	}
 
 	/**
@@ -1114,25 +1103,14 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Return a cursor with all of the guards. Columns: KEY_ROWID, KEY_NAME,
-	 * KEY_NUMBER
-	 * 
-	 * @return the cursor
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public Cursor fetchAllGuards() throws SQLException {
-		return mDb.query(DATABASE_TABLE_GUARDS, new String[] { KEY_ROWID,
-				KEY_NAME, KEY_NUMBER }, null, null, null, null, KEY_NAME);
-	}
-
-	/**
 	 * Get a report of a guard's check-ins that were due before the present
 	 * time. Columns: KEY_ID, KEY_TIME, KEY_RESPONSE
 	 * 
 	 * @param guard_id
+	 *            the guard_id
 	 * @return a cursor with the report
 	 * @throws SQLException
+	 *             the sQL exception
 	 */
 	public Cursor fetchGuardCheckinReport(long guard_id) throws SQLException {
 		return mDb
@@ -1216,6 +1194,26 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns whether the callaround is delayed or not.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @return True if the callaround is delayed, otherwise false.
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public boolean getCallaroundDelayed(long rowId) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CALLAROUNDS,
+				new String[] { KEY_DELAYED }, KEY_HOUSEID + "= ?",
+				new String[] { String.valueOf(rowId) }, null, null, null);
+		if (c.moveToFirst()) {
+			return c.getInt(0) == 1 ? true : false;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Returns true if a current call around is outstanding, otherwise false.
 	 * 
 	 * @param house_id
@@ -1229,33 +1227,6 @@ public class DbAdapter {
 				"select count(_id) as count from callarounds where house_id='"
 						+ String.valueOf(house_id) + "' and outstanding='1';",
 				null);
-
-		if (c.moveToFirst()) {
-			return c.getLong(0) > 0 ? true : false;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true if a current call around is outstanding and is eligible to
-	 * be resolved at the current moment, otherwise false.
-	 * 
-	 * @param house_id
-	 *            the house_id of the call around
-	 * @return True if the call around is outstanding, otherwise false.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean getCallaroundTimely(long house_id) throws SQLException {
-		String now = Time.iso8601DateTime();
-
-		Cursor c = mDb.rawQuery(
-				"select count(_id) as count from callarounds where house_id='"
-						+ String.valueOf(house_id)
-						+ "' and outstanding='1' and datetime('" + now
-						+ "') >= datetime(duefrom) and datetime('" + now
-						+ "') <= datetime(dueby);", null);
 
 		if (c.moveToFirst()) {
 			return c.getLong(0) > 0 ? true : false;
@@ -1365,6 +1336,33 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns true if a current call around is outstanding and is eligible to
+	 * be resolved at the current moment, otherwise false.
+	 * 
+	 * @param house_id
+	 *            the house_id of the call around
+	 * @return True if the call around is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCallaroundTimely(long house_id) throws SQLException {
+		String now = Time.iso8601DateTime();
+
+		Cursor c = mDb.rawQuery(
+				"select count(_id) as count from callarounds where house_id='"
+						+ String.valueOf(house_id)
+						+ "' and outstanding='1' and datetime('" + now
+						+ "') >= datetime(duefrom) and datetime('" + now
+						+ "') <= datetime(dueby);", null);
+
+		if (c.moveToFirst()) {
+			return c.getLong(0) > 0 ? true : false;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Returns true if the check-in is outstanding, otherwise false.
 	 * 
 	 * @param checkin_id
@@ -1383,68 +1381,6 @@ public class DbAdapter {
 		long r = c.getLong(0);
 		c.close();
 		return r == 1 ? true : false;
-	}
-
-	/**
-	 * Returns true if the check-in is trip-resolved, otherwise false.
-	 * 
-	 * @param checkin_id
-	 *            the checkin_id
-	 * @return true if the check-in is outstanding, otherwise false.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean getCheckinTripResolved(long checkin_id) throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_TRIPRESOLVED }, KEY_ROWID + "=?",
-				new String[] { String.valueOf(checkin_id) }, null, null, null);
-		if (!c.moveToFirst()) {
-			return false;
-		}
-		long r = c.getLong(0);
-		c.close();
-		return r == 1 ? true : false;
-	}
-
-	/**
-	 * Gets the current checkin for contact.
-	 * 
-	 * @param contact_id
-	 *            the contact_id
-	 * @return the current checkin for contact
-	 * @throws SQLException
-	 *             the sQL exception
-	 */
-	public long getCurrentCheckinForContact(long contact_id)
-			throws SQLException {
-		Cursor c = mDb.rawQuery("select _id from checkins where contact_id='"
-				+ String.valueOf(contact_id) + "' and outstanding='1';", null);
-		if (c.moveToFirst()) {
-			return c.getLong(0);
-		} else {
-			return -1;
-		}
-	}
-
-	/**
-	 * Returns the time that the checkin is due for the given checkin.
-	 * 
-	 * @param checkin_id
-	 *            the _id of the checkin
-	 * @return the time the checkin is due
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public String getCheckinTime(long checkin_id) throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_TIMEDUE }, KEY_ROWID + "=?",
-				new String[] { String.valueOf(checkin_id) }, null, null, null);
-		if (!c.moveToFirst()) {
-			return null;
-		}
-		String r = c.getString(0);
-		c.close();
-		return r;
 	}
 
 	/**
@@ -1473,6 +1409,48 @@ public class DbAdapter {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Returns the time that the checkin is due for the given checkin.
+	 * 
+	 * @param checkin_id
+	 *            the _id of the checkin
+	 * @return the time the checkin is due
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getCheckinTime(long checkin_id) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
+				new String[] { KEY_TIMEDUE }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }, null, null, null);
+		if (!c.moveToFirst()) {
+			return null;
+		}
+		String r = c.getString(0);
+		c.close();
+		return r;
+	}
+
+	/**
+	 * Returns true if the check-in is trip-resolved, otherwise false.
+	 * 
+	 * @param checkin_id
+	 *            the checkin_id
+	 * @return true if the check-in is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getCheckinTripResolved(long checkin_id) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_CHECKINS,
+				new String[] { KEY_TRIPRESOLVED }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }, null, null, null);
+		if (!c.moveToFirst()) {
+			return false;
+		}
+		long r = c.getLong(0);
+		c.close();
+		return r == 1 ? true : false;
 	}
 
 	/**
@@ -1575,63 +1553,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the name of the guard.
-	 * 
-	 * @param guardId
-	 *            the guard id
-	 * @return the guard name
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public String getGuardName(long guardId) throws SQLException {
-		Cursor c = mDb.rawQuery("select name from guards where _id=?;",
-				new String[] { String.valueOf(guardId) });
-		if (c.moveToFirst()) {
-			return c.getString(0);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Returns the number of the guard.
-	 * 
-	 * @param guardId
-	 *            the guard id
-	 * @return the guard number
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public String getGuardNumber(long guardId) throws SQLException {
-		Cursor c = mDb.rawQuery("select number from guards where _id=?;",
-				new String[] { String.valueOf(guardId) });
-		if (c.moveToFirst()) {
-			return c.getString(0);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Gets the guard id from number.
-	 * 
-	 * @param number
-	 *            the number
-	 * @return the guard id from number
-	 * @throws SQLException
-	 *             the sQL exception
-	 */
-	public long getGuardIdFromNumber(String number) throws SQLException {
-		Cursor c = mDb.rawQuery("select _id from guards where number=?;",
-				new String[] { number });
-		if (c.moveToFirst()) {
-			return c.getLong(0);
-		} else {
-			return -1;
-		}
-	}
-
-	/**
 	 * Returns the specified contact's specified preference.
 	 * 
 	 * @param contact_id
@@ -1676,6 +1597,26 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Gets the current checkin for contact.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @return the current checkin for contact
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public long getCurrentCheckinForContact(long contact_id)
+			throws SQLException {
+		Cursor c = mDb.rawQuery("select _id from checkins where contact_id='"
+				+ String.valueOf(contact_id) + "' and outstanding='1';", null);
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
 	 * Return a list of forbidden locations in a CSV string.
 	 * 
 	 * @return the string
@@ -1704,31 +1645,139 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Gets the location keywords.
+	 * Returns the ID of the guard given the house_id and the 'which' parameter.
 	 * 
-	 * @return the location keywords
+	 * @param house_id
+	 *            the house_id
+	 * @param which
+	 *            the which
+	 * @return the guard
 	 * @throws SQLException
 	 *             the sQL exception
 	 */
-	public String getLocationKeywords() throws SQLException {
-		Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS,
-				new String[] { KEY_KEYWORD }, null, null, null, null,
-				KEY_KEYWORD);
-		if (cursor.moveToFirst()) {
-			String r = "";
-			for (int i = 0; i < cursor.getCount(); i++) {
-				r += cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_KEYWORD));
-				if (!cursor.isLast()) {
-					r += ", ";
-				}
-				cursor.moveToNext();
-			}
-			cursor.close();
-			return r;
+	public long getGuard(long house_id, String which) throws SQLException {
+		Cursor c = mDb.rawQuery(
+				"select " + which + " from houses where _id=?;",
+				new String[] { String.valueOf(house_id) });
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Gets the guard checkin time.
+	 * 
+	 * @param guard_id
+	 *            the guard_id
+	 * @return the guard checkin time
+	 */
+	public String getGuardCheckinTime(long guard_id) {
+		// this query should select the most recent checkin time for the guard
+		Cursor c = mDb
+				.rawQuery(
+						"select time from guardcheckins where guard_id=? order by time desc limit 1;",
+						new String[] { String.valueOf(guard_id) });
+		if (c.moveToFirst()) {
+			return c.getString(0);
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Returns the id of the guard currently assigned to the specified house for
+	 * today.
+	 * 
+	 * @param house_id
+	 *            the house_id
+	 * @return the guard for house
+	 */
+	public long getGuardForHouse(long house_id) {
+		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase();
+
+		Cursor c = mDb.rawQuery("select " + todaysDayOfWeek
+				+ "_guard from houses where _id=?;",
+				new String[] { String.valueOf(house_id) });
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Gets the guard id from number.
+	 * 
+	 * @param number
+	 *            the number
+	 * @return the guard id from number
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public long getGuardIdFromNumber(String number) throws SQLException {
+		Cursor c = mDb.rawQuery("select _id from guards where number=?;",
+				new String[] { number });
+		if (c.moveToFirst()) {
+			return c.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Returns the name of the guard.
+	 * 
+	 * @param guardId
+	 *            the guard id
+	 * @return the guard name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getGuardName(long guardId) throws SQLException {
+		Cursor c = mDb.rawQuery("select name from guards where _id=?;",
+				new String[] { String.valueOf(guardId) });
+		if (c.moveToFirst()) {
+			return c.getString(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns the number of the guard.
+	 * 
+	 * @param guardId
+	 *            the guard id
+	 * @return the guard number
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getGuardNumber(long guardId) throws SQLException {
+		Cursor c = mDb.rawQuery("select number from guards where _id=?;",
+				new String[] { String.valueOf(guardId) });
+		if (c.moveToFirst()) {
+			return c.getString(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Gets the scheduled guard's phone number for the day of the week of the
+	 * given date.
+	 * 
+	 * @param house_id
+	 *            the house_id
+	 * @param date
+	 *            the date
+	 * @return the guard number from date
+	 */
+	public String getGuardNumberFromDate(long house_id, String date) {
+		String dayOfWeek = Time.dayOfWeek(date).toLowerCase();
+		long guardId = getGuard(house_id, dayOfWeek + "_guard");
+		return getGuardNumber(guardId);
 	}
 
 	/**
@@ -1796,46 +1845,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns whether the callaround is delayed or not.
-	 * 
-	 * @param rowId
-	 *            the row id
-	 * @return True if the callaround is delayed, otherwise false.
-	 * @throws SQLException
-	 *             the sQL exception
-	 */
-	public boolean getCallaroundDelayed(long rowId) throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_CALLAROUNDS,
-				new String[] { KEY_DELAYED }, KEY_HOUSEID + "= ?",
-				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (c.moveToFirst()) {
-			return c.getInt(0) == 1 ? true : false;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Returns the name of the location.
-	 * 
-	 * @param rowId
-	 *            the row id
-	 * @return the location name
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public String getLocationName(long rowId) throws SQLException {
-		Cursor c = mDb.query(DATABASE_TABLE_LOCATIONS,
-				new String[] { KEY_LABEL }, KEY_ROWID + "= ?",
-				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (c.moveToFirst()) {
-			return c.getString(0);
-		} else {
-			return null;
-		}
-	}
-
-	/**
 	 * Return true if the given location keyword exists in the database;
 	 * otherwise returns false.
 	 * 
@@ -1877,6 +1886,54 @@ public class DbAdapter {
 			return c.getLong(0) == 1 ? true : false;
 		} else {
 			return false;
+		}
+	}
+
+	/**
+	 * Gets the location keywords.
+	 * 
+	 * @return the location keywords
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public String getLocationKeywords() throws SQLException {
+		Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS,
+				new String[] { KEY_KEYWORD }, null, null, null, null,
+				KEY_KEYWORD);
+		if (cursor.moveToFirst()) {
+			String r = "";
+			for (int i = 0; i < cursor.getCount(); i++) {
+				r += cursor.getString(cursor
+						.getColumnIndexOrThrow(DbAdapter.KEY_KEYWORD));
+				if (!cursor.isLast()) {
+					r += ", ";
+				}
+				cursor.moveToNext();
+			}
+			cursor.close();
+			return r;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns the name of the location.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @return the location name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getLocationName(long rowId) throws SQLException {
+		Cursor c = mDb.query(DATABASE_TABLE_LOCATIONS,
+				new String[] { KEY_LABEL }, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(rowId) }, null, null, null);
+		if (c.moveToFirst()) {
+			return c.getString(0);
+		} else {
+			return null;
 		}
 	}
 
@@ -2107,6 +2164,16 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Resets the guards' schedules for the day to whatever is set in the
+	 * typical fields.
+	 */
+	public void resetGuardSchedule() {
+		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase();
+		mDb.execSQL("update houses set " + todaysDayOfWeek + "_guard=typical_"
+				+ todaysDayOfWeek + "_guard;");
+	}
+
+	/**
 	 * Sets the call around status of the house (i.e., whether the house is
 	 * expected to do call around or not.)
 	 * 
@@ -2259,6 +2326,29 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Resolve a check-in, given its _id.
+	 * 
+	 * @param checkin_id
+	 *            the checkin_id
+	 * @param resolved
+	 *            the resolved
+	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public int setCheckinResolvedFromId(long checkin_id, boolean resolved)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
+		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }) > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
+
+	/**
 	 * Set the trip-resolution status of any check-ins associated with a given
 	 * contact. If the trip is resolved, the checkin is also marked as not
 	 * outstanding.
@@ -2280,29 +2370,6 @@ public class DbAdapter {
 		}
 		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) }) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
-	}
-
-	/**
-	 * Resolve a check-in, given its _id.
-	 * 
-	 * @param checkin_id
-	 *            the checkin_id
-	 * @param resolved
-	 *            the resolved
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public int setCheckinResolvedFromId(long checkin_id, boolean resolved)
-			throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
-		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
-				new String[] { String.valueOf(checkin_id) }) > 0) {
 			return NOTIFY_SUCCESS;
 		} else {
 			return NOTIFY_FAILURE;
@@ -2370,41 +2437,6 @@ public class DbAdapter {
 		args.put(KEY_NAME, newname);
 		mDb.update(DATABASE_TABLE_CONTACTS, args, KEY_ROWID + "= ?",
 				new String[] { String.valueOf(contact_id) });
-	}
-
-	/**
-	 * Sets the name of a guard.
-	 * 
-	 * @param guard_id
-	 *            the guard's id
-	 * @param newname
-	 *            the new name
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public void setGuardName(long guard_id, String newname) throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(KEY_NAME, newname);
-		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
-				new String[] { String.valueOf(guard_id) });
-	}
-
-	/**
-	 * Sets the phone number of a guard.
-	 * 
-	 * @param guard_id
-	 *            the guard's id
-	 * @param newnumber
-	 *            the new name
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public void setGuardNumber(long guard_id, String newnumber)
-			throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(KEY_NUMBER, newnumber);
-		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
-				new String[] { String.valueOf(guard_id) });
 	}
 
 	/**
@@ -2518,6 +2550,98 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Sets the guard.
+	 * 
+	 * @param house_id
+	 *            the id of the house to change
+	 * @param guard_id
+	 *            the id of the guard to assign
+	 * @param which
+	 *            one of SUNDAY_GUARD, SUNDAY_GUARD_DEFAULT, etc. from DbAdapter
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void setGuard(long house_id, long guard_id, String which)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(which, guard_id);
+		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(house_id) });
+	}
+
+	/**
+	 * Sets the guard checkin resolved.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param guard_id
+	 *            the guard_id
+	 * @return the int
+	 */
+	public int setGuardCheckinResolved(Context context, long guard_id) {
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext);
+		int window = Long.valueOf(
+				settings.getString(
+						HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"))
+				.intValue();
+
+		String checkinTime = getGuardCheckinTime(guard_id);
+		if (checkinTime == null) {
+			return NOTIFY_FAILURE;
+		}
+
+		ContentValues args = new ContentValues();
+		args.put(KEY_RESPONSE, 1);
+
+		if (mDb.update(
+				DATABASE_TABLE_GUARD_CHECKINS,
+				args,
+				"guard_id=? and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
+						+ window + " minutes')",
+				new String[] { String.valueOf(guard_id) }) > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
+
+	/**
+	 * Sets the name of a guard.
+	 * 
+	 * @param guard_id
+	 *            the guard's id
+	 * @param newname
+	 *            the new name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setGuardName(long guard_id, String newname) throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_NAME, newname);
+		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(guard_id) });
+	}
+
+	/**
+	 * Sets the phone number of a guard.
+	 * 
+	 * @param guard_id
+	 *            the guard's id
+	 * @param newnumber
+	 *            the new name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setGuardNumber(long guard_id, String newnumber)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_NUMBER, newnumber);
+		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(guard_id) });
+	}
+
+	/**
 	 * Sets the house associated with a particular contact.
 	 * 
 	 * @param contact_id
@@ -2596,23 +2720,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Renames a location.
-	 * 
-	 * @param rowId
-	 *            the row id
-	 * @param name
-	 *            the new name
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public void setLocationName(long rowId, String name) throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(KEY_LABEL, name);
-		mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "= ?",
-				new String[] { String.valueOf(rowId) });
-	}
-
-	/**
 	 * Sets a location's keyword.
 	 * 
 	 * @param rowId
@@ -2626,6 +2733,23 @@ public class DbAdapter {
 			throws SQLException {
 		ContentValues args = new ContentValues();
 		args.put(KEY_KEYWORD, keyword);
+		mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(rowId) });
+	}
+
+	/**
+	 * Renames a location.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @param name
+	 *            the new name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void setLocationName(long rowId, String name) throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_LABEL, name);
 		mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "= ?",
 				new String[] { String.valueOf(rowId) });
 	}
@@ -2653,6 +2777,46 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Sets a message as having been delivered. Also deletes messages from the
+	 * database that are both sent and delivered.
+	 * 
+	 * @param number
+	 *            the phone number
+	 * @param message
+	 *            the message
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void setPendingMessageDelivered(String number, String message)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_DELIVERED, 1);
+		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
+				+ KEY_MESSAGE + "=?", new String[] { number, message });
+		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
+	}
+
+	/**
+	 * Sets a message as having been sent. Also deletes messages from the
+	 * database that are both sent and delivered.
+	 * 
+	 * @param number
+	 *            the phone number
+	 * @param message
+	 *            the message
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public void setPendingMessageSent(String number, String message)
+			throws SQLException {
+		ContentValues args = new ContentValues();
+		args.put(KEY_SENT, 1);
+		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
+				+ KEY_MESSAGE + "=?", new String[] { number, message });
+		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
+	}
+
+	/**
 	 * Toggles the specified contact's specified preference.
 	 * 
 	 * @param contact_id
@@ -2667,148 +2831,5 @@ public class DbAdapter {
 			throws SQLException {
 		return setContactPermission(contact_id, preferenceId,
 				!getContactPermission(contact_id, preferenceId));
-	}
-
-	/**
-	 * Sets the guard.
-	 * 
-	 * @param house_id
-	 *            the id of the house to change
-	 * @param guard_id
-	 *            the id of the guard to assign
-	 * @param which
-	 *            one of SUNDAY_GUARD, SUNDAY_GUARD_DEFAULT, etc. from DbAdapter
-	 * @throws SQLException
-	 *             the SQL exception
-	 */
-	public void setGuard(long house_id, long guard_id, String which)
-			throws SQLException {
-		ContentValues args = new ContentValues();
-		args.put(which, guard_id);
-		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "= ?",
-				new String[] { String.valueOf(house_id) });
-	}
-
-	/**
-	 * Returns the ID of the guard given the house_id and the 'which' parameter.
-	 * 
-	 * @param house_id
-	 *            the house_id
-	 * @param which
-	 *            the which
-	 * @return the guard
-	 * @throws SQLException
-	 *             the sQL exception
-	 */
-	public long getGuard(long house_id, String which) throws SQLException {
-		Cursor c = mDb.rawQuery(
-				"select " + which + " from houses where _id=?;",
-				new String[] { String.valueOf(house_id) });
-		if (c.moveToFirst()) {
-			return c.getLong(0);
-		} else {
-			return -1;
-		}
-	}
-
-	/**
-	 * Gets the scheduled guard's phone number for the day of the week of the
-	 * given date.
-	 * 
-	 * @param house_id
-	 *            the house_id
-	 * @param date
-	 *            the date
-	 * @return the guard number from date
-	 */
-	public String getGuardNumberFromDate(long house_id, String date) {
-		String dayOfWeek = Time.dayOfWeek(date).toLowerCase();
-		long guardId = getGuard(house_id, dayOfWeek + "_guard");
-		return getGuardNumber(guardId);
-	}
-
-	/**
-	 * Gets the guard checkin time.
-	 * 
-	 * @param guard_id
-	 *            the guard_id
-	 * @return the guard checkin time
-	 */
-	public String getGuardCheckinTime(long guard_id) {
-		// this query should select the most recent checkin time for the guard
-		Cursor c = mDb
-				.rawQuery(
-						"select time from guardcheckins where guard_id=? order by time desc limit 1;",
-						new String[] { String.valueOf(guard_id) });
-		if (c.moveToFirst()) {
-			return c.getString(0);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Sets the guard checkin resolved.
-	 * 
-	 * @param context
-	 *            the context
-	 * @param guard_id
-	 *            the guard_id
-	 * @return the int
-	 */
-	public int setGuardCheckinResolved(Context context, long guard_id) {
-		SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(mContext);
-		int window = Long.valueOf(
-				settings.getString(
-						HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"))
-				.intValue();
-
-		String checkinTime = getGuardCheckinTime(guard_id);
-		if (checkinTime == null) {
-			return NOTIFY_FAILURE;
-		}
-
-		ContentValues args = new ContentValues();
-		args.put(KEY_RESPONSE, 1);
-
-		if (mDb.update(
-				DATABASE_TABLE_GUARD_CHECKINS,
-				args,
-				"guard_id=? and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
-						+ window + " minutes')",
-				new String[] { String.valueOf(guard_id) }) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
-	}
-
-	/**
-	 * Returns the id of the guard currently assigned to the specified house for
-	 * today.
-	 * 
-	 * @param house_id
-	 * @return
-	 */
-	public long getGuardForHouse(long house_id) {
-		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase();
-
-		Cursor c = mDb.rawQuery("select " + todaysDayOfWeek
-				+ "_guard from houses where _id=?;",
-				new String[] { String.valueOf(house_id) });
-		if (c.moveToFirst()) {
-			return c.getLong(0);
-		} else {
-			return -1;
-		}
-	}
-
-	/**
-	 * Resets the guards' schedules for the day to whatever is set in the
-	 * typical fields.
-	 */
-	public void resetGuardSchedule() {
-		mDb.execSQL("sunday_guard=typical_sunday_guard,monday_guard=typical_monday_guard,tuesday_guard=typical_tuesday_guard,wednesday_guard=typical_wednesday_guard,thursday_guard=typical_thursday_guard,friday_guard=typical_friday_guard,saturday_guard=typical_saturday_guard;");
 	}
 }
