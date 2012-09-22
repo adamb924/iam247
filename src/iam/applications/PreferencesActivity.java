@@ -5,6 +5,7 @@ package iam.applications;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -141,7 +142,7 @@ public class PreferencesActivity extends PreferenceActivity {
 			source = new FileInputStream(sourceFile).getChannel();
 			destination = new FileOutputStream(destFile).getChannel();
 			destination.transferFrom(source, 0, source.size());
-		} catch (Exception e) {
+		} catch (FileNotFoundException e) {
 			try {
 				e.printStackTrace();
 
@@ -154,6 +155,8 @@ public class PreferencesActivity extends PreferenceActivity {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		Intent sendIntent = new Intent(Intent.ACTION_SEND);
@@ -188,7 +191,7 @@ public class PreferencesActivity extends PreferenceActivity {
 					source = new FileInputStream(sourceFile).getChannel();
 					destination = new FileOutputStream(destFile).getChannel();
 					destination.transferFrom(source, 0, source.size());
-				} catch (Exception e) {
+				} catch (FileNotFoundException e) {
 					try {
 						e.printStackTrace();
 
@@ -201,6 +204,8 @@ public class PreferencesActivity extends PreferenceActivity {
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 		});

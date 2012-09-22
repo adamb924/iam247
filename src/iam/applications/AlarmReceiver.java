@@ -29,55 +29,55 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * check-ins. Also used as an extra in the Intent to start the CheckinList
 	 * activity.
 	 */
-	public static String ALERT_CHECKIN_DUE = "ALERT_CHECKIN_DUE";
+	public static final String ALERT_CHECKIN_DUE = "ALERT_CHECKIN_DUE";
 
 	/**
 	 * An Intent action string alerting the application to check for overdue
 	 * call arounds.
 	 */
-	public static String ALERT_CALLAROUND_DUE = "ALERT_CALLAROUND_DUE";
+	public static final String ALERT_CALLAROUND_DUE = "ALERT_CALLAROUND_DUE";
 
 	/**
 	 * An Intent action string alerting the application to check for delayed
 	 * call arounds.
 	 */
-	public static String ALERT_DELAYED_CALLAROUND_DUE = "ALERT_DELAYED_CALLAROUND_DUE";
+	public static final String ALERT_DELAYED_CALLAROUND_DUE = "ALERT_DELAYED_CALLAROUND_DUE";
 
 	/**
 	 * An Intent action string alerting the application to add call arounds for
 	 * the day
 	 */
-	public static String ALERT_ADD_CALLAROUNDS = "ALERT_ADD_CALLAROUNDS";
+	public static final String ALERT_ADD_CALLAROUNDS = "ALERT_ADD_CALLAROUNDS";
 
 	/**
 	 * An Intent action string alerting the application send a message for
 	 * activities to refresh their screens
 	 */
-	public static String ALERT_REFRESH = "ALERT_REFRESH";
+	public static final String ALERT_REFRESH = "ALERT_REFRESH";
 
 	/**
 	 * An Intent action string alerting the application to remind the user about
 	 * a check-in
 	 */
-	public static String ALERT_CHECKIN_REMINDER = "ALERT_CHECKIN_REMINDER";
+	public static final String ALERT_CHECKIN_REMINDER = "ALERT_CHECKIN_REMINDER";
 
 	/**
 	 * An Intent action string alerting the application to add the guards'
 	 * check-ins.
 	 */
-	public static String ALERT_ADD_GUARD_CHECKINS = "ALERT_ADD_GUARD_CHECKINS";
+	public static final String ALERT_ADD_GUARD_CHECKINS = "ALERT_ADD_GUARD_CHECKINS";
 
 	/**
 	 * An Intent action string alerting the application to perform a guard
 	 * check.
 	 */
-	public static String ALERT_GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
+	public static final String ALERT_GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
 
 	/**
 	 * An Intent action string alerting the application set today's guard
 	 * schedule to their typical schedule.
 	 */
-	public static String ALERT_RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
+	public static final String ALERT_RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
 
 	/*
 	 * (non-Javadoc)

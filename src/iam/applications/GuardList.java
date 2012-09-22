@@ -154,6 +154,7 @@ public class GuardList extends ListActivity {
 		case R.id.delete:
 			mDbHelper.deleteGuard(guardId);
 			fillData();
+			return true;
 		default:
 			return super.onContextItemSelected(item);
 		}

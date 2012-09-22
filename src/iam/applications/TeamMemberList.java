@@ -236,6 +236,7 @@ public class TeamMemberList extends Activity {
 			item.setChecked(newValue);
 			mDbHelper.setContactPreference(mContactId,
 					DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, newValue);
+			return true;
 		default:
 			return super.onContextItemSelected(item);
 		}

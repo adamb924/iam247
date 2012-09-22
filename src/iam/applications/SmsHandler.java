@@ -13,7 +13,6 @@ import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 
-// TODO: Auto-generated Javadoc
 /**
  * This class processes SMS messages, and calls <code>DbAdapter</code> methods,
  * and sends response SMS messages, as appropriate.
@@ -120,10 +119,10 @@ public class SmsHandler {
 	private final DbAdapter mDbHelper;
 
 	/** The phone number. */
-	static public String PHONE_NUMBER = "PHONE_NUMBER";
+	static public final String PHONE_NUMBER = "PHONE_NUMBER";
 
 	/** The message. */
-	static public String MESSAGE = "MESSAGE";
+	static public final String MESSAGE = "MESSAGE";
 
 	/** The m settings. */
 	private SharedPreferences mSettings;
@@ -233,7 +232,7 @@ public class SmsHandler {
 		String place, keyword, withwhom, by;
 		if (with) {
 			matches = getMessageMatches(R.string.re_startcheckin_with);
-			if (matches == null || matches.length < 4) {
+			if (matches.length < 4) {
 				yourError();
 				return;
 			}
@@ -243,7 +242,7 @@ public class SmsHandler {
 			by = matches[3];
 		} else {
 			matches = getMessageMatches(R.string.re_startcheckin);
-			if (matches == null || matches.length < 3) {
+			if (matches.length < 3) {
 				yourError();
 				return;
 			}
@@ -419,7 +418,7 @@ public class SmsHandler {
 			}
 			return matches;
 		} else {
-			return null;
+			return new String[0];
 		}
 	}
 
@@ -472,7 +471,7 @@ public class SmsHandler {
 			}
 
 			String[] matches = getMessageMatches(R.string.re_thisis);
-			if (matches == null) {
+			if (matches.length < 1) {
 				yourError();
 				mDbHelper.close();
 			}

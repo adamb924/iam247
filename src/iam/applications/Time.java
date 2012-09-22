@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -213,7 +214,8 @@ public class Time {
 			String timebit = java.text.DateFormat.getTimeInstance(
 					java.text.DateFormat.SHORT).format(date);
 			String datebit = Time.prettyDate(context, date);
-			return String.format("%s (%s)", timebit, datebit.toLowerCase());
+			return String.format("%s (%s)", timebit,
+					datebit.toLowerCase(Locale.US));
 		}
 	}
 
@@ -279,10 +281,11 @@ public class Time {
 			if (h < 0 || h > 23 || m < 0 || m > 59 || (!ap.isEmpty() && h > 12)) {
 				Log.e("Parsing time",
 						"Numbers out of bounds, or inconsistent with am/pm");
-				if (ap == null)
+				if (ap == null) {
 					Log.e("Parsing time", "Null ap");
-				if (ap.isEmpty())
+				} else if (ap.isEmpty()) {
 					Log.e("Parsing time", "Empty");
+				}
 				return null;
 			}
 

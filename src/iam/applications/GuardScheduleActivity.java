@@ -22,7 +22,6 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class GuardScheduleActivity.
  * 
@@ -38,7 +37,7 @@ public class GuardScheduleActivity extends Activity {
 	 * Static string used as an extra key, indicating whether this is the
 	 * default schedule or not.
 	 */
-	static public String SET_DEFAULT = "SET_DEFAULT";
+	static public final String SET_DEFAULT = "SET_DEFAULT";
 
 	/** The database interface. */
 	private DbAdapter mDbHelper;
@@ -94,8 +93,9 @@ public class GuardScheduleActivity extends Activity {
 				label.setText(dayNames[day + 1]);
 				layout.addView(label);
 
-				mSpinners[i] = new GuardSpinner(this, mDbHelper, getColumnName(
-						day, mSetDefault), mHouseId);
+				mSpinners[i] = new GuardSpinner(this, mDbHelper,
+						DbAdapter.getGuardScheduleColumnName(day, mSetDefault),
+						mHouseId);
 				layout.addView(mSpinners[i]);
 			}
 		} else {
@@ -112,8 +112,9 @@ public class GuardScheduleActivity extends Activity {
 				label.setText(Time.prettyDate(this, c.getTime()));
 				layout.addView(label);
 
-				mSpinners[i] = new GuardSpinner(this, mDbHelper, getColumnName(
-						day, mSetDefault), mHouseId);
+				mSpinners[i] = new GuardSpinner(this, mDbHelper,
+						DbAdapter.getGuardScheduleColumnName(day, mSetDefault),
+						mHouseId);
 				layout.addView(mSpinners[i]);
 
 				c.add(Calendar.DATE, 1);
@@ -121,23 +122,6 @@ public class GuardScheduleActivity extends Activity {
 
 		}
 
-	}
-
-	/**
-	 * Gets the column name.
-	 * 
-	 * @param i
-	 *            the i
-	 * @param default_column
-	 *            the default_column
-	 * @return the column name
-	 */
-	static private String getColumnName(int i, boolean default_column) {
-		if (default_column) {
-			return DbAdapter.DAYS[i] + "_guard";
-		} else {
-			return "typical_" + DbAdapter.DAYS[i] + "_guard";
-		}
 	}
 
 	/*
@@ -148,7 +132,8 @@ public class GuardScheduleActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		mDbHelper.close();
+		if (mDbHelper != null)
+			mDbHelper.close();
 	}
 
 	/*
@@ -180,9 +165,16 @@ public class GuardScheduleActivity extends Activity {
 	}
 
 	/**
-	 * Sets the all.
+	 * Sets the values of all of the spinners.
 	 */
 	private void setAll() {
+		// TODO commenting this creates a FindBugs warning, but I am at a loss
+		// to understand why that happens here and not elsewhere. At some point
+		// I should figure this out.
+		if (mDbHelper == null) {
+			return;
+		}
+
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(getString(R.string.unblock_number));
 		alert.setCursor(mDbHelper.fetchAllGuards(),
@@ -200,7 +192,7 @@ public class GuardScheduleActivity extends Activity {
 	/**
 	 * The Class GuardSpinner.
 	 */
-	private class GuardSpinner extends Spinner {
+	static private class GuardSpinner extends Spinner {
 
 		/** The m db helper. */
 		private final DbAdapter mDbHelper;
@@ -240,7 +232,6 @@ public class GuardScheduleActivity extends Activity {
 			mGuard = mDbHelper.getGuard(mHouseId, mColumn);
 
 			mCur = mDbHelper.fetchAllGuards();
-			startManagingCursor(mCur);
 
 			String[] from = new String[] { DbAdapter.KEY_NAME };
 			int[] to = new int[] { android.R.id.text1 };
@@ -264,8 +255,20 @@ public class GuardScheduleActivity extends Activity {
 			});
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#finalize()
+		 */
+		@Override
+		protected void finalize() throws Throwable {
+			mCur.close();
+
+			super.finalize();
+		}
+
 		/**
-		 * Sets the current.
+		 * Sets the current item.
 		 */
 		private void setCurrent() {
 			if (mGuard == -1 || !mCur.moveToFirst()) {
