@@ -216,7 +216,7 @@ public class UnsentMessageList extends ListActivity {
 					.getColumnIndex(DbAdapter.KEY_DELIVERED)) == 1 ? true
 					: false;
 
-			String type = new String();
+			String type = "";
 			if (!sent) {
 				type = context.getString(R.string.unsent);
 			} else if (sent && !delivered) {

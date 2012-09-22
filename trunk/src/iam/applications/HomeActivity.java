@@ -19,70 +19,69 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-// TODO: Auto-generated Javadoc
 /**
  * This is the home activity of the app, i.e., the first screen that is
  * displayed.
  */
 public class HomeActivity extends Activity {
 
-	/** The name of the applicationpreferences. */
-	static public String PREFERENCES = "247-Preferences-File";
+	/** The name of the application preferences. */
+	static public final String PREFERENCES = "247-Preferences-File";
 
 	/** Preference key: what time callaround is due by. */
-	static public String PREFERENCES_CALLAROUND_DUE_BY = "PREFERENCES_CALLAROUND_DUE_BY";
+	static public final String PREFERENCES_CALLAROUND_DUE_BY = "PREFERENCES_CALLAROUND_DUE_BY";
 
 	/** Preference key: the earliest time to callaround. */
-	static public String PREFERENCES_CALLAROUND_DUE_FROM = "PREFERENCES_CALLAROUND_DUE_FROM";
+	static public final String PREFERENCES_CALLAROUND_DUE_FROM = "PREFERENCES_CALLAROUND_DUE_FROM";
 
 	/** Preference key: what time the callarounds are added for the day. */
-	static public String PREFERENCES_CALLAROUND_ADD = "PREFERENCES_CALLAROUND_ADD";
+	static public final String PREFERENCES_CALLAROUND_ADD = "PREFERENCES_CALLAROUND_ADD";
 
 	/** Preference key: whether the application permits "this is" messages. */
-	static public String PREFERENCES_PERMIT_THISIS = "PREFERENCES_PERMIT_THISIS";
+	static public final String PREFERENCES_PERMIT_THISIS = "PREFERENCES_PERMIT_THISIS";
 
 	/**
 	 * Preference key: how many minutes before the checkin is due should a
 	 * reminder be sent.
 	 */
-	static public String PREFERENCES_CHECKIN_REMINDER_DELAY = "PREFERENCES_CHECKIN_REMINDER_DELAY";
+	static public final String PREFERENCES_CHECKIN_REMINDER_DELAY = "PREFERENCES_CHECKIN_REMINDER_DELAY";
 
 	/**
 	 * Preference key: how long after the phone starts ringing should the
 	 * application wait before seeing if the person has hung up (and therefore
 	 * missed-called).
 	 */
-	static public String PREFERENCES_MISSED_CALL_DELAY = "PREFERENCES_MISSED_CALL_DELAY";
+	static public final String PREFERENCES_MISSED_CALL_DELAY = "PREFERENCES_MISSED_CALL_DELAY";
 
 	/**
 	 * Preference key: whether callarounds scheduled for the future should be
 	 * displayed in the list.
 	 */
-	static public String PREFERENCES_CALLAROUNDS_SHOW_FUTURE = "PREFERENCES_CALLAROUNDS_SHOW_FUTURE";
+	static public final String PREFERENCES_CALLAROUNDS_SHOW_FUTURE = "PREFERENCES_CALLAROUNDS_SHOW_FUTURE";
 
 	/** Preference key: a kill switch to disable 24/7. */
-	static public String PREFERENCES_DISABLE_247 = "PREFERENCES_DISABLE_247";
+	static public final String PREFERENCES_DISABLE_247 = "PREFERENCES_DISABLE_247";
 
 	/**
 	 * Preference key: the latest possible callaround, if someone requests a
 	 * delay.
 	 */
-	static public String PREFERENCES_CALLAROUND_DELAYED_TIME = "PREFERENCES_CALLAROUND_DELAYED_TIME";
+	static public final String PREFERENCES_CALLAROUND_DELAYED_TIME = "PREFERENCES_CALLAROUND_DELAYED_TIME";
 
 	/** Preference key: what time 24/7 starts checking in on guards. */
-	static public String PREFERENCES_GUARD_CHECKIN_START = "PREFERENCES_GUARD_CHECKIN_START";
+	static public final String PREFERENCES_GUARD_CHECKIN_START = "PREFERENCES_GUARD_CHECKIN_START";
 
 	/** Preference key: what time 24/7 stops checkin in on guards. */
-	static public String PREFERENCES_GUARD_CHECKIN_END = "PREFERENCES_GUARD_CHECKIN_END";
+	static public final String PREFERENCES_GUARD_CHECKIN_END = "PREFERENCES_GUARD_CHECKIN_END";
 
 	/** Preference key: the fewest possible guard checks. */
-	static public String PREFERENCES_FEWEST_GUARD_CHECKS = "PREFERENCES_FEWEST_GUARD_CHECKS";
+	static public final String PREFERENCES_FEWEST_GUARD_CHECKS = "PREFERENCES_FEWEST_GUARD_CHECKS";
 
 	/** Preference key: the maximum number of random checks allowed. */
-	static public String PREFERENCES_RANDOM_GUARD_CHECKS = "PREFERENCES_RANDOM_GUARD_CHECKS";
+	static public final String PREFERENCES_RANDOM_GUARD_CHECKS = "PREFERENCES_RANDOM_GUARD_CHECKS";
 
 	/** Preference key: how long the guard as to respond. */
-	static public String PREFERENCES_GUARD_CHECKIN_WINDOW = "PREFERENCES_GUARD_CHECKIN_WINDOW";
+	static public final String PREFERENCES_GUARD_CHECKIN_WINDOW = "PREFERENCES_GUARD_CHECKIN_WINDOW";
 
 	/** The database interface. */
 	private DbAdapter mDbHelper;

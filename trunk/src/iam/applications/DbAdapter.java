@@ -2,6 +2,7 @@ package iam.applications;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -95,34 +96,34 @@ public class DbAdapter {
 	}
 
 	/** The user preference checkin reminder. */
-	public static int USER_PREFERENCE_CHECKIN_REMINDER = 1;
+	public static final int USER_PREFERENCE_CHECKIN_REMINDER = 1;
 
 	/** The user permission report. */
-	public static int USER_PERMISSION_REPORT = 1;
+	public static final int USER_PERMISSION_REPORT = 1;
 
 	/** Return value to indicate failure. */
-	public static int NOTIFY_FAILURE = 0;
+	public static final int NOTIFY_FAILURE = 0;
 
 	/**
 	 * Return value to indicate that an existing check-in was resolved when the
 	 * new one was added.
 	 */
-	public static int NOTIFY_EXISTING_CHECKIN_RESOLVED = 1;
+	public static final int NOTIFY_EXISTING_CHECKIN_RESOLVED = 1;
 
 	/** Return value to indicate success. */
-	public static int NOTIFY_SUCCESS = 2;
+	public static final int NOTIFY_SUCCESS = 2;
 
 	/**
 	 * Return value to indicate that the requested action had already been
 	 * completed.
 	 */
-	public static int NOTIFY_ALREADY = 3;
+	public static final int NOTIFY_ALREADY = 3;
 
 	/** Return value to indicate that call around is currently inactive. */
-	public static int NOTIFY_INACTIVE = 4;
+	public static final int NOTIFY_INACTIVE = 4;
 
 	/** The notify untimely. */
-	public static int NOTIFY_UNTIMELY = 5;
+	public static final int NOTIFY_UNTIMELY = 5;
 
 	/** The version of the current database. */
 	private static final int DATABASE_VERSION = 19;
@@ -419,8 +420,8 @@ public class DbAdapter {
 	 * The days of the week in lowercase, to be used to build database column
 	 * names.
 	 */
-	static public String[] DAYS = { "sunday", "monday", "tuesday", "wednesday",
-			"thursday", "friday", "saturday" };
+	private final static String[] DAYS = { "sunday", "monday", "tuesday",
+			"wednesday", "thursday", "friday", "saturday" };
 
 	/**
 	 * Instantiates a new db adapter.
@@ -1160,20 +1161,6 @@ public class DbAdapter {
 				null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#finalize()
-	 */
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-
-		// this may have been causing problems....
-		// 9/3/2012: I don't understand the above comment
-		// close();
-	}
-
 	/**
 	 * Returns true if the house is expected to be doing call around, otherwise
 	 * false.
@@ -1628,17 +1615,17 @@ public class DbAdapter {
 				KEY_ROWID, KEY_LABEL }, KEY_ALLOWED + "='0'", null, null, null,
 				KEY_LABEL);
 		if (cursor.moveToFirst()) {
-			String r = "";
+			StringBuffer b = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
-				r += cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL));
+				b.append(cursor.getString(cursor
+						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL)));
 				if (!cursor.isLast()) {
-					r += ", ";
+					b.append(", ");
 				}
 				cursor.moveToNext();
 			}
 			cursor.close();
-			return r;
+			return b.toString();
 		} else {
 			return null;
 		}
@@ -1695,7 +1682,8 @@ public class DbAdapter {
 	 * @return the guard for house
 	 */
 	public long getGuardForHouse(long house_id) {
-		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase();
+		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase(
+				Locale.US);
 
 		Cursor c = mDb.rawQuery("select " + todaysDayOfWeek
 				+ "_guard from houses where _id=?;",
@@ -1775,9 +1763,27 @@ public class DbAdapter {
 	 * @return the guard number from date
 	 */
 	public String getGuardNumberFromDate(long house_id, String date) {
-		String dayOfWeek = Time.dayOfWeek(date).toLowerCase();
+		String dayOfWeek = Time.dayOfWeek(date).toLowerCase(Locale.US);
 		long guardId = getGuard(house_id, dayOfWeek + "_guard");
 		return getGuardNumber(guardId);
+	}
+
+	/**
+	 * Gets the column name.
+	 * 
+	 * @param i
+	 *            the i
+	 * @param default_column
+	 *            the default_column
+	 * @return the column name
+	 */
+	static public String getGuardScheduleColumnName(int i,
+			boolean default_column) {
+		if (default_column) {
+			return DbAdapter.DAYS[i] + "_guard";
+		} else {
+			return "typical_" + DbAdapter.DAYS[i] + "_guard";
+		}
 	}
 
 	/**
@@ -1901,17 +1907,17 @@ public class DbAdapter {
 				new String[] { KEY_KEYWORD }, null, null, null, null,
 				KEY_KEYWORD);
 		if (cursor.moveToFirst()) {
-			String r = "";
+			StringBuffer b = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
-				r += cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_KEYWORD));
+				b.append(cursor.getString(cursor
+						.getColumnIndexOrThrow(DbAdapter.KEY_KEYWORD)));
 				if (!cursor.isLast()) {
-					r += ", ";
+					b.append(", ");
 				}
 				cursor.moveToNext();
 			}
 			cursor.close();
-			return r;
+			return b.toString();
 		} else {
 			return null;
 		}
@@ -2087,8 +2093,10 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public String getReport() throws SQLException {
-		String checkin_people = "";
-		String callaround_houses = "";
+		String checkin_people;
+		String callaround_houses;
+		StringBuffer checkin_people_buffer = new StringBuffer();
+		StringBuffer callaround_houses_buffer = new StringBuffer();
 
 		Cursor c = mDb
 				.rawQuery(
@@ -2096,12 +2104,14 @@ public class DbAdapter {
 						null);
 		if (c.moveToFirst()) {
 			for (int i = 0; i < c.getCount(); i++) {
-				checkin_people += c.getString(0) + " (" + c.getString(1) + ")";
+				checkin_people_buffer.append(c.getString(0) + " ("
+						+ c.getString(1) + ")");
 				if (!c.isLast()) {
-					checkin_people += ", ";
+					checkin_people_buffer.append(", ");
 				}
 				c.moveToNext();
 			}
+			checkin_people = checkin_people_buffer.toString();
 		} else {
 			checkin_people = mContext.getString(R.string.none);
 		}
@@ -2111,14 +2121,15 @@ public class DbAdapter {
 				null);
 		if (c.moveToFirst()) {
 			for (int i = 0; i < c.getCount(); i++) {
-				callaround_houses += c.getString(0);
+				callaround_houses_buffer.append(c.getString(0));
 				if (!c.isLast()) {
-					callaround_houses += ", ";
+					callaround_houses_buffer.append(", ");
 				}
 				c.moveToNext();
 			}
+			callaround_houses = callaround_houses_buffer.toString();
 		} else {
-			checkin_people = mContext.getString(R.string.none);
+			callaround_houses = mContext.getString(R.string.none);
 		}
 
 		String checkin_report = String.format(
@@ -2168,7 +2179,8 @@ public class DbAdapter {
 	 * typical fields.
 	 */
 	public void resetGuardSchedule() {
-		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase();
+		String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase(
+				Locale.US);
 		mDb.execSQL("update houses set " + todaysDayOfWeek + "_guard=typical_"
 				+ todaysDayOfWeek + "_guard;");
 	}

@@ -75,8 +75,11 @@ public class CallAroundDetailList extends ListActivity implements
 						| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
 		Bundle extras = getIntent().getExtras();
-		mDay = extras != null ? extras.getString(DbAdapter.KEY_DUEBY) : null;
+		if (extras == null) {
+			return;
+		}
 
+		mDay = extras.getString(DbAdapter.KEY_DUEBY);
 		if (extras.containsKey(DbAdapter.KEY_DELAYED)) {
 			mIncludeDelayed = true;
 		}
