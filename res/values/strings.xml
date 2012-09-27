@@ -267,4 +267,9 @@
     <string name="sms_guard_checkin_rejection">yA wakht bArE checkin nEs, yA wakhtesh tEr shuda. Either it is not the time for checkin, or the time has passed.</string>
     <string name="sms_refuse_permission">24/7 says: You are currently not allowed to go there. You can missed-call 24/7 to get a list of forbidden locations.</string>
 	<string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
+
+	<!-- Log Messages -->
+	<string name="log_null_guard" formatted="false">Tried to get the guard associated with %s (%s), but got -1 as a return value.</string>
+	<string name="log_null_number" formatted="false">Tried to get the number associated with guard %s (%s), but got a null return value.</string>
+	
 </resources>
