@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -100,6 +101,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		mDbHelper = new DbAdapter(mContext);
 		mDbHelper.open();
 
+		int request_id = intent.getIntExtra(DbAdapter.KEY_REQUESTID, -1);
+		if (request_id != -1) {
+			mDbHelper.deleteAlarm(request_id);
+		}
+
 		// call various functions depending on the action of the intent. the
 		// action will have been set in one of the static member functions of
 		// this class.
@@ -135,31 +141,50 @@ public class AlarmReceiver extends BroadcastReceiver {
 	private static void createGuardCheckin(Context context, long house_id,
 			Date checkinTime) {
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_GUARD_CHECKIN);
+		intent.setAction(AlarmReceiver.ALERT_GUARD_CHECKIN);
 		intent.putExtra(DbAdapter.KEY_HOUSEID, house_id);
 
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) checkinTime.getTime(), intent,
+		final int _id = (int) System.currentTimeMillis();
+		PendingIntent sender = PendingIntent.getBroadcast(context, _id, intent,
 				PendingIntent.FLAG_ONE_SHOT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, checkinTime.getTime(), sender);
+
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_GUARD_CHECKIN);
+		dbHelper.close();
 	}
 
 	/**
-	 * Cancel all guard check-in alarms.
+	 * Cancel all alarms of the given type.
 	 * 
 	 * @param context
+	 * @param type
+	 *            the type of alarm to remove
 	 */
-	static public void removeGuardCheckins(Context context) {
-		Intent toCancel = new Intent(AlarmReceiver.ALERT_GUARD_CHECKIN);
-		PendingIntent pendingToCancel = PendingIntent.getBroadcast(context, 0,
-				toCancel, PendingIntent.FLAG_CANCEL_CURRENT);
+	static public void removeAlarmsByType(Context context, String type) {
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		Cursor c = dbHelper.fetchAlarmsForType(type);
+		dbHelper.close();
 
-		AlarmManager am = (AlarmManager) context
-				.getSystemService(Context.ALARM_SERVICE);
-		am.cancel(pendingToCancel);
+		if (!c.moveToFirst()) {
+			return;
+		}
+
+		do {
+			final int _id = c.getInt(0);
+			Intent toCancel = new Intent(type);
+			PendingIntent pendingToCancel = PendingIntent.getBroadcast(context,
+					_id, toCancel, PendingIntent.FLAG_CANCEL_CURRENT);
+
+			AlarmManager am = (AlarmManager) context
+					.getSystemService(Context.ALARM_SERVICE);
+			am.cancel(pendingToCancel);
+		} while (c.moveToNext());
 	}
 
 	/**
@@ -198,10 +223,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
 		}
 
+		final int _id = (int) System.currentTimeMillis();
+
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_RESET_GUARD_SCHEDULE);
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) timeToAddAt.getTime(), intent,
+		PendingIntent sender = PendingIntent.getBroadcast(context, _id, intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
@@ -231,19 +257,24 @@ public class AlarmReceiver extends BroadcastReceiver {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
 		}
 
+		removeAlarmsByType(context, AlarmReceiver.ALERT_ADD_CALLAROUNDS);
+
+		final int _id = (int) System.currentTimeMillis();
+
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_ADD_CALLAROUNDS);
-		intent.putExtra("TIME", ALERT_ADD_CALLAROUNDS); // 9/16/2012: I don't
-														// understand this line
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) timeToAddAt.getTime(), intent,
-				PendingIntent.FLAG_CANCEL_CURRENT);
+		intent.setAction(AlarmReceiver.ALERT_ADD_CALLAROUNDS);
+		PendingIntent sender = PendingIntent.getBroadcast(context, _id, intent,
+				0);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		am.cancel(sender);
 		am.setRepeating(AlarmManager.RTC_WAKEUP, timeToAddAt.getTime(),
 				AlarmManager.INTERVAL_DAY, sender);
+
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_ADD_CALLAROUNDS);
+		dbHelper.close();
 	}
 
 	/**
@@ -256,7 +287,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		String old = settings.getString(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "06:00");
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "21:00");
 
 		// make sure that the time for the alarm is in the future, so that these
 		// events aren't really added every time you go to the home activity
@@ -266,7 +297,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 		}
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_ADD_GUARD_CHECKINS);
+		intent.setAction(AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
+
+		final int _id = (int) System.currentTimeMillis();
 		PendingIntent sender = PendingIntent.getBroadcast(context,
 				(int) timeToAddAt.getTime(), intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
@@ -276,6 +309,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		am.cancel(sender);
 		am.setRepeating(AlarmManager.RTC_WAKEUP, timeToAddAt.getTime(),
 				AlarmManager.INTERVAL_DAY, sender);
+
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
+		dbHelper.close();
 	}
 
 	/**
@@ -291,18 +329,21 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
+		final int _id = (int) System.currentTimeMillis();
+
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_CALLAROUND_DUE);
-		// this extra is there only so that several ALERT_CALLAROUND_DUE Intents
-		// don't overwrite one another
-		intent.putExtra("TIME", Time.iso8601DateTime(date));
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) cal.getTimeInMillis(), intent,
+		intent.setAction(AlarmReceiver.ALERT_CALLAROUND_DUE);
+		PendingIntent sender = PendingIntent.getBroadcast(context, _id, intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
+
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_CALLAROUND_DUE);
+		dbHelper.close();
 	}
 
 	/**
@@ -317,15 +358,21 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
+		final int _id = (int) System.currentTimeMillis();
+
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_CHECKIN_DUE);
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) cal.getTimeInMillis(), intent,
+		intent.setAction(AlarmReceiver.ALERT_CHECKIN_DUE);
+		PendingIntent sender = PendingIntent.getBroadcast(context, _id, intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
+
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_CHECKIN_DUE);
+		dbHelper.close();
 	}
 
 	/**
@@ -340,7 +387,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 		DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 		String duetime = dbHelper.getCheckinTime(checkin_id);
-		dbHelper.close();
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(Time.iso8601Date(duetime));
@@ -355,16 +401,19 @@ public class AlarmReceiver extends BroadcastReceiver {
 		cal.add(Calendar.MINUTE, offset);
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(ALERT_CHECKIN_REMINDER);
-		intent.putExtra(ALERT_CHECKIN_REMINDER, checkin_id);
+		intent.setAction(AlarmReceiver.ALERT_CHECKIN_REMINDER);
+		intent.putExtra(AlarmReceiver.ALERT_CHECKIN_REMINDER, checkin_id);
 
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) cal.getTimeInMillis(), intent,
+		final int _id = (int) System.currentTimeMillis();
+		PendingIntent sender = PendingIntent.getBroadcast(context, _id, intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
+
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_CHECKIN_REMINDER);
+		dbHelper.close();
 	}
 
 	/**
@@ -382,17 +431,19 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_DELAYED_CALLAROUND_DUE);
-		// this extra is there only so that several ALERT_DELAYED_CALLAROUND_DUE
-		// Intents
-		// don't overwrite one another
-		intent.putExtra("TIME", Time.iso8601DateTime(date));
-		PendingIntent sender = PendingIntent.getBroadcast(context,
-				(int) cal.getTimeInMillis(), intent,
+
+		final int _id = (int) System.currentTimeMillis();
+		PendingIntent sender = PendingIntent.getBroadcast(context, _id, intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
 		AlarmManager am = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
+
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_CHECKIN_DUE);
+		dbHelper.close();
 	}
 
 	/** The database interface */
@@ -413,8 +464,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * Adds guard checkins for today.
 	 */
 	private void addGuardCheckins() {
+
 		// clear out old ones
-		removeGuardCheckins(mContext);
+		removeAlarmsByType(mContext, AlarmReceiver.ALERT_GUARD_CHECKIN);
 
 		SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
@@ -427,6 +479,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 				settings.getString(
 						HomeActivity.PREFERENCES_RANDOM_GUARD_CHECKS, "3"))
 				.intValue();
+
+		Log.i("Debug", "Up to Fewest: " + String.valueOf(fewestCheckins));
+		Log.i("Debug", "Up to Random: " + String.valueOf(randomCheckins));
 
 		String startTimeString = settings.getString(
 				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
@@ -452,12 +507,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 			return;
 		}
 
-		// cycle through the guards
+		// cycle through the houses
 		do {
 			long house_id = c.getLong(0);
 
 			// the fixed checkins
 			for (int i = 0; i < fewestCheckins; i++) {
+				Log.i("Debug", "Fewest: " + String.valueOf(i));
 				Date checkinTime = new Date(startTime.getTime()
 						+ r.nextInt(range));
 				createGuardCheckin(mContext, house_id, checkinTime);
@@ -466,6 +522,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 			// the random checkins
 			for (int i = 0; i < randomCheckins; i++) {
 				if (r.nextBoolean()) {
+					Log.i("Debug", "Random: " + String.valueOf(i));
 					Date checkinTime = new Date(startTime.getTime()
 							+ r.nextInt(range));
 					createGuardCheckin(mContext, house_id, checkinTime);
@@ -552,7 +609,23 @@ public class AlarmReceiver extends BroadcastReceiver {
 			return;
 		}
 		long guard_id = mDbHelper.getGuardForHouse(house_id);
+		if (guard_id == -1) {
+			mDbHelper
+					.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String.format(
+							mContext.getString(R.string.log_null_guard),
+							String.valueOf(house_id),
+							mDbHelper.getHouseName(house_id)));
+			return;
+		}
 		String number = mDbHelper.getGuardNumber(guard_id);
+		if (number == null) {
+			mDbHelper
+					.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String.format(
+							mContext.getString(R.string.log_null_number),
+							String.valueOf(guard_id),
+							mDbHelper.getGuardName(guard_id)));
+			return;
+		}
 
 		SmsHandler.sendSms(mContext, number,
 				mContext.getString(R.string.sms_guard_checkin));

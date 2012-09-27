@@ -139,8 +139,9 @@ public class UnsentMessageList extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.delete_all:
+		// switch (item.getItemId()) {
+		// case R.id.delete_all:
+		if (item.getItemId() == R.id.delete_all) {
 			AlertDialog.Builder alert = new AlertDialog.Builder(this);
 			alert.setTitle(R.string.delete_all);
 			alert.setMessage(R.string.delete_all_unsent_warning);
@@ -159,9 +160,12 @@ public class UnsentMessageList extends ListActivity {
 			alert.setNegativeButton("Cancel", null);
 			alert.show();
 			return true;
-		default:
+		} else {
 			return super.onOptionsItemSelected(item);
 		}
+		// default:
+		// return super.onOptionsItemSelected(item);
+		// }
 	}
 
 	/**

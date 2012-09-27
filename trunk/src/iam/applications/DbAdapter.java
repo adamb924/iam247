@@ -90,6 +90,7 @@ public class DbAdapter {
 			db.execSQL(DROP_TABLE_PENDING);
 			db.execSQL(DROP_TABLE_GUARDS);
 			db.execSQL(DROP_TABLE_GUARD_CHECKIN);
+			db.execSQL(DROP_TABLE_ALARMS);
 
 			onCreate(db);
 		}
@@ -126,7 +127,7 @@ public class DbAdapter {
 	public static final int NOTIFY_UNTIMELY = 5;
 
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 19;
+	private static final int DATABASE_VERSION = 20;
 
 	/** Create Table Commands. */
 	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
@@ -170,6 +171,9 @@ public class DbAdapter {
 	/** The Constant DATABASE_CREATE_GUARD_CHECKINS. */
 	private static final String DATABASE_CREATE_GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text , response int default 0, unique(time) on conflict ignore )";
 
+	/** The Constant DATABASE_CREATE_ALARMS. */
+	private static final String DATABASE_CREATE_ALARMS = "create table alarms ( _id integer primary key autoincrement , request_id int not null , type text )";
+
 	/** Drop Table Commands. */
 	private static final String DROP_TABLE_LOCATIONS = "DROP TABLE IF EXISTS locations;";
 
@@ -211,6 +215,9 @@ public class DbAdapter {
 
 	/** The Constant DROP_TABLE_GUARD_CHECKIN. */
 	private static final String DROP_TABLE_GUARD_CHECKIN = "DROP TABLE IF EXISTS guardcheckins;";
+
+	/** The Constant DROP_TABLE_ALARMS. */
+	private static final String DROP_TABLE_ALARMS = "DROP TABLE IF EXISTS alarms;";
 
 	/** The Constant DATABASE_NAME. */
 	private static final String DATABASE_NAME = "thedatabase";
@@ -256,6 +263,9 @@ public class DbAdapter {
 
 	/** The Constant DATABASE_TABLE_GUARDS_CHECKINS. */
 	private static final String DATABASE_TABLE_GUARD_CHECKINS = "guardcheckins";
+
+	/** The Constant DATABASE_TABLE_ALARMS. */
+	private static final String DATABASE_TABLE_ALARMS = "alarms";
 
 	/** SQL column names constants. */
 	public static final String KEY_ROWID = "_id";
@@ -359,8 +369,14 @@ public class DbAdapter {
 	/** The Constant KEY_SENT. */
 	public static final String KEY_SENT = "sent";
 
+	/** The Constant KEY_REQUESTID. */
+	public static final String KEY_REQUESTID = "request_id";
+
 	/** Log message types. */
 	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
+
+	/** Log message types. */
+	public static final String LOG_TYPE_SMS_ERROR = "SMS Error";
 
 	/** The Constant TAG. */
 	private static final String TAG = "DbAdapter";
@@ -431,6 +447,23 @@ public class DbAdapter {
 	 */
 	public DbAdapter(Context ctx) {
 		mContext = ctx;
+	}
+
+	/**
+	 * Adds a record of an alarm to the database.
+	 * 
+	 * @param request_id
+	 *            the request_id of the alarm
+	 * @param type
+	 *            the type of alarm (as defined in AlarmManager)
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public void addAlarm(int request_id, String type) throws SQLException {
+		ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_REQUESTID, request_id);
+		initialValues.put(KEY_TYPE, type);
+		mDb.insert(DATABASE_TABLE_ALARMS, null, initialValues);
 	}
 
 	/**
@@ -776,6 +809,19 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Deletes a record of an alarm from the database.
+	 * 
+	 * @param request_id
+	 *            The request id of the alarm
+	 * @return the number of rows deleted
+	 * @throws SQLException
+	 */
+	public long deleteAlarm(int request_id) throws SQLException {
+		return mDb.delete(DATABASE_TABLE_ALARMS, KEY_REQUESTID + "=?",
+				new String[] { String.valueOf(request_id) });
+	}
+
+	/**
 	 * Delete all information from database.
 	 * 
 	 * @throws SQLException
@@ -795,6 +841,7 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_PENDING, null, null);
 		mDb.delete(DATABASE_CREATE_GUARDS, null, null);
 		mDb.delete(DATABASE_CREATE_GUARD_CHECKINS, null, null);
+		mDb.delete(DATABASE_CREATE_ALARMS, null, null);
 	}
 
 	/**
@@ -932,6 +979,20 @@ public class DbAdapter {
 				.rawQuery(
 						"select contactphones.number from contactphones,housemembers,houses on houses.active='1' and housemembers.house_id=houses._id and housemembers.contact_id=contactphones.contact_id;",
 						null);
+	}
+
+	/**
+	 * Return a cursor with a list of alarms of the specified type. Columns:
+	 * KEY_REQUESTID
+	 * 
+	 * @param type
+	 *            The type of alarm to return (defined in AlarmManager)
+	 * @return the cursor
+	 * @throws SQLException
+	 */
+	public Cursor fetchAlarmsForType(String type) throws SQLException {
+		return mDb.rawQuery("select request_id from alarms where type=?;",
+				new String[] { type });
 	}
 
 	/**
@@ -1734,7 +1795,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the number of the guard.
+	 * Returns the number of the guard, or null if there is no number for the
+	 * supplied guardId.
 	 * 
 	 * @param guardId
 	 *            the guard id
