@@ -16,18 +16,25 @@ import android.util.Log;
  * This is a class with miscellaneous static functions to convert
  * <code>Date</code> objects to <code>String</code> objects, and vice versa.
  */
-public class Time {
+final public class Time {
+
+	private Time() {
+	}
+
+	private final static transient String ISO8601 = "yyyy-MM-dd HH:mm";
+	private final static transient String ISO8601_DAY = "yyyy-MM-dd";
+	private final static transient String ISO8601_TIME = "HH:mm";
 
 	/**
 	 * Return the ISO 8601 string of the Date object.
 	 * 
-	 * @param d
+	 * @param date
 	 *            the date
 	 * @return the string
 	 */
-	static public String iso8601DateTime(Date d) {
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		return format.format(d);
+	static public String iso8601DateTime(final Date date) {
+		final SimpleDateFormat format = new SimpleDateFormat(ISO8601, Locale.US);
+		return format.format(date);
 	}
 
 	/**
@@ -38,36 +45,38 @@ public class Time {
 	 * @return the string
 	 */
 	static public String iso8601DateTime() {
-		Calendar today = Calendar.getInstance();
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		final Calendar today = Calendar.getInstance();
+		final SimpleDateFormat format = new SimpleDateFormat(ISO8601, Locale.US);
 		return format.format(today.getTime());
 	}
 
 	/**
 	 * Return the time portion of the ISO 8601 string of the given Date.
 	 * 
-	 * @param d
+	 * @param date
 	 *            the date
 	 * @return the string
 	 */
-	static public String iso8601Time(Date d) {
-		SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-		return format.format(d);
+	static public String iso8601Time(final Date date) {
+		final SimpleDateFormat format = new SimpleDateFormat(ISO8601_TIME,
+				Locale.US);
+		return format.format(date);
 	}
 
 	/**
 	 * Return a Date object from a ISO 8601 string.
 	 * 
-	 * @param d
+	 * @param date
 	 *            the date
 	 * @return the date
 	 */
-	static public Date iso8601DateTime(String d) {
+	static public Date iso8601DateTime(final String date) {
 		try {
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-			return format.parse(d);
+			final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
+					Locale.US);
+			return format.parse(date);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
 			return null;
 		}
 	}
@@ -76,13 +85,14 @@ public class Time {
 	 * Return the day (not time) portion of the ISO 8601 string of the Date
 	 * object.
 	 * 
-	 * @param d
+	 * @param date
 	 *            the d
 	 * @return the string
 	 */
-	static public String iso8601Date(Date d) {
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		return format.format(d);
+	static public String iso8601Date(final Date date) {
+		final SimpleDateFormat format = new SimpleDateFormat(ISO8601_DAY,
+				Locale.US);
+		return format.format(date);
 	}
 
 	/**
@@ -92,8 +102,9 @@ public class Time {
 	 * @return the string
 	 */
 	static public String iso8601Date() {
-		Calendar today = Calendar.getInstance();
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		final Calendar today = Calendar.getInstance();
+		final SimpleDateFormat format = new SimpleDateFormat(ISO8601_DAY,
+				Locale.US);
 		return format.format(today.getTime());
 	}
 
@@ -101,22 +112,23 @@ public class Time {
 	 * Return a Date object from the day portion of the ISO 8601 string. Also
 	 * accepts full ISO 8601 strings.
 	 * 
-	 * @param d
+	 * @param date
 	 *            the d
 	 * @return the date
 	 */
-	static public Date iso8601Date(String d) {
+	static public Date iso8601Date(final String date) {
 		try {
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			return format.parse(d);
+			final SimpleDateFormat format = new SimpleDateFormat(ISO8601_DAY,
+					Locale.US);
+			return format.parse(date);
 		} catch (ParseException e) {
 			try {
-				SimpleDateFormat format = new SimpleDateFormat(
-						"yyyy-MM-dd HH:mm");
-				return format.parse(d);
+				final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
+						Locale.US);
+				return format.parse(date);
 			} catch (ParseException e2) {
-				e.printStackTrace();
-				e2.printStackTrace();
+				Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
+				Log.v(HomeActivity.TAG, Log.getStackTraceString(e2));
 				return null;
 			}
 		}
@@ -130,7 +142,7 @@ public class Time {
 	 *            the date
 	 * @return the string
 	 */
-	static public String prettyDateTime(Date date) {
+	static public String prettyDateTime(final Date date) {
 		if (date == null) {
 			return "";
 		} else {
@@ -148,9 +160,9 @@ public class Time {
 	 *            the date
 	 * @return the string
 	 */
-	static public String prettyDateTime(String date) {
-		Date d = iso8601DateTime(date);
-		return prettyDateTime(d);
+	static public String prettyDateTime(final String date) {
+		final Date dateDate = iso8601DateTime(date);
+		return prettyDateTime(dateDate);
 	}
 
 	/**
@@ -161,7 +173,7 @@ public class Time {
 	 *            the date
 	 * @return the string
 	 */
-	static public String prettyTime(String date) {
+	static public String prettyTime(final String date) {
 		return prettyTime(iso8601DateTime(date));
 	}
 
@@ -173,7 +185,7 @@ public class Time {
 	 *            the date
 	 * @return the string
 	 */
-	static public String prettyTime(Date date) {
+	static public String prettyTime(final Date date) {
 		if (date == null) {
 			return "";
 		} else {
@@ -192,9 +204,9 @@ public class Time {
 	 *            the date
 	 * @return the string
 	 */
-	static public String prettyDate(Context context, String date) {
-		Date d = iso8601Date(date);
-		return prettyDate(context, d);
+	static public String prettyDate(final Context context, final String date) {
+		final Date dateDate = iso8601Date(date);
+		return prettyDate(context, dateDate);
 	}
 
 	/**
@@ -207,13 +219,14 @@ public class Time {
 	 *            the date
 	 * @return the string
 	 */
-	static public String timeTodayTomorrow(Context context, Date date) {
+	static public String timeTodayTomorrow(final Context context,
+			final Date date) {
 		if (date == null) {
 			return "";
 		} else {
-			String timebit = java.text.DateFormat.getTimeInstance(
+			final String timebit = java.text.DateFormat.getTimeInstance(
 					java.text.DateFormat.SHORT).format(date);
-			String datebit = Time.prettyDate(context, date);
+			final String datebit = Time.prettyDate(context, date);
 			return String.format("%s (%s)", timebit,
 					datebit.toLowerCase(Locale.US));
 		}
@@ -229,11 +242,11 @@ public class Time {
 	 *            the date
 	 * @return the string
 	 */
-	static public String prettyDate(Context context, Date date) {
+	static public String prettyDate(final Context context, final Date date) {
 		if (date == null) {
 			return "";
 		} else {
-			Calendar today = Calendar.getInstance();
+			final Calendar today = Calendar.getInstance();
 
 			if (iso8601Date(date).equals(iso8601Date(today.getTime()))) {
 				return context.getString(R.string.today);
@@ -262,50 +275,57 @@ public class Time {
 	 *            the string containing the time representation
 	 * @return a <code>Date</code> object with the corresponding time, or null.
 	 */
-	static public Date timeFromString(Context context, String timeString) {
-		Resources r = context.getResources();
-		Pattern p = Pattern.compile(r.getString(R.string.re_time),
-				Pattern.CASE_INSENSITIVE);
-		Matcher matcher = p.matcher(timeString);
+	static public Date timeFromString(final Context context,
+			final String timeString) {
+		final Resources resources = context.getResources();
+		final Pattern pattern = Pattern
+				.compile(resources.getString(R.string.re_time),
+						Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(timeString);
 		if (matcher.matches()) {
-			Calendar date = Calendar.getInstance();
+			final Calendar date = Calendar.getInstance();
 
-			long h = matcher.group(1).length() == 0 ? 0 : Long.valueOf(
-					matcher.group(1)).longValue();
-			long m = matcher.group(2).length() == 0 ? 0 : Long.valueOf(
-					matcher.group(2)).longValue();
-			String ap = (matcher.group(3) == null || matcher.group(3).length() == 0) ? ""
-					: matcher.group(3);
+			long hour = matcher.group(1).length() == 0 ? 0 : Long
+					.parseLong(matcher.group(1));
+			final long minute = matcher.group(2).length() == 0 ? 0 : Long
+					.parseLong(matcher.group(2));
+			final String ampm = (matcher.group(3) == null || matcher.group(3)
+					.length() == 0) ? "" : matcher.group(3);
 
 			// obvious nonsense
-			if (h < 0 || h > 23 || m < 0 || m > 59 || (!ap.isEmpty() && h > 12)) {
-				Log.e("Parsing time",
+			if (hour < 0 || hour > 23 || minute < 0 || minute > 59
+					|| (!ampm.isEmpty() && hour > 12)) {
+				Log.e(HomeActivity.TAG,
 						"Numbers out of bounds, or inconsistent with am/pm");
-				if (ap == null) {
-					Log.e("Parsing time", "Null ap");
-				} else if (ap.isEmpty()) {
-					Log.e("Parsing time", "Empty");
+				if (ampm == null) {
+					Log.e(HomeActivity.TAG, "Null ap");
+				} else if (ampm.isEmpty()) {
+					Log.e(HomeActivity.TAG, "Empty");
 				}
 				return null;
 			}
 
-			long nowH = date.get(Calendar.HOUR_OF_DAY);
-			long nowM = date.get(Calendar.MINUTE);
+			final long nowH = date.get(Calendar.HOUR_OF_DAY);
+			final long nowM = date.get(Calendar.MINUTE);
 
-			if (ap.equals("a") && h == 12)
-				h -= 12;
-			else if (ap.equals("p") && h < 12)
-				h += 12;
+			if ("a".equals(ampm) && hour == 12) {
+				hour -= 12;
+			} else if ("p".equals(ampm) && hour < 12) {
+				hour += 12;
+			}
 
 			// if it's later than it is already, then it must be about tomorrow
 			boolean nextDay = false;
-			if ((nowH == h && nowM > m) || nowH > h)
+			if ((nowH == hour && nowM > minute) || nowH > hour) {
 				nextDay = true;
+			}
 
 			date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH),
-					date.get(Calendar.DAY_OF_MONTH), (int) h, (int) m, 0);
-			if (nextDay)
+					date.get(Calendar.DAY_OF_MONTH), (int) hour, (int) minute,
+					0);
+			if (nextDay) {
 				date.add(Calendar.DAY_OF_MONTH, 1);
+			}
 
 			return date.getTime();
 		} else {
@@ -324,16 +344,16 @@ public class Time {
 	 *            the date
 	 * @return the date object
 	 */
-	static public Date timeFromSimpleTime(String timeString) {
-		String[] pieces = timeString.split(":");
-		if (pieces.length != 2) {
-			return null;
+	static public Date timeFromSimpleTime(final String timeString) {
+		final String[] pieces = timeString.split(":");
+		if (pieces.length == 2) {
+			final Date ret = new Date();
+			ret.setHours(Integer.parseInt(pieces[0]));
+			ret.setMinutes(Integer.parseInt(pieces[1]));
+			ret.setSeconds(0);
+			return ret;
 		} else {
-			Date r = new Date();
-			r.setHours(Integer.parseInt(pieces[0]));
-			r.setMinutes(Integer.parseInt(pieces[1]));
-			r.setSeconds(0);
-			return r;
+			return null;
 		}
 	}
 
@@ -341,22 +361,23 @@ public class Time {
 	 * Returns a full day of the week (Sunday, Monday, ...) for the given time
 	 * string (which can be either yyyy-MM-dd or yyyy-MM-dd HH:mm).
 	 * 
-	 * @param d
+	 * @param date
 	 *            the date
 	 * @return the day of the week
 	 */
-	static public String dayOfWeek(String d) {
+	static public String dayOfWeek(final String date) {
 		try {
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			return dayOfWeek(format.parse(d));
+			final SimpleDateFormat format = new SimpleDateFormat(ISO8601_DAY,
+					Locale.US);
+			return dayOfWeek(format.parse(date));
 		} catch (ParseException e) {
 			try {
-				SimpleDateFormat format = new SimpleDateFormat(
-						"yyyy-MM-dd HH:mm");
-				return dayOfWeek(format.parse(d));
+				final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
+						Locale.US);
+				return dayOfWeek(format.parse(date));
 			} catch (ParseException e2) {
-				e.printStackTrace();
-				e2.printStackTrace();
+				Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
+				Log.v(HomeActivity.TAG, Log.getStackTraceString(e2));
 				return null;
 			}
 		}
@@ -365,31 +386,42 @@ public class Time {
 	/**
 	 * Returns a full day of the week (Sunday, Monday, ...) for the given Date.
 	 * 
-	 * @param d
+	 * @param date
 	 *            the date
 	 * @return the day of the week
 	 */
-	static public String dayOfWeek(Date d) {
-		Calendar c = Calendar.getInstance();
-		c.setTime(d);
-		int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+	static public String dayOfWeek(final Date date) {
+		String returnValue;
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 		switch (dayOfWeek) {
 		case 1:
-			return "Sunday";
+			returnValue = "Sunday";
+			break;
 		case 2:
-			return "Monday";
+			returnValue = "Monday";
+			break;
 		case 3:
-			return "Tuesday";
+			returnValue = "Tuesday";
+			break;
 		case 4:
-			return "Wednesday";
+			returnValue = "Wednesday";
+			break;
 		case 5:
-			return "Thursday";
+			returnValue = "Thursday";
+			break;
 		case 6:
-			return "Friday";
+			returnValue = "Friday";
+			break;
 		case 7:
-			return "Saturday";
+			returnValue = "Saturday";
+			break;
+		default:
+			returnValue = "";
+			break;
 		}
-		return "";
+		return returnValue;
 	}
 
 	/**
@@ -400,9 +432,9 @@ public class Time {
 	 *            the simple time
 	 * @return the date
 	 */
-	static public Date todayAtGivenTime(String simpleTime) {
-		Date targetTime = Time.timeFromSimpleTime(simpleTime);
-		Date today = new Date();
+	static public Date todayAtGivenTime(final String simpleTime) {
+		final Date targetTime = Time.timeFromSimpleTime(simpleTime);
+		final Date today = new Date();
 
 		today.setHours(targetTime.getHours());
 		today.setMinutes(targetTime.getMinutes());
@@ -419,13 +451,13 @@ public class Time {
 	 *            the simple time
 	 * @return the date
 	 */
-	static public Date tomorrowAtGivenTime(String simpleTime) {
-		Date targetTime = Time.timeFromSimpleTime(simpleTime);
+	static public Date tomorrowAtGivenTime(final String simpleTime) {
+		final Date targetTime = Time.timeFromSimpleTime(simpleTime);
 
-		Calendar c = Calendar.getInstance();
-		c.add(Calendar.DATE, 1);
+		final Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DATE, 1);
 
-		Date tomorrow = c.getTime();
+		final Date tomorrow = calendar.getTime();
 		tomorrow.setHours(targetTime.getHours());
 		tomorrow.setMinutes(targetTime.getMinutes());
 		tomorrow.setSeconds(targetTime.getSeconds());
@@ -437,20 +469,32 @@ public class Time {
 	 * indicated.
 	 * 
 	 * @param isoTime
-	 * @param n
+	 * @param nMinutes
 	 * @return a time object n minutes after the time indicated
 	 */
-	static public String nMinutesAfter(String isoTime, int n) {
+	static public String nMinutesAfter(final String isoTime, final int nMinutes) {
 		try {
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-			Date initialTime = format.parse(isoTime);
-			Calendar cal = Calendar.getInstance();
+			final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
+					Locale.US);
+			final Date initialTime = format.parse(isoTime);
+			final Calendar cal = Calendar.getInstance();
 			cal.setTime(initialTime);
-			cal.add(Calendar.MINUTE, n);
+			cal.add(Calendar.MINUTE, nMinutes);
 			return Time.iso8601DateTime(cal.getTime());
 		} catch (ParseException e) {
-			e.printStackTrace();
+			Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
 			return null;
 		}
+	}
+
+	/**
+	 * Returns a time formatted like "18:30".
+	 * 
+	 * @param hour
+	 * @param minute
+	 * @return the formatted time
+	 */
+	static public String basicTimeFormat(final int hour, final int minute) {
+		return String.format("%02d:%02d", hour, minute);
 	}
 }

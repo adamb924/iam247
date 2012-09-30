@@ -21,9 +21,9 @@ import android.widget.TextView;
 public class GuardCheckinList extends ListActivity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
-	private long mGuardId;
+	private transient long mGuardId;
 
 	/*
 	 * (non-Javadoc)
@@ -31,13 +31,13 @@ public class GuardCheckinList extends ListActivity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.guard_checkin_list);
 
-		Bundle extras = getIntent().getExtras();
-		mGuardId = extras != null ? extras.getLong(DbAdapter.KEY_ROWID) : -1;
+		final Bundle extras = getIntent().getExtras();
+		mGuardId = extras == null ? -1 : extras.getLong(DbAdapter.KEY_ROWID);
 
 		if (mGuardId == -1) {
 			return;
@@ -66,8 +66,8 @@ public class GuardCheckinList extends ListActivity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		Cursor c = mDbHelper.fetchGuardCheckinReport(mGuardId);
-		GuardReportAdapter adapter = new GuardReportAdapter(this, c);
+		final Cursor cur = mDbHelper.fetchGuardCheckinReport(mGuardId);
+		final GuardReportAdapter adapter = new GuardReportAdapter(this, cur);
 		getListView().setAdapter(adapter);
 	}
 
@@ -87,7 +87,7 @@ public class GuardCheckinList extends ListActivity {
 		 * @param cur
 		 *            the cur
 		 */
-		public GuardReportAdapter(Context context, Cursor cur) {
+		public GuardReportAdapter(final Context context, final Cursor cur) {
 			super(context, android.R.layout.simple_list_item_1, cur);
 		}
 
@@ -99,9 +99,10 @@ public class GuardCheckinList extends ListActivity {
 		 * android.database.Cursor, android.view.ViewGroup)
 		 */
 		@Override
-		public View newView(Context context, Cursor cur, ViewGroup parent) {
-			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return li.inflate(android.R.layout.simple_list_item_1, parent,
+		public View newView(final Context context, final Cursor cur,
+				final ViewGroup parent) {
+			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			return inflater.inflate(android.R.layout.simple_list_item_1, parent,
 					false);
 		}
 
@@ -112,19 +113,22 @@ public class GuardCheckinList extends ListActivity {
 		 * android.content.Context, android.database.Cursor)
 		 */
 		@Override
-		public void bindView(View view, Context context, Cursor cur) {
-			String day = cur.getString(cur.getColumnIndex(DbAdapter.KEY_TIME));
-			boolean response = cur.getLong(cur
+		public void bindView(final View view, final Context context,
+				final Cursor cur) {
+			final String day = cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_TIME));
+			final boolean response = cur.getLong(cur
 					.getColumnIndex(DbAdapter.KEY_RESPONSE)) == 1 ? true
 					: false;
 
-			TextView tv = (TextView) view.findViewById(android.R.id.text1);
-			tv.setText(Time.prettyDateTime(day));
+			final TextView textview = (TextView) view
+					.findViewById(android.R.id.text1);
+			textview.setText(Time.prettyDateTime(day));
 
 			if (response) {
-				tv.setTextColor(Color.WHITE);
+				textview.setTextColor(Color.WHITE);
 			} else {
-				tv.setTextColor(Color.RED);
+				textview.setTextColor(Color.RED);
 			}
 		}
 	}

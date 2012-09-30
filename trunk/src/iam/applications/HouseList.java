@@ -26,7 +26,7 @@ import android.widget.SimpleCursorAdapter;
 public class HouseList extends ListActivity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/*
 	 * (non-Javadoc)
@@ -34,8 +34,8 @@ public class HouseList extends ListActivity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.house_list);
 
@@ -67,24 +67,25 @@ public class HouseList extends ListActivity {
 	 * android.view.View, int, long)
 	 */
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
+	protected void onListItemClick(final ListView listView, final View view,
+			final int position, final long itemId) {
+		super.onListItemClick(listView, view, position, itemId);
 		mDbHelper
-				.setCallaroundActive(id, getListView().isItemChecked(position));
+				.setCallaroundActive(itemId, getListView().isItemChecked(position));
 	}
 
 	/**
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		Cursor housesCur = mDbHelper.fetchAllHouses();
+		final Cursor housesCur = mDbHelper.fetchAllHouses();
 		startManagingCursor(housesCur);
 
-		String[] from = new String[] { DbAdapter.KEY_NAME };
-		int[] to = new int[] { R.id.item };
+		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final int[] toFields = new int[] { R.id.item };
 
-		SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
-				R.layout.checked_textview_item, housesCur, from, to);
+		final SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
+				R.layout.checked_textview_item, housesCur, fromFields, toFields);
 		setListAdapter(notes);
 
 		housesCur.moveToFirst();
@@ -104,8 +105,8 @@ public class HouseList extends ListActivity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.houses_menu, menu);
 
 		return true;
@@ -117,14 +118,19 @@ public class HouseList extends ListActivity {
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.newHouse:
+	public boolean onOptionsItemSelected(final MenuItem item) {
+		if (item.getItemId() == R.id.newHouse) {
 			newHouse();
 			return true;
-		default:
-			return super.onOptionsItemSelected(item);
 		}
+		return super.onOptionsItemSelected(item);
+		// switch (item.getItemId()) {
+		// case R.id.newHouse:
+		// newHouse();
+		// return true;
+		// default:
+		// return super.onOptionsItemSelected(item);
+		// }
 	}
 
 	/*
@@ -134,10 +140,10 @@ public class HouseList extends ListActivity {
 	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		MenuInflater inflater = getMenuInflater();
+	public void onCreateContextMenu(final ContextMenu menu, final View view,
+			final ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, view, menuInfo);
+		final MenuInflater inflater = getMenuInflater();
 		// just re-using this
 		inflater.inflate(R.menu.houses_context, menu);
 	}
@@ -148,7 +154,7 @@ public class HouseList extends ListActivity {
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
+	public boolean onContextItemSelected(final MenuItem item) {
 		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 
@@ -174,25 +180,25 @@ public class HouseList extends ListActivity {
 	}
 
 	/**
-	 * @param id
+	 * @param guardId
 	 */
-	private void editTypicalGuardSchedule(long id) {
-		Intent i = new Intent(this, GuardScheduleActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra(GuardScheduleActivity.SET_DEFAULT, true);
-		i.putExtra(DbAdapter.KEY_HOUSEID, id);
-		startActivity(i);
+	private void editTypicalGuardSchedule(final long guardId) {
+		final Intent intent = new Intent(this, GuardScheduleActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.putExtra(GuardScheduleActivity.SET_DEFAULT, true);
+		intent.putExtra(DbAdapter.KEY_HOUSEID, guardId);
+		startActivity(intent);
 	}
 
 	/**
-	 * @param id
+	 * @param guardId
 	 */
-	private void editTodaysGuardSchedule(long id) {
-		Intent i = new Intent(this, GuardScheduleActivity.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra(GuardScheduleActivity.SET_DEFAULT, false);
-		i.putExtra(DbAdapter.KEY_HOUSEID, id);
-		startActivity(i);
+	private void editTodaysGuardSchedule(final long guardId) {
+		final Intent intent = new Intent(this, GuardScheduleActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.putExtra(GuardScheduleActivity.SET_DEFAULT, false);
+		intent.putExtra(DbAdapter.KEY_HOUSEID, guardId);
+		startActivity(intent);
 	}
 
 	/**
@@ -214,7 +220,8 @@ public class HouseList extends ListActivity {
 	 *            The clicked menu item.
 	 */
 	private void editHouse(final long item) {
-		AlertDialog.Builder alert = new AlertDialog.Builder(HouseList.this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				HouseList.this);
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(HouseList.this);
@@ -223,8 +230,9 @@ public class HouseList extends ListActivity {
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = input.getText().toString();
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final String value = input.getText().toString();
 				if (value.length() > 0) {
 					mDbHelper.setHouseName(item, value);
 					fillData();
@@ -241,7 +249,8 @@ public class HouseList extends ListActivity {
 	 * the database.
 	 */
 	private void newHouse() {
-		AlertDialog.Builder alert = new AlertDialog.Builder(HouseList.this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				HouseList.this);
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(HouseList.this);
@@ -249,8 +258,9 @@ public class HouseList extends ListActivity {
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = input.getText().toString();
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final String value = input.getText().toString();
 				if (value.length() > 0) {
 					mDbHelper.addHouse(value);
 					// this call will not create duplicates, so it's convenient
@@ -270,11 +280,11 @@ public class HouseList extends ListActivity {
 	 * @param house_id
 	 *            The _id of the house for which to display numbers.
 	 */
-	private void callGuard(long house_id) {
-		String number = mDbHelper.getGuardNumberFromDate(house_id,
+	private void callGuard(final long house_id) {
+		final String number = mDbHelper.getGuardNumberFromDate(house_id,
 				Time.iso8601Date());
 
-		Intent callIntent = new Intent(Intent.ACTION_CALL);
+		final Intent callIntent = new Intent(Intent.ACTION_CALL);
 		callIntent.setData(Uri.parse("tel:" + number));
 		startActivity(callIntent);
 	}

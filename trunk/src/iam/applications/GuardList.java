@@ -26,7 +26,7 @@ import android.widget.SimpleCursorAdapter;
 public class GuardList extends ListActivity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/*
 	 * (non-Javadoc)
@@ -34,8 +34,8 @@ public class GuardList extends ListActivity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.guard_list);
 
@@ -65,26 +65,28 @@ public class GuardList extends ListActivity {
 	 * android.view.View, int, long)
 	 */
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
+	protected void onListItemClick(final ListView listView, final View view,
+			final int position, final long itemId) {
+		super.onListItemClick(listView, view, position, itemId);
 
-		Intent i = new Intent(this, GuardCheckinList.class);
-		i.putExtra(DbAdapter.KEY_ROWID, id);
-		startActivity(i);
+		final Intent intent = new Intent(this, GuardCheckinList.class);
+		intent.putExtra(DbAdapter.KEY_ROWID, itemId);
+		startActivity(intent);
 	}
 
 	/**
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		Cursor c = mDbHelper.fetchAllGuards();
-		startManagingCursor(c);
+		final Cursor cur = mDbHelper.fetchAllGuards();
+		startManagingCursor(cur);
 
-		String[] from = new String[] { DbAdapter.KEY_NAME, DbAdapter.KEY_NUMBER };
-		int[] to = new int[] { R.id.text1, R.id.text2 };
+		final String[] fromFields = new String[] { DbAdapter.KEY_NAME,
+				DbAdapter.KEY_NUMBER };
+		final int[] toFields = new int[] { R.id.text1, R.id.text2 };
 
-		SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
-				R.layout.twolinelistitem, c, from, to);
+		final SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
+				R.layout.twolinelistitem, cur, fromFields, toFields);
 		setListAdapter(notes);
 	}
 
@@ -94,8 +96,8 @@ public class GuardList extends ListActivity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.guard_options, menu);
 		return true;
 	}
@@ -106,14 +108,20 @@ public class GuardList extends ListActivity {
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.newGuard:
+	public boolean onOptionsItemSelected(final MenuItem item) {
+		if (item.getItemId() == R.id.newGuard) {
 			newGuard();
 			return true;
-		default:
-			return super.onOptionsItemSelected(item);
 		}
+		return super.onOptionsItemSelected(item);
+
+		// switch (item.getItemId()) {
+		// case R.id.newGuard:
+		// newGuard();
+		// return true;
+		// default:
+		// return super.onOptionsItemSelected(item);
+		// }
 	}
 
 	/*
@@ -123,10 +131,10 @@ public class GuardList extends ListActivity {
 	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		MenuInflater inflater = getMenuInflater();
+	public void onCreateContextMenu(final ContextMenu menu, final View view,
+			final ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, view, menuInfo);
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.guard_context, menu);
 	}
 
@@ -136,10 +144,10 @@ public class GuardList extends ListActivity {
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+	public boolean onContextItemSelected(final MenuItem item) {
+		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
-		long guardId = info == null ? -1 : info.id;
+		final long guardId = info == null ? -1 : info.id;
 
 		switch (item.getItemId()) {
 		case R.id.call_number:
@@ -166,17 +174,18 @@ public class GuardList extends ListActivity {
 	 * @param guard_id
 	 */
 	private void editName(final long guard_id) {
+		final EditText editinput = new EditText(GuardList.this);
+		editinput.setText(mDbHelper.getGuardName(guard_id));
+
 		AlertDialog.Builder alert;
-		final EditText editinput;
 		alert = new AlertDialog.Builder(GuardList.this);
 		alert.setTitle(getString(R.string.name));
-		editinput = new EditText(GuardList.this);
-		editinput.setText(mDbHelper.getGuardName(guard_id));
 		alert.setView(editinput);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = editinput.getText().toString();
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final String value = editinput.getText().toString();
 				if (value.length() > 0) {
 					mDbHelper.setGuardName(guard_id, value);
 					fillData();
@@ -194,16 +203,17 @@ public class GuardList extends ListActivity {
 	 */
 	private void editPhone(final long guard_id) {
 		AlertDialog.Builder alert;
-		final EditText editinput;
+		final EditText editinput = new EditText(GuardList.this);
+		editinput.setText(mDbHelper.getContactNumber(guard_id));
+
 		alert = new AlertDialog.Builder(GuardList.this);
 		alert.setTitle(getString(R.string.number));
-		editinput = new EditText(GuardList.this);
-		editinput.setText(mDbHelper.getContactNumber(guard_id));
 		alert.setView(editinput);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = editinput.getText().toString();
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final String value = editinput.getText().toString();
 				if (value.length() > 0) {
 					mDbHelper.setGuardNumber(guard_id, SmsHandler
 							.getNormalizedPhoneNumber(GuardList.this, value));
@@ -221,19 +231,19 @@ public class GuardList extends ListActivity {
 	 */
 	private void newGuard() {
 		AlertDialog.Builder alert;
-		final EditText editinput;
+		final EditText editinput = new EditText(GuardList.this);
 		alert = new AlertDialog.Builder(GuardList.this);
-		editinput = new EditText(GuardList.this);
 		alert.setView(editinput);
 		alert.setTitle(getString(R.string.name));
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = editinput.getText().toString();
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final String value = editinput.getText().toString();
 				if (value.length() > 0) {
 					mDbHelper.addGuard(value);
-					long id = mDbHelper.lastInsertId();
-					editPhone(id);
+					final long lastId = mDbHelper.lastInsertId();
+					editPhone(lastId);
 					fillData();
 				}
 			}
@@ -249,9 +259,9 @@ public class GuardList extends ListActivity {
 	 */
 	private void callNumber(final long guard_id) {
 		try {
-			String number = mDbHelper.getGuardNumber(guard_id);
+			final String number = mDbHelper.getGuardNumber(guard_id);
 			if (number != null) {
-				Intent callIntent = new Intent(Intent.ACTION_CALL);
+				final Intent callIntent = new Intent(Intent.ACTION_CALL);
 				callIntent.setData(Uri.parse("tel:" + number));
 				startActivity(callIntent);
 			}

@@ -27,17 +27,17 @@ import android.widget.TextView;
 public class LocationsList extends ListActivity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/**
 	 * Called when the activity is first created.
 	 * 
-	 * @param savedInstanceState
+	 * @param bundle
 	 *            the saved instance state
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.location_list);
 
@@ -76,16 +76,17 @@ public class LocationsList extends ListActivity {
 	 * android.view.View, int, long)
 	 */
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
-		mDbHelper.setLocationAllowed(id, getListView().isItemChecked(position));
+	protected void onListItemClick(final ListView listView, final View view,
+			final int position, final long itemId) {
+		super.onListItemClick(listView, view, position, itemId);
+		mDbHelper.setLocationAllowed(itemId, getListView().isItemChecked(position));
 	}
 
 	/**
 	 * Query the database and refresh the list of locations.
 	 */
 	private void fillData() {
-		Cursor locationsCur = mDbHelper.fetchAllLocations();
+		final Cursor locationsCur = mDbHelper.fetchAllLocations();
 		startManagingCursor(locationsCur);
 		/*
 		 * String[] from = new String[] { DbAdapter.KEY_LABEL }; int[] to = new
@@ -95,7 +96,7 @@ public class LocationsList extends ListActivity {
 		 * R.layout.checked_textview_item, locationsCur, from, to);
 		 * setListAdapter(notes);
 		 */
-		LocationItemAdapter adapter = new LocationItemAdapter(this,
+		final LocationItemAdapter adapter = new LocationItemAdapter(this,
 				locationsCur);
 		setListAdapter(adapter);
 
@@ -117,8 +118,8 @@ public class LocationsList extends ListActivity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.location_menu, menu);
 		return true;
 	}
@@ -129,14 +130,19 @@ public class LocationsList extends ListActivity {
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.newlocation:
+	public boolean onOptionsItemSelected(final MenuItem item) {
+		if (item.getItemId() == R.id.newlocation) {
 			newLocation();
 			return true;
-		default:
-			return super.onOptionsItemSelected(item);
 		}
+		return super.onOptionsItemSelected(item);
+		// switch (item.getItemId()) {
+		// case R.id.newlocation:
+		// newLocation();
+		// return true;
+		// default:
+		// return super.onOptionsItemSelected(item);
+		// }
 	}
 
 	/*
@@ -146,10 +152,10 @@ public class LocationsList extends ListActivity {
 	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		MenuInflater inflater = getMenuInflater();
+	public void onCreateContextMenu(final ContextMenu menu, final View view,
+			final ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, view, menuInfo);
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.location_context, menu);
 	}
 
@@ -159,7 +165,7 @@ public class LocationsList extends ListActivity {
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
+	public boolean onContextItemSelected(final MenuItem item) {
 		AdapterContextMenuInfo info;
 		switch (item.getItemId()) {
 		case R.id.location_delete:
@@ -170,30 +176,30 @@ public class LocationsList extends ListActivity {
 		case R.id.location_edit:
 			final AdapterContextMenuInfo info2 = (AdapterContextMenuInfo) item
 					.getMenuInfo();
-			AlertDialog.Builder alert = new AlertDialog.Builder(
+			final AlertDialog.Builder alert = new AlertDialog.Builder(
 					LocationsList.this);
 			final EditText input = new EditText(LocationsList.this);
 			input.setText(mDbHelper.getLocationName(info2.id));
 			alert.setView(input);
-			alert.setPositiveButton("Ok",
+			alert.setPositiveButton(getString(R.string.ok),
 					new DialogInterface.OnClickListener() {
 						@Override
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
-							String value = input.getText().toString();
+						public void onClick(final DialogInterface dialog,
+								final int whichButton) {
+							final String value = input.getText().toString();
 							if (value.length() > 0) {
 								mDbHelper.setLocationName(info2.id, value);
 								fillData();
 							}
 						}
 					});
-			alert.setNegativeButton("Cancel", null);
+			alert.setNegativeButton(getString(R.string.cancel), null);
 			alert.show();
 			return true;
 		case R.id.location_edit_keyword:
 			final AdapterContextMenuInfo info3 = (AdapterContextMenuInfo) item
 					.getMenuInfo();
-			AlertDialog.Builder alert2 = new AlertDialog.Builder(
+			final AlertDialog.Builder alert2 = new AlertDialog.Builder(
 					LocationsList.this);
 			final EditText input2 = new EditText(LocationsList.this);
 			input2.setText(mDbHelper.getLocationName(info3.id));
@@ -201,16 +207,16 @@ public class LocationsList extends ListActivity {
 			alert2.setPositiveButton("Ok",
 					new DialogInterface.OnClickListener() {
 						@Override
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
-							String value = input2.getText().toString();
+						public void onClick(final DialogInterface dialog,
+								final int whichButton) {
+							final String value = input2.getText().toString();
 							if (value.length() > 0) {
 								mDbHelper.setLocationKeyword(info3.id, value);
 								fillData();
 							}
 						}
 					});
-			alert2.setNegativeButton("Cancel", null);
+			alert2.setNegativeButton(getString(R.string.cancel), null);
 			alert2.show();
 			return true;
 		default:
@@ -223,18 +229,20 @@ public class LocationsList extends ListActivity {
 	 * location to the database.
 	 */
 	private void newLocation() {
-		AlertDialog.Builder alert = new AlertDialog.Builder(LocationsList.this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				LocationsList.this);
 		final EditText input = new EditText(LocationsList.this);
 		alert.setView(input);
 		alert.setTitle(R.string.name);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = input.getText().toString();
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final String value = input.getText().toString();
 				if (value.length() > 0) {
 					final String label = value;
 
-					AlertDialog.Builder alert2 = new AlertDialog.Builder(
+					final AlertDialog.Builder alert2 = new AlertDialog.Builder(
 							LocationsList.this);
 					final EditText input2 = new EditText(LocationsList.this);
 					alert2.setView(input2);
@@ -242,9 +250,11 @@ public class LocationsList extends ListActivity {
 					alert2.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
 								@Override
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-									String value = input2.getText().toString();
+								public void onClick(
+										final DialogInterface dialog,
+										final int whichButton) {
+									final String value = input2.getText()
+											.toString();
 									if (value.length() > 0) {
 										mDbHelper.addLocation(label, true,
 												value);
@@ -252,12 +262,12 @@ public class LocationsList extends ListActivity {
 									}
 								}
 							});
-					alert2.setNegativeButton("Cancel", null);
+					alert2.setNegativeButton(getString(R.string.cancel), null);
 					alert2.show();
 				}
 			}
 		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
@@ -274,7 +284,7 @@ public class LocationsList extends ListActivity {
 		 * @param cur
 		 *            the cur
 		 */
-		public LocationItemAdapter(Context context, Cursor cur) {
+		public LocationItemAdapter(final Context context, final Cursor cur) {
 			super(context, R.layout.checked_textview_item, cur);
 		}
 
@@ -286,9 +296,10 @@ public class LocationsList extends ListActivity {
 		 * android.database.Cursor, android.view.ViewGroup)
 		 */
 		@Override
-		public View newView(Context context, Cursor cur, ViewGroup parent) {
-			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return li.inflate(R.layout.checked_textview_item, parent, false);
+		public View newView(final Context context, final Cursor cur,
+				final ViewGroup parent) {
+			final LayoutInflater inflator = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			return inflator.inflate(R.layout.checked_textview_item, parent, false);
 		}
 
 		/*
@@ -298,10 +309,11 @@ public class LocationsList extends ListActivity {
 		 * android.content.Context, android.database.Cursor)
 		 */
 		@Override
-		public void bindView(View view, Context context, Cursor cur) {
-			String label = cur.getString(cur
+		public void bindView(final View view, final Context context,
+				final Cursor cur) {
+			final String label = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_LABEL));
-			String keyword = cur.getString(cur
+			final String keyword = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_KEYWORD));
 
 			((TextView) view.findViewById(R.id.item)).setText(String.format(

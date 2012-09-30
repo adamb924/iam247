@@ -22,7 +22,8 @@ public class BlockPhonePreferenceDialog extends EditTextPreference {
 	 * @param attrs
 	 *            the attrs
 	 */
-	public BlockPhonePreferenceDialog(Context ctxt, AttributeSet attrs) {
+	public BlockPhonePreferenceDialog(final Context ctxt,
+			final AttributeSet attrs) {
 		super(ctxt, attrs);
 
 		setPositiveButtonText("Block");
@@ -35,11 +36,11 @@ public class BlockPhonePreferenceDialog extends EditTextPreference {
 	 * @see android.preference.EditTextPreference#onDialogClosed(boolean)
 	 */
 	@Override
-	protected void onDialogClosed(boolean positiveResult) {
+	protected void onDialogClosed(final boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
 
 		if (positiveResult) {
-			DbAdapter dbHelper = new DbAdapter(getContext());
+			final DbAdapter dbHelper = new DbAdapter(getContext());
 			dbHelper.open();
 			dbHelper.setNumberIsBlocked(getText(), true);
 			dbHelper.close();

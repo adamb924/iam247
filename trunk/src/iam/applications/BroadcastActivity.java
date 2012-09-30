@@ -20,11 +20,11 @@ import android.widget.Toast;
 public class BroadcastActivity extends Activity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
-	private EditText mMessageBody;
+	private transient EditText mMessageBody;
 
-	private Spinner mToWhom;
+	private transient Spinner mToWhom;
 
 	/*
 	 * (non-Javadoc)
@@ -32,8 +32,8 @@ public class BroadcastActivity extends Activity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
@@ -44,16 +44,16 @@ public class BroadcastActivity extends Activity {
 		initializeMessageBody();
 
 		mToWhom = (Spinner) findViewById(R.id.towhom);
-		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-				this, R.array.broadcast_options_array,
-				android.R.layout.simple_spinner_item);
+		final ArrayAdapter<CharSequence> adapter = ArrayAdapter
+				.createFromResource(this, R.array.broadcast_options_array,
+						android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mToWhom.setAdapter(adapter);
 
-		Button broadcastButton = (Button) findViewById(R.id.broadcast);
+		final Button broadcastButton = (Button) findViewById(R.id.broadcast);
 		broadcastButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
+			public void onClick(final View view) {
 				sendMessage();
 			}
 		});
@@ -71,29 +71,29 @@ public class BroadcastActivity extends Activity {
 	}
 
 	private void initializeMessageBody() {
-		String forbidden = mDbHelper.getForbiddenLocations();
+		final String forbidden = mDbHelper.getForbiddenLocations();
 		if (forbidden != null) {
-			String message = String.format(
+			final String message = String.format(
 					getString(R.string.broadcast_forbidden), forbidden);
 			mMessageBody.setText(message);
 		}
 	}
 
 	private void sendMessage() {
-		String message = mMessageBody.getText().toString();
-		String to = mToWhom.getSelectedItem().toString();
+		final String message = mMessageBody.getText().toString();
+		final String toWhom = mToWhom.getSelectedItem().toString();
 
-		Cursor c;
+		Cursor cur;
 
-		if (to.equals(getString(R.string.broadcast_to_all))) {
-			c = mDbHelper.fetchAllContactNumbers();
-		} else if (to.equals(getString(R.string.broadcast_to_active))) {
-			c = mDbHelper.fetchActiveContactNumbers();
+		if (toWhom.equals(getString(R.string.broadcast_to_all))) {
+			cur = mDbHelper.fetchAllContactNumbers();
+		} else if (toWhom.equals(getString(R.string.broadcast_to_active))) {
+			cur = mDbHelper.fetchActiveContactNumbers();
 		} else {
 			return;
 		}
 
-		if (!c.moveToFirst()) {
+		if (!cur.moveToFirst()) {
 			Toast.makeText(
 					this,
 					String.format(getString(R.string.broadcast_result),
@@ -102,10 +102,10 @@ public class BroadcastActivity extends Activity {
 		}
 		long count = 0;
 		do {
-			String number = c.getString(0);
+			final String number = cur.getString(0);
 			SmsHandler.sendSms(this, number, message);
 			count++;
-		} while (c.moveToNext());
+		} while (cur.moveToNext());
 		Toast.makeText(
 				this,
 				String.format(getString(R.string.broadcast_result),

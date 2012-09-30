@@ -27,11 +27,11 @@ import android.widget.TimePicker;
  */
 public class AddTravelCallaround extends Activity {
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
-	private Spinner mWhichHouse;
-	private TimePicker mSecondTimePicker;
-	private EditText mWindow;
+	private transient Spinner mWhichHouse;
+	private transient TimePicker mSecondTimePicker;
+	private transient EditText mWindow;
 
 	/*
 	 * (non-Javadoc)
@@ -39,8 +39,8 @@ public class AddTravelCallaround extends Activity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.travel_callarounds);
 
@@ -49,11 +49,11 @@ public class AddTravelCallaround extends Activity {
 
 		// populate the spinner with the names of the houses/groups
 		mWhichHouse = (Spinner) findViewById(R.id.which_house);
-		Cursor c = mDbHelper.fetchAllHouses();
-		String[] from = new String[] { DbAdapter.KEY_NAME };
-		int[] to = new int[] { android.R.id.text1 };
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_spinner_item, c, from, to);
+		final Cursor cur = mDbHelper.fetchAllHouses();
+		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final int[] toFields = new int[] { android.R.id.text1 };
+		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_spinner_item, cur, fromFields, toFields);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mWhichHouse.setAdapter(adapter);
 
@@ -65,30 +65,31 @@ public class AddTravelCallaround extends Activity {
 		// checkbox is checked it is enabled
 		mSecondTimePicker = (TimePicker) findViewById(R.id.secondTime);
 		mSecondTimePicker.setEnabled(false);
-		CheckBox secondTimeEnabled = (CheckBox) findViewById(R.id.secondTimeEnabled);
+		final CheckBox secondTimeEnabled = (CheckBox) findViewById(R.id.secondTimeEnabled);
 		secondTimeEnabled
 				.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 					@Override
-					public void onCheckedChanged(CompoundButton buttonView,
-							boolean isChecked) {
+					public void onCheckedChanged(
+							final CompoundButton buttonView,
+							final boolean isChecked) {
 						mSecondTimePicker.setEnabled(isChecked);
 					}
 				});
 
 		// logic for the Ok and Cancel buttons
-		Button okButton = (Button) findViewById(R.id.ok);
+		final Button okButton = (Button) findViewById(R.id.ok);
 		okButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
+			public void onClick(final View view) {
 				addCallarounds();
 				finish();
 			}
 		});
 
-		Button cancelButton = (Button) findViewById(R.id.cancel);
+		final Button cancelButton = (Button) findViewById(R.id.cancel);
 		cancelButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
+			public void onClick(final View view) {
 				finish();
 			}
 		});
@@ -111,53 +112,56 @@ public class AddTravelCallaround extends Activity {
 	 * DbAdapter.addTravelCallarounds(), and calls that function.
 	 */
 	private void addCallarounds() {
-		DatePicker fromDatePicker = (DatePicker) findViewById(R.id.fromDate);
-		DatePicker toDatePicker = (DatePicker) findViewById(R.id.toDate);
-		TimePicker firstTimePicker = (TimePicker) findViewById(R.id.firstTime);
+		final DatePicker fromDatePicker = (DatePicker) findViewById(R.id.fromDate);
+		final DatePicker toDatePicker = (DatePicker) findViewById(R.id.toDate);
+		final TimePicker firstTimePicker = (TimePicker) findViewById(R.id.firstTime);
 
-		Cursor cursor = (Cursor) mWhichHouse.getSelectedItem();
-		long house_id = cursor.getLong(cursor.getColumnIndex("_id"));
+		final Cursor cursor = (Cursor) mWhichHouse.getSelectedItem();
+		final long house_id = cursor.getLong(cursor.getColumnIndex("_id"));
 
-		long window = Long.valueOf(mWindow.getText().toString());
+		final long window = Long.valueOf(mWindow.getText().toString());
 
-		Calendar fromDate = Calendar.getInstance();
+		final Calendar fromDate = Calendar.getInstance();
 		fromDate.set(fromDatePicker.getYear(), fromDatePicker.getMonth(),
 				fromDatePicker.getDayOfMonth());
 
-		Calendar toDate = Calendar.getInstance();
+		final Calendar toDate = Calendar.getInstance();
 		toDate.set(toDatePicker.getYear(), toDatePicker.getMonth(),
 				toDatePicker.getDayOfMonth());
 
-		String firstTime = String.format("%02d:%02d",
+		final String firstTime = Time.basicTimeFormat(
 				firstTimePicker.getCurrentHour(),
 				firstTimePicker.getCurrentMinute());
 
-		Calendar firstTimeEarlyCal = Calendar.getInstance();
+		final Calendar firstTimeEarlyCal = Calendar.getInstance();
 		firstTimeEarlyCal.set(Calendar.HOUR_OF_DAY,
 				firstTimePicker.getCurrentHour());
 		firstTimeEarlyCal.set(Calendar.MINUTE,
 				firstTimePicker.getCurrentMinute());
 		firstTimeEarlyCal.add(Calendar.MINUTE, -1 * (int) window);
-		String firstTimeEarly = String.format("%02d:%02d",
+		final String firstTimeEarly = Time.basicTimeFormat(
 				firstTimeEarlyCal.get(Calendar.HOUR_OF_DAY),
 				firstTimeEarlyCal.get(Calendar.MONTH));
 
-		String secondTime = null;
-		String secondTimeEarly = null;
+		String secondTime;
+		String secondTimeEarly;
 		if (mSecondTimePicker.isEnabled()) {
-			secondTime = String.format("%02d:%02d",
+			secondTime = Time.basicTimeFormat(
 					mSecondTimePicker.getCurrentHour(),
 					mSecondTimePicker.getCurrentMinute());
 
-			Calendar secondTimeEarlyCal = Calendar.getInstance();
-			secondTimeEarlyCal.set(Calendar.HOUR_OF_DAY,
+			final Calendar secondTimeCal = Calendar.getInstance();
+			secondTimeCal.set(Calendar.HOUR_OF_DAY,
 					mSecondTimePicker.getCurrentHour());
-			secondTimeEarlyCal.set(Calendar.MINUTE,
+			secondTimeCal.set(Calendar.MINUTE,
 					mSecondTimePicker.getCurrentMinute());
-			secondTimeEarlyCal.add(Calendar.MINUTE, -1 * (int) window);
-			secondTimeEarly = String.format("%02d:%02d",
-					secondTimeEarlyCal.get(Calendar.HOUR_OF_DAY),
-					secondTimeEarlyCal.get(Calendar.MONTH));
+			secondTimeCal.add(Calendar.MINUTE, -1 * (int) window);
+			secondTimeEarly = Time.basicTimeFormat(
+					secondTimeCal.get(Calendar.HOUR_OF_DAY),
+					secondTimeCal.get(Calendar.MONTH));
+		} else {
+			secondTime = "";
+			secondTimeEarly = "";
 		}
 
 		mDbHelper.addTravelCallarounds(house_id, fromDate, toDate, firstTime,

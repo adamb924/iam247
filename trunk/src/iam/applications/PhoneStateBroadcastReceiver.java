@@ -22,8 +22,8 @@ public class PhoneStateBroadcastReceiver extends BroadcastReceiver {
 	 * android.content.Intent)
 	 */
 	@Override
-	public void onReceive(Context context, Intent intent) {
-		TelephonyManager telephonyManager = (TelephonyManager) context
+	public void onReceive(final Context context, final Intent intent) {
+		final TelephonyManager telephonyManager = (TelephonyManager) context
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		telephonyManager.listen(new MissedCallReceiver(context),
 				PhoneStateListener.LISTEN_CALL_STATE);

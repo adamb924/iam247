@@ -32,18 +32,18 @@ import android.widget.Spinner;
 public class TeamMemberList extends Activity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/** The list of checked-in people. */
-	private ListView mCheckedIn;
+	private transient ListView mCheckedIn;
 
 	/** The list of checked-out people. */
-	private ListView mCheckedOut;
+	private transient ListView mCheckedOut;
 
 	/** An intent filter to catch all broadcast refresh requests. */
-	private IntentFilter mIntentFilter;
+	private transient IntentFilter mIntentFilter;
 
-	private long mContactId;
+	private transient long mContactId;
 
 	/*
 	 * (non-Javadoc)
@@ -51,8 +51,8 @@ public class TeamMemberList extends Activity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.teammember_list);
 
@@ -99,27 +99,28 @@ public class TeamMemberList extends Activity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		String[] from = new String[] { DbAdapter.KEY_NAME, DbAdapter.KEY_LABEL };
-		int[] to = new int[] { R.id.name, R.id.house };
+		final String[] fromFields = new String[] { DbAdapter.KEY_NAME,
+				DbAdapter.KEY_LABEL };
+		final int[] toFields = new int[] { R.id.name, R.id.house };
 
-		Cursor checkedoutCur = mDbHelper.fetchCheckedOutPeople();
+		final Cursor checkedoutCur = mDbHelper.fetchCheckedOutPeople();
 		startManagingCursor(checkedoutCur);
 
 		if (checkedoutCur.getCount() > 0) {
-			SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
-					R.layout.teammember_item, checkedoutCur, from, to);
+			final SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
+					R.layout.teammember_item, checkedoutCur, fromFields, toFields);
 			mCheckedOut.setAdapter(notes);
 		} else {
-			ViewGroup vg = (ViewGroup) findViewById(R.id.teammember_layout);
-			vg.removeView(mCheckedOut);
-			vg.removeView(findViewById(R.id.checkedout_label));
+			final ViewGroup viewGroup = (ViewGroup) findViewById(R.id.teammember_layout);
+			viewGroup.removeView(mCheckedOut);
+			viewGroup.removeView(findViewById(R.id.checkedout_label));
 		}
 
-		Cursor checkedinCur = mDbHelper.fetchCheckedInPeople();
+		final Cursor checkedinCur = mDbHelper.fetchCheckedInPeople();
 		startManagingCursor(checkedinCur);
 
-		SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
-				R.layout.teammember_item, checkedinCur, from, to);
+		final SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
+				R.layout.teammember_item, checkedinCur, fromFields, toFields);
 		mCheckedIn.setAdapter(notes);
 
 	}
@@ -131,15 +132,15 @@ public class TeamMemberList extends Activity {
 	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		MenuInflater inflater = getMenuInflater();
+	public void onCreateContextMenu(final ContextMenu menu, final View view,
+			final ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, view, menuInfo);
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.teammember_menu, menu);
 
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-		long contact_id = info.id;
-		long house_id = mDbHelper.getHouseId(contact_id);
+		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		final long contact_id = info.id;
+		final long house_id = mDbHelper.getHouseId(contact_id);
 
 		if (!mDbHelper.getContactHasCheckinOutstanding(contact_id)) {
 			menu.removeItem(R.id.resolve_checkin);
@@ -148,26 +149,28 @@ public class TeamMemberList extends Activity {
 		if (!mDbHelper.getCallaroundActive(house_id) || house_id == -1) {
 			menu.removeItem(R.id.callaround_resolved);
 		} else {
-			MenuItem callaroundResolved = menu
+			final MenuItem caResolved = menu
 					.findItem(R.id.callaround_resolved);
-			callaroundResolved.setCheckable(true);
-			callaroundResolved.setChecked(!mDbHelper
+			caResolved.setCheckable(true);
+			caResolved.setChecked(!mDbHelper
 					.getCallaroundOutstanding(house_id));
 		}
 
-		MenuItem callaroundEnabled = menu.findItem(R.id.callaround_enabled);
+		final MenuItem callaroundEnabled = menu
+				.findItem(R.id.callaround_enabled);
 		callaroundEnabled.setCheckable(true);
 		callaroundEnabled.setChecked(mDbHelper.getCallaroundActive(house_id));
 
-		MenuItem reportsEnabled = menu.findItem(R.id.allow_request_reports);
+		final MenuItem reportsEnabled = menu
+				.findItem(R.id.allow_request_reports);
 		reportsEnabled.setCheckable(true);
 		reportsEnabled.setChecked(mDbHelper.getContactPermission(contact_id,
 				DbAdapter.USER_PERMISSION_REPORT));
 
-		MenuItem checkinRemindersEnabled = menu
+		final MenuItem remindersEnabled = menu
 				.findItem(R.id.checkin_reminders);
-		checkinRemindersEnabled.setCheckable(true);
-		checkinRemindersEnabled.setChecked(mDbHelper.getContactPreference(
+		remindersEnabled.setCheckable(true);
+		remindersEnabled.setChecked(mDbHelper.getContactPreference(
 				contact_id, DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER));
 
 	}
@@ -178,13 +181,13 @@ public class TeamMemberList extends Activity {
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+	public boolean onContextItemSelected(final MenuItem item) {
+		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 		mContactId = info == null ? mContactId : info.id;
 
-		long house_id = mDbHelper.getHouseId(mContactId);
-		boolean newValue;
+		final long house_id = mDbHelper.getHouseId(mContactId);
+		boolean newValue = false;
 
 		switch (item.getItemId()) {
 		case R.id.call_number:
@@ -216,23 +219,23 @@ public class TeamMemberList extends Activity {
 			blockNumber(mContactId);
 			return true;
 		case R.id.allow_request_reports:
-			newValue = !item.isChecked();
+			newValue ^= item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPermission(mContactId,
 					DbAdapter.USER_PERMISSION_REPORT, newValue);
 			return true;
 		case R.id.callaround_enabled:
-			newValue = !item.isChecked();
+			newValue ^= item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundActive(house_id, newValue);
 			return true;
 		case R.id.callaround_resolved:
-			newValue = !item.isChecked();
+			newValue ^= item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundResolved(house_id, newValue);
 			return true;
 		case R.id.checkin_reminders:
-			newValue = !item.isChecked();
+			newValue ^= item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPreference(mContactId,
 					DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, newValue);
@@ -249,17 +252,20 @@ public class TeamMemberList extends Activity {
 	 * @param contact_id
 	 */
 	private void blockNumber(final long contact_id) {
-		AlertDialog.Builder alert = new AlertDialog.Builder(TeamMemberList.this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				TeamMemberList.this);
 		alert.setTitle(R.string.block_number);
 		alert.setMessage(R.string.block_number_warning);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				mDbHelper.setNumberIsBlocked(
-						mDbHelper.getContactNumber(contact_id), true);
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						mDbHelper.setNumberIsBlocked(
+								mDbHelper.getContactNumber(contact_id), true);
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
@@ -270,23 +276,25 @@ public class TeamMemberList extends Activity {
 	 * @param contact_id
 	 */
 	private void editEmail(final long contact_id) {
-		AlertDialog.Builder alert;
-		final EditText editinput;
-		alert = new AlertDialog.Builder(TeamMemberList.this);
-		editinput = new EditText(TeamMemberList.this);
+		final EditText editinput = new EditText(TeamMemberList.this);
 		editinput.setText(mDbHelper.getContactEmail(contact_id));
+
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				TeamMemberList.this);
 		alert.setView(editinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = editinput.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setContactEmail(contact_id, value);
-					fillData();
-				}
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = editinput.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setContactEmail(contact_id, value);
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
@@ -298,23 +306,25 @@ public class TeamMemberList extends Activity {
 	 * @param contact_id
 	 */
 	private void editPhone(final long contact_id) {
-		AlertDialog.Builder alert;
-		final EditText editinput;
-		alert = new AlertDialog.Builder(TeamMemberList.this);
-		editinput = new EditText(TeamMemberList.this);
+		final EditText editinput = new EditText(TeamMemberList.this);
 		editinput.setText(mDbHelper.getContactNumber(contact_id));
+
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				TeamMemberList.this);
 		alert.setView(editinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = editinput.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setContactPhone(contact_id, value);
-					fillData();
-				}
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = editinput.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setContactPhone(contact_id, value);
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
@@ -325,23 +335,25 @@ public class TeamMemberList extends Activity {
 	 * @param contact_id
 	 */
 	private void editName(final long contact_id) {
-		AlertDialog.Builder alert;
-		final EditText editinput;
-		alert = new AlertDialog.Builder(TeamMemberList.this);
-		editinput = new EditText(TeamMemberList.this);
+		final EditText editinput = new EditText(TeamMemberList.this);
 		editinput.setText(mDbHelper.getContactName(contact_id));
+
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				TeamMemberList.this);
 		alert.setView(editinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String value = editinput.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setContactName(contact_id, value);
-					fillData();
-				}
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = editinput.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setContactName(contact_id, value);
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
@@ -352,9 +364,9 @@ public class TeamMemberList extends Activity {
 	 */
 	private void callNumber(final long contact_id) {
 		try {
-			String number = mDbHelper.getContactNumber(contact_id);
+			final String number = mDbHelper.getContactNumber(contact_id);
 			if (number != null) {
-				Intent callIntent = new Intent(Intent.ACTION_CALL);
+				final Intent callIntent = new Intent(Intent.ACTION_CALL);
 				callIntent.setData(Uri.parse("tel:" + number));
 				startActivity(callIntent);
 			}
@@ -374,24 +386,26 @@ public class TeamMemberList extends Activity {
 		alert = new AlertDialog.Builder(TeamMemberList.this);
 
 		final Spinner spinnerinput = new Spinner(TeamMemberList.this);
-		Cursor c = mDbHelper.fetchAllHouses();
-		String[] from = new String[] { DbAdapter.KEY_NAME };
-		int[] to = new int[] { android.R.id.text1 };
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_spinner_item, c, from, to);
+		final Cursor cur = mDbHelper.fetchAllHouses();
+		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final int[] toFields = new int[] { android.R.id.text1 };
+		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_spinner_item, cur, fromFields, toFields);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinnerinput.setAdapter(adapter);
 
 		alert.setView(spinnerinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				long house_id = spinnerinput.getSelectedItemId();
-				mDbHelper.setHouse(contact_id, house_id);
-				fillData();
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final long house_id = spinnerinput.getSelectedItemId();
+						mDbHelper.setHouse(contact_id, house_id);
+						fillData();
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
@@ -399,9 +413,9 @@ public class TeamMemberList extends Activity {
 	 * When the refresh request is received, call fillData() to refresh the
 	 * screen.
 	 */
-	public BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
+	public transient BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(final Context context, final Intent intent) {
 			fillData();
 		};
 	};

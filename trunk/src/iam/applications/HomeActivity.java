@@ -25,6 +25,9 @@ import android.widget.TextView;
  */
 public class HomeActivity extends Activity {
 
+	/** The debug tag */
+	static public final String TAG = "Debug";
+
 	/** The name of the application preferences. */
 	static public final String PREFERENCES = "247-Preferences-File";
 
@@ -84,10 +87,10 @@ public class HomeActivity extends Activity {
 	static public final String PREFERENCES_GUARD_CHECKIN_WINDOW = "PREFERENCES_GUARD_CHECKIN_WINDOW";
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/** An intent filter to catch all broadcast refresh requests. */
-	private IntentFilter mIntentFilter;
+	private transient IntentFilter mIntentFilter;
 
 	/*
 	 * (non-Javadoc)
@@ -95,8 +98,8 @@ public class HomeActivity extends Activity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		// make the phone wake up if necessary (for the call around add alarm)
 		getWindow().addFlags(
@@ -112,77 +115,83 @@ public class HomeActivity extends Activity {
 
 		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
 
-		LinearLayout checkinsButton = (LinearLayout) findViewById(R.id.checkins_button);
+		final LinearLayout checkinsButton = (LinearLayout) findViewById(R.id.checkins_button);
 		checkinsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this, CheckinList.class);
-				startActivity(i);
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
+						CheckinList.class);
+				startActivity(intent);
 			}
 		});
 
-		LinearLayout callaroundButton = (LinearLayout) findViewById(R.id.callarounds_button);
+		final LinearLayout callaroundButton = (LinearLayout) findViewById(R.id.callarounds_button);
 		callaroundButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this, CallAroundList.class);
-				startActivity(i);
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
+						CallAroundList.class);
+				startActivity(intent);
 			}
 		});
 
-		TextView locationsButton = (TextView) findViewById(R.id.home_locations);
+		final TextView locationsButton = (TextView) findViewById(R.id.home_locations);
 		locationsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this, LocationsList.class);
-				startActivity(i);
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
+						LocationsList.class);
+				startActivity(intent);
 			}
 		});
 
-		TextView teammembersButton = (TextView) findViewById(R.id.home_teammembers);
+		final TextView teammembersButton = (TextView) findViewById(R.id.home_teammembers);
 		teammembersButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this, TeamMemberList.class);
-				startActivity(i);
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
+						TeamMemberList.class);
+				startActivity(intent);
 			}
 		});
 
-		TextView housesButton = (TextView) findViewById(R.id.home_houses);
+		final TextView housesButton = (TextView) findViewById(R.id.home_houses);
 		housesButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this, HouseList.class);
-				startActivity(i);
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
+						HouseList.class);
+				startActivity(intent);
 			}
 		});
 
-		TextView guardsButton = (TextView) findViewById(R.id.home_guards);
+		final TextView guardsButton = (TextView) findViewById(R.id.home_guards);
 		guardsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this, GuardList.class);
-				startActivity(i);
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
+						GuardList.class);
+				startActivity(intent);
 			}
 		});
 
-		TextView broadcastButton = (TextView) findViewById(R.id.home_broadcast);
+		final TextView broadcastButton = (TextView) findViewById(R.id.home_broadcast);
 		broadcastButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this,
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
 						BroadcastActivity.class);
-				startActivity(i);
+				startActivity(intent);
 			}
 		});
 
-		LinearLayout messageerrorsButton = (LinearLayout) findViewById(R.id.message_errors);
-		messageerrorsButton.setOnClickListener(new View.OnClickListener() {
+		final LinearLayout msgErrButton = (LinearLayout) findViewById(R.id.message_errors);
+		msgErrButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent i = new Intent(HomeActivity.this,
+			public void onClick(final View view) {
+				final Intent intent = new Intent(HomeActivity.this,
 						UnsentMessageList.class);
-				startActivity(i);
+				startActivity(intent);
 			}
 		});
 
@@ -207,24 +216,24 @@ public class HomeActivity extends Activity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		TextView checkinSummary = (TextView) findViewById(R.id.home_checkins_summary);
+		final TextView checkinSummary = (TextView) findViewById(R.id.home_checkins_summary);
 		checkinSummary.setText(mDbHelper.getCheckinSummary());
 
-		TextView callaroundSummary = (TextView) findViewById(R.id.home_callaround_summary);
+		final TextView callaroundSummary = (TextView) findViewById(R.id.home_callaround_summary);
 		callaroundSummary.setText(mDbHelper.getCallaroundSummary(new Date()));
 
-		TextView messageErrorReport = (TextView) findViewById(R.id.error_report);
-		int count = mDbHelper.getNumberOfMessageErrors();
+		final TextView msgErrReport = (TextView) findViewById(R.id.error_report);
+		final int count = mDbHelper.getNumberOfMessageErrors();
 
 		switch (count) {
 		case 0:
-			messageErrorReport.setText(R.string.noerrors);
+			msgErrReport.setText(R.string.noerrors);
 			break;
 		case 1:
-			messageErrorReport.setText(R.string.message_error_one);
+			msgErrReport.setText(R.string.message_error_one);
 			break;
 		default:
-			messageErrorReport.setText(String.format(
+			msgErrReport.setText(String.format(
 					getString(R.string.message_errors), String.valueOf(count)));
 			break;
 		}
@@ -259,9 +268,9 @@ public class HomeActivity extends Activity {
 	 * When the refresh request is received, call fillData() to refresh the
 	 * screen.
 	 */
-	public BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
+	public transient BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(final Context context, final Intent intent) {
 			fillData();
 		};
 	};
@@ -272,12 +281,12 @@ public class HomeActivity extends Activity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		boolean r = super.onCreateOptionsMenu(menu);
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		final boolean returnValue = super.onCreateOptionsMenu(menu);
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.home_menu, menu);
 
-		return r;
+		return returnValue;
 	}
 
 	/*
@@ -286,7 +295,7 @@ public class HomeActivity extends Activity {
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.customization:
 			startActivity(new Intent(this, PreferencesActivity.class));

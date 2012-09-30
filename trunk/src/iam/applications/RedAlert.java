@@ -22,37 +22,37 @@ import android.widget.TextView;
 public class RedAlert extends Activity implements OnInitListener {
 
 	/** The field id. */
-	static String FIELD_ID = "contact_id";
+	public static final String FIELD_ID = "contact_id";
 
 	/** The field number. */
-	static String FIELD_NUMBER = "number";
+	public static final String FIELD_NUMBER = "number";
 
 	/** The field message. */
-	static String FIELD_MESSAGE = "message";
+	public static final String FIELD_MESSAGE = "message";
 
 	/** The field time. */
-	static String FIELD_TIME = "time";
+	public static final String FIELD_TIME = "time";
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/** The name <code>TextView</code>. */
-	TextView mName;
+	private transient TextView mName;
 
 	/** The number <code>TextView</code>. */
-	TextView mNumber;
-	// TextView mMessage;
+	private transient TextView mNumber;
+
 	/** The m time. */
-	TextView mTime;
+	private transient TextView mTime;
 
 	/** The received contact id. */
-	long msContactId;
+	private transient long msContactId;
 
 	/** The received number. */
-	String msNumber;
+	private transient String msNumber;
 
 	/** The TSS object for TTS. */
-	TextToSpeech mTts;
+	private transient TextToSpeech mTts;
 
 	/** An arbitrary code for testing the availability of the TTS service. */
 	private static final int TTS_CHECK_CODE = 1234;
@@ -60,12 +60,12 @@ public class RedAlert extends Activity implements OnInitListener {
 	/**
 	 * Called when the activity is first created.
 	 * 
-	 * @param savedInstanceState
+	 * @param bundle
 	 *            the saved instance state
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		// make the phone wake up if necessary
 		getWindow().addFlags(
@@ -76,16 +76,16 @@ public class RedAlert extends Activity implements OnInitListener {
 		setContentView(R.layout.red_alert);
 
 		// play the alert
-		Intent checkIntent = new Intent();
+		final Intent checkIntent = new Intent();
 		checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
 		startActivityForResult(checkIntent, TTS_CHECK_CODE);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
 
-		Bundle extras = getIntent().getExtras();
-		msContactId = extras != null ? extras.getLong(FIELD_ID) : -1;
-		msNumber = extras != null ? extras.getString(FIELD_NUMBER) : null;
+		final Bundle extras = getIntent().getExtras();
+		msContactId = extras == null ? -1 : extras.getLong(FIELD_ID);
+		msNumber = extras == null ? null : extras.getString(FIELD_NUMBER);
 
 		mName = (TextView) findViewById(R.id.redalert_name);
 		mNumber = (TextView) findViewById(R.id.redalert_number);
@@ -93,11 +93,11 @@ public class RedAlert extends Activity implements OnInitListener {
 
 		fillData();
 
-		Button callButton = (Button) findViewById(R.id.call_number);
+		final Button callButton = (Button) findViewById(R.id.call_number);
 		callButton.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onClick(View view) {
-				Intent callIntent = new Intent(Intent.ACTION_CALL);
+			public void onClick(final View view) {
+				final Intent callIntent = new Intent(Intent.ACTION_CALL);
 				callIntent.setData(Uri.parse("tel:" + msNumber));
 				startActivity(callIntent);
 			}
@@ -128,12 +128,13 @@ public class RedAlert extends Activity implements OnInitListener {
 	 * android.content.Intent)
 	 */
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(final int requestCode, final int resultCode,
+			final Intent data) {
 		if (requestCode == TTS_CHECK_CODE) {
 			if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
 				mTts = new TextToSpeech(this, this);
 			} else {
-				Intent installIntent = new Intent();
+				final Intent installIntent = new Intent();
 				installIntent
 						.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
 				startActivity(installIntent);
@@ -147,19 +148,19 @@ public class RedAlert extends Activity implements OnInitListener {
 	 * @see android.speech.tts.TextToSpeech.OnInitListener#onInit(int)
 	 */
 	@Override
-	public void onInit(int status) {
+	public void onInit(final int status) {
 		if (status == TextToSpeech.SUCCESS) {
-			int result = mTts.setLanguage(Locale.US);
+			final int result = mTts.setLanguage(Locale.US);
 			if (result == TextToSpeech.LANG_MISSING_DATA
 					|| result == TextToSpeech.LANG_NOT_SUPPORTED) {
-				Log.e("Debug", "Language is not available.");
+				Log.e(HomeActivity.TAG, "Language is not available.");
 			}
 
 			mTts.speak(getString(R.string.tts_redalert),
 					TextToSpeech.QUEUE_FLUSH, null);
 		} else {
 			// Initialization failed.
-			Log.e("Debug", "Could not initialize TextToSpeech.");
+			Log.e(HomeActivity.TAG, "Could not initialize TextToSpeech.");
 		}
 	}
 
@@ -170,7 +171,7 @@ public class RedAlert extends Activity implements OnInitListener {
 		if (msContactId == -1) {
 			mName.setText(getString(R.string.unknown_number));
 		} else {
-			String name = mDbHelper.getContactName(msContactId);
+			final String name = mDbHelper.getContactName(msContactId);
 			mName.setText(name);
 		}
 		mNumber.setText(msNumber);

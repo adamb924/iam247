@@ -2,8 +2,6 @@ package iam.applications;
 
 import android.content.Context;
 import android.telephony.PhoneStateListener;
-import android.telephony.ServiceState;
-import android.telephony.SignalStrength;
 
 /**
  * @author Adam
@@ -20,7 +18,7 @@ public class ServiceChangeReceiver extends PhoneStateListener {
 	/**
 	 * @param context
 	 */
-	public ServiceChangeReceiver(Context context) {
+	public ServiceChangeReceiver(final Context context) {
 		super();
 	}
 
@@ -31,12 +29,12 @@ public class ServiceChangeReceiver extends PhoneStateListener {
 	 * android.telephony.PhoneStateListener#onServiceStateChanged(android.telephony
 	 * .ServiceState)
 	 */
-	@Override
-	public void onServiceStateChanged(ServiceState serviceState) {
-		// my recollection is that this method is not be called
-
-		super.onServiceStateChanged(serviceState);
-	}
+	// @Override
+	// public void onServiceStateChanged(final ServiceState serviceState) {
+	// // my recollection is that this method is not be called
+	//
+	// super.onServiceStateChanged(serviceState);
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -45,11 +43,12 @@ public class ServiceChangeReceiver extends PhoneStateListener {
 	 * android.telephony.PhoneStateListener#onSignalStrengthsChanged(android
 	 * .telephony.SignalStrength)
 	 */
-	@Override
-	public void onSignalStrengthsChanged(SignalStrength signalStrength) {
-		super.onSignalStrengthsChanged(signalStrength);
-
-		// this method is being called
-	}
+	// @Override
+	// public void onSignalStrengthsChanged(final SignalStrength signalStrength)
+	// {
+	// super.onSignalStrengthsChanged(signalStrength);
+	//
+	// // this method is being called
+	// }
 
 }
