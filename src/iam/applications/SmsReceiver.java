@@ -22,12 +22,12 @@ public class SmsReceiver extends BroadcastReceiver {
 	 * android.content.Intent)
 	 */
 	@Override
-	public void onReceive(Context context, Intent intent) {
-		String action = intent.getAction();
+	public void onReceive(final Context context, final Intent intent) {
+		final String action = intent.getAction();
 
-		SharedPreferences settings = PreferenceManager
+		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
-		boolean disabled = settings.getBoolean(
+		final boolean disabled = settings.getBoolean(
 				HomeActivity.PREFERENCES_DISABLE_247, false);
 		if (disabled) {
 			return;
@@ -35,11 +35,11 @@ public class SmsReceiver extends BroadcastReceiver {
 
 		// process the message according to whether it is a received SMS, or a
 		// sent confirmation, or a delivery confirmation
-		if (action.equals("android.provider.Telephony.SMS_RECEIVED")) {
+		if ("android.provider.Telephony.SMS_RECEIVED".equals(action)) {
 			processSms(context, intent);
-		} else if (action.equals("iam.applications.SmsReceiver.SMS_SENT")) {
+		} else if ("iam.applications.SmsReceiver.SMS_SENT".equals(action)) {
 			processSmsSent(context, intent);
-		} else if (action.equals("iam.applications.SmsReceiver.SMS_DELIVERED")) {
+		} else if ("iam.applications.SmsReceiver.SMS_DELIVERED".equals(action)) {
 			processSmsDelivered(context, intent);
 		}
 	}
@@ -51,20 +51,20 @@ public class SmsReceiver extends BroadcastReceiver {
 	 * @param context
 	 * @param intent
 	 */
-	private void processSms(Context context, Intent intent) {
-		Bundle bundle = intent.getExtras();
+	private void processSms(final Context context, final Intent intent) {
+		final Bundle bundle = intent.getExtras();
 		if (bundle == null || !bundle.containsKey("pdus")) {
 			return;
 		}
-		Object[] pdus = (Object[]) bundle.get("pdus");
+		final Object[] pdus = (Object[]) bundle.get("pdus");
 		for (int i = 0; i < pdus.length; i++) {
-			SmsMessage msg = SmsMessage.createFromPdu((byte[]) pdus[i]);
-			String number = msg.getOriginatingAddress();
-			String message = msg.getMessageBody();
+			final SmsMessage msg = SmsMessage.createFromPdu((byte[]) pdus[i]);
+			final String number = msg.getOriginatingAddress();
+			final String message = msg.getMessageBody();
 
 			// multiple commands can be sent if they are delimited by ... This
 			// might be useful for some applications.
-			String[] commands = message.split("\\.\\.\\.");
+			final String[] commands = message.split("\\.\\.\\.");
 			for (int j = 0; j < commands.length; j++) {
 				new SmsHandler(context, number, commands[i], false);
 			}
@@ -79,13 +79,13 @@ public class SmsReceiver extends BroadcastReceiver {
 	 * @param intent
 	 *            the Intent object from the message
 	 */
-	private void processSmsSent(Context context, Intent intent) {
-		DbAdapter dbHelper = new DbAdapter(context);
+	private void processSmsSent(final Context context, final Intent intent) {
+		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 
 		// this information is added to the Intent in SmsHandler.sendSms()
-		String number = intent.getStringExtra(SmsHandler.PHONE_NUMBER);
-		String message = intent.getStringExtra(SmsHandler.MESSAGE);
+		final String number = intent.getStringExtra(SmsHandler.PHONE_NUMBER);
+		final String message = intent.getStringExtra(SmsHandler.MESSAGE);
 
 		// if the message was successful, delete it from the pending-sent table
 		if (getResultCode() == Activity.RESULT_OK) {
@@ -104,13 +104,13 @@ public class SmsReceiver extends BroadcastReceiver {
 	 * @param intent
 	 *            the Intent object from the message
 	 */
-	private void processSmsDelivered(Context context, Intent intent) {
-		DbAdapter dbHelper = new DbAdapter(context);
+	private void processSmsDelivered(final Context context, final Intent intent) {
+		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 
 		// this information is added to the Intent in SmsHandler.sendSms()
-		String number = intent.getStringExtra(SmsHandler.PHONE_NUMBER);
-		String message = intent.getStringExtra(SmsHandler.MESSAGE);
+		final String number = intent.getStringExtra(SmsHandler.PHONE_NUMBER);
+		final String message = intent.getStringExtra(SmsHandler.MESSAGE);
 
 		// if the message was successful, delete it from the pending-delivered
 		// table

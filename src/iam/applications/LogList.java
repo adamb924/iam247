@@ -24,17 +24,17 @@ import android.widget.TextView;
 public class LogList extends ListActivity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/**
 	 * Called when the activity is first created.
 	 * 
-	 * @param savedInstanceState
+	 * @param bundle
 	 *            the saved instance state
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.log_list);
 
@@ -62,10 +62,10 @@ public class LogList extends ListActivity {
 	 * 
 	 */
 	private void fillData() {
-		Cursor c = mDbHelper.fetchLog();
-		startManagingCursor(c);
+		final Cursor cur = mDbHelper.fetchLog();
+		startManagingCursor(cur);
 
-		LogAdapter listAdapter = new LogAdapter(this, c);
+		final LogAdapter listAdapter = new LogAdapter(this, cur);
 		setListAdapter(listAdapter);
 	}
 
@@ -82,7 +82,7 @@ public class LogList extends ListActivity {
 		 * @param cur
 		 *            the cur
 		 */
-		public LogAdapter(Context context, Cursor cur) {
+		public LogAdapter(final Context context, final Cursor cur) {
 			super(context, R.layout.log_item, cur);
 		}
 
@@ -94,9 +94,10 @@ public class LogList extends ListActivity {
 		 * android.database.Cursor, android.view.ViewGroup)
 		 */
 		@Override
-		public View newView(Context context, Cursor cur, ViewGroup parent) {
-			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return li.inflate(R.layout.log_item, parent, false);
+		public View newView(final Context context, final Cursor cur,
+				final ViewGroup parent) {
+			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			return inflater.inflate(R.layout.log_item, parent, false);
 		}
 
 		/*
@@ -106,12 +107,14 @@ public class LogList extends ListActivity {
 		 * android.content.Context, android.database.Cursor)
 		 */
 		@Override
-		public void bindView(View view, Context context, Cursor cur) {
-			TextView date = (TextView) view.findViewById(R.id.log_date);
-			TextView message = (TextView) view.findViewById(R.id.log_text);
-			TextView type = (TextView) view.findViewById(R.id.log_type);
+		public void bindView(final View view, final Context context,
+				final Cursor cur) {
+			final TextView date = (TextView) view.findViewById(R.id.log_date);
+			final TextView message = (TextView) view
+					.findViewById(R.id.log_text);
+			final TextView type = (TextView) view.findViewById(R.id.log_type);
 
-			Date datedate = Time.iso8601DateTime(cur.getString(cur
+			final Date datedate = Time.iso8601DateTime(cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_TIME)));
 
 			date.setText(Time.timeTodayTomorrow(context, datedate));

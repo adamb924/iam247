@@ -40,16 +40,10 @@ public class GuardScheduleActivity extends Activity {
 	static public final String SET_DEFAULT = "SET_DEFAULT";
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
-
-	/** The m set default. */
-	private boolean mSetDefault;
-
-	/** The m house id. */
-	private long mHouseId;
+	private transient DbAdapter mDbHelper;
 
 	/** The m spinners. */
-	private Spinner[] mSpinners;
+	private transient Spinner[] mSpinners;
 
 	/*
 	 * (non-Javadoc)
@@ -57,67 +51,73 @@ public class GuardScheduleActivity extends Activity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.guard_schedule);
 
-		Bundle extras = getIntent().getExtras();
-		mSetDefault = extras != null ? extras.getBoolean(SET_DEFAULT) : false;
-		mHouseId = extras != null ? extras.getLong(DbAdapter.KEY_HOUSEID) : -1;
+		final Bundle extras = getIntent().getExtras();
+		final boolean setDefault = extras == null ? false : extras
+				.getBoolean(SET_DEFAULT);
+		final long houseId = extras == null ? -1 : extras
+				.getLong(DbAdapter.KEY_HOUSEID);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
 
-		setTitle(mDbHelper.getHouseName(mHouseId));
+		setTitle(mDbHelper.getHouseName(houseId));
 
-		LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+		final LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
 
 		mSpinners = new Spinner[7];
 
-		if (mSetDefault) {
+		if (setDefault) {
 			// for the default configuration, just list a typical weekly
 			// schedule
 
 			// get the localized first day of the week
-			int first = Long.valueOf(getString(R.string.loc_first_day_of_week))
-					.intValue();
+			final int first = Integer
+					.parseInt(getString(R.string.loc_first_day_of_week));
 
+			DateFormatSymbols symbols;
+			String[] dayNames;
+			TextView label;
 			for (int i = 0; i < 7; i++) {
-				int day = (first + i) % 7;
+				final int day = (first + i) % 7;
 
-				DateFormatSymbols symbols = new DateFormatSymbols();
-				String[] dayNames = symbols.getWeekdays();
+				symbols = new DateFormatSymbols();
+				dayNames = symbols.getWeekdays();
 
-				TextView label = new TextView(this);
+				label = new TextView(this);
 				label.setText(dayNames[day + 1]);
 				layout.addView(label);
 
 				mSpinners[i] = new GuardSpinner(this, mDbHelper,
-						DbAdapter.getGuardScheduleColumnName(day, mSetDefault),
-						mHouseId);
+						DbAdapter.getGuardScheduleColumnName(day, setDefault),
+						houseId);
 				layout.addView(mSpinners[i]);
 			}
 		} else {
 			// if you're setting it for particular days, make it different
 
 			// let today be the first day displayed
-			Calendar c = Calendar.getInstance();
-			int first = c.get(Calendar.DAY_OF_WEEK);
+			final Calendar cur = Calendar.getInstance();
+			final int first = cur.get(Calendar.DAY_OF_WEEK);
 
+			TextView label;
 			for (int i = 0; i < 7; i++) {
-				int day = (first + i) % 7;
+				final int day = (first + i) % 7;
 
-				TextView label = new TextView(this);
-				label.setText(Time.prettyDate(this, c.getTime()));
+				label = new TextView(this);
+				label.setText(Time.prettyDate(this, cur.getTime()));
 				layout.addView(label);
 
 				mSpinners[i] = new GuardSpinner(this, mDbHelper,
-						DbAdapter.getGuardScheduleColumnName(day, mSetDefault),
-						mHouseId);
+						DbAdapter.getGuardScheduleColumnName(day, setDefault),
+						houseId);
 				layout.addView(mSpinners[i]);
 
-				c.add(Calendar.DATE, 1);
+				cur.add(Calendar.DATE, 1);
 			}
 
 		}
@@ -132,8 +132,9 @@ public class GuardScheduleActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if (mDbHelper != null)
+		if (mDbHelper != null) {
 			mDbHelper.close();
+		}
 	}
 
 	/*
@@ -142,8 +143,8 @@ public class GuardScheduleActivity extends Activity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.guard_schedule_context, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -154,14 +155,19 @@ public class GuardScheduleActivity extends Activity {
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.set_all:
+	public boolean onOptionsItemSelected(final MenuItem item) {
+		if (item.getItemId() == R.id.set_all) {
 			setAll();
 			return true;
-		default:
-			return super.onContextItemSelected(item);
 		}
+		return super.onOptionsItemSelected(item);
+		// switch (item.getItemId()) {
+		// case R.id.set_all:
+		// setAll();
+		// return true;
+		// default:
+		// return super.onContextItemSelected(item);
+		// }
 	}
 
 	/**
@@ -175,12 +181,13 @@ public class GuardScheduleActivity extends Activity {
 			return;
 		}
 
-		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(getString(R.string.unblock_number));
 		alert.setCursor(mDbHelper.fetchAllGuards(),
 				new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(DialogInterface dialog, int item) {
+					public void onClick(final DialogInterface dialog,
+							final int item) {
 						for (int i = 0; i < 7; i++) {
 							mSpinners[i].setSelection(item);
 						}
@@ -195,37 +202,37 @@ public class GuardScheduleActivity extends Activity {
 	static private class GuardSpinner extends Spinner {
 
 		/** The m db helper. */
-		private final DbAdapter mDbHelper;
+		private transient final DbAdapter mDbHelper;
 
 		/** The m column. */
-		private final String mColumn;
+		private transient final String mColumn;
 
 		/** The m house id. */
-		private final long mHouseId;
+		private transient final long mHouseId;
 
 		/** The m cur. */
-		private final Cursor mCur;
+		private transient final Cursor mCur;
 
 		/** The m guard. */
-		private final long mGuard;
+		private transient final long mGuard;
 
 		/**
 		 * Instantiates a new guard spinner.
 		 * 
 		 * @param context
 		 *            the context
-		 * @param db
+		 * @param database
 		 *            the db
 		 * @param column
 		 *            the column
 		 * @param house_id
 		 *            the house_id
 		 */
-		public GuardSpinner(Context context, DbAdapter db, String column,
-				long house_id) {
+		public GuardSpinner(final Context context, final DbAdapter database,
+				final String column, final long house_id) {
 			super(context);
 
-			mDbHelper = db;
+			mDbHelper = database;
 			mColumn = column;
 			mHouseId = house_id;
 
@@ -233,24 +240,26 @@ public class GuardScheduleActivity extends Activity {
 
 			mCur = mDbHelper.fetchAllGuards();
 
-			String[] from = new String[] { DbAdapter.KEY_NAME };
-			int[] to = new int[] { android.R.id.text1 };
+			final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+			final int[] toFields = new int[] { android.R.id.text1 };
 
-			SimpleCursorAdapter adapter = new SimpleCursorAdapter(context,
-					android.R.layout.simple_spinner_item, mCur, from, to);
+			final SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+					context, android.R.layout.simple_spinner_item, mCur,
+					fromFields, toFields);
 			setAdapter(adapter);
 
 			setCurrent();
 
 			setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
-				public void onItemSelected(AdapterView<?> arg0, View view,
-						int position, long id) {
-					mDbHelper.setGuard(mHouseId, id, mColumn);
+				public void onItemSelected(final AdapterView<?> arg0,
+						final View view, final int position, final long itemId) {
+					mDbHelper.setGuard(mHouseId, itemId, mColumn);
 				}
 
 				@Override
-				public void onNothingSelected(AdapterView<?> arg0) {
+				public void onNothingSelected(final AdapterView<?> arg0) {
+					// empty
 				}
 			});
 		}

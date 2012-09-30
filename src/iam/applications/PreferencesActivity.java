@@ -21,6 +21,7 @@ import android.os.Environment;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -34,7 +35,7 @@ import android.widget.Toast;
 public class PreferencesActivity extends PreferenceActivity {
 
 	/** The database interface. */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/*
 	 * (non-Javadoc)
@@ -42,67 +43,67 @@ public class PreferencesActivity extends PreferenceActivity {
 	 * @see android.preference.PreferenceActivity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
 
 		addPreferencesFromResource(R.xml.preferences);
 
-		Preference emailDatabase = findPreference("email_database");
+		final Preference emailDatabase = findPreference("email_database");
 		emailDatabase
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					@Override
-					public boolean onPreferenceClick(Preference preference) {
+					public boolean onPreferenceClick(final Preference preference) {
 						emailDatabase();
 						return false;
 					}
 				});
 
-		Preference resetDatabase = findPreference("reset_database");
+		final Preference resetDatabase = findPreference("reset_database");
 		resetDatabase
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					@Override
-					public boolean onPreferenceClick(Preference preference) {
+					public boolean onPreferenceClick(final Preference preference) {
 						resetDatabase();
 						return false;
 					}
 				});
 
-		Preference uploadDatabase = findPreference("upload_database");
+		final Preference uploadDatabase = findPreference("upload_database");
 		uploadDatabase
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					@Override
-					public boolean onPreferenceClick(Preference preference) {
+					public boolean onPreferenceClick(final Preference preference) {
 						uploadDatabase();
 						return false;
 					}
 				});
 
-		Preference clearOneWeekDatabase = findPreference("clear_oneweek");
-		clearOneWeekDatabase
+		final Preference clearWeekDatabase = findPreference("clear_oneweek");
+		clearWeekDatabase
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					@Override
-					public boolean onPreferenceClick(Preference preference) {
+					public boolean onPreferenceClick(final Preference preference) {
 						mDbHelper.deleteDataBeforeOneWeek();
 						return false;
 					}
 				});
-		Preference clearLogDatabase = findPreference("clear_log");
+		final Preference clearLogDatabase = findPreference("clear_log");
 		clearLogDatabase
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					@Override
-					public boolean onPreferenceClick(Preference preference) {
+					public boolean onPreferenceClick(final Preference preference) {
 						mDbHelper.deleteLogBeforeOneWeek();
 						return false;
 					}
 				});
-		Preference unblockNumber = findPreference("unblock_number");
+		final Preference unblockNumber = findPreference("unblock_number");
 		unblockNumber
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					@Override
-					public boolean onPreferenceClick(Preference preference) {
+					public boolean onPreferenceClick(final Preference preference) {
 						unblockNumber();
 						return false;
 					}
@@ -135,8 +136,8 @@ public class PreferencesActivity extends PreferenceActivity {
 		FileChannel destination = null;
 
 		final File sdcard = Environment.getExternalStorageDirectory();
-		File sourceFile = new File(mDbHelper.getPath());
-		File destFile = new File(sdcard, "temp/thedatabase");
+		final File sourceFile = new File(mDbHelper.getPath());
+		final File destFile = new File(sdcard, "temp/thedatabase");
 
 		try {
 			source = new FileInputStream(sourceFile).getChannel();
@@ -144,7 +145,7 @@ public class PreferencesActivity extends PreferenceActivity {
 			destination.transferFrom(source, 0, source.size());
 		} catch (FileNotFoundException e) {
 			try {
-				e.printStackTrace();
+				Log.i(HomeActivity.TAG, Log.getStackTraceString(e));
 
 				if (source != null) {
 					source.close();
@@ -153,13 +154,13 @@ public class PreferencesActivity extends PreferenceActivity {
 					destination.close();
 				}
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				Log.i(HomeActivity.TAG, Log.getStackTraceString(e1));
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.i(HomeActivity.TAG, Log.getStackTraceString(e));
 		}
 
-		Intent sendIntent = new Intent(Intent.ACTION_SEND);
+		final Intent sendIntent = new Intent(Intent.ACTION_SEND);
 		sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		sendIntent.setType("application/x-sqlite3");
 		sendIntent.putExtra(Intent.EXTRA_SUBJECT, "24/7 App Database");
@@ -174,18 +175,19 @@ public class PreferencesActivity extends PreferenceActivity {
 	 * card to replace the current database file.
 	 */
 	private void uploadDatabase() {
-		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(R.string.upload_database);
 		alert.setMessage(R.string.upload_database_instructions);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
 				FileChannel source = null;
 				FileChannel destination = null;
 
 				final File sdcard = Environment.getExternalStorageDirectory();
-				File sourceFile = new File(sdcard, "temp/thedatabase");
-				File destFile = new File(mDbHelper.getPath());
+				final File sourceFile = new File(sdcard, "temp/thedatabase");
+				final File destFile = new File(mDbHelper.getPath());
 
 				try {
 					source = new FileInputStream(sourceFile).getChannel();
@@ -193,7 +195,7 @@ public class PreferencesActivity extends PreferenceActivity {
 					destination.transferFrom(source, 0, source.size());
 				} catch (FileNotFoundException e) {
 					try {
-						e.printStackTrace();
+						Log.i(HomeActivity.TAG, Log.getStackTraceString(e));
 
 						if (source != null) {
 							source.close();
@@ -202,10 +204,10 @@ public class PreferencesActivity extends PreferenceActivity {
 							destination.close();
 						}
 					} catch (IOException e1) {
-						e1.printStackTrace();
+						Log.i(HomeActivity.TAG, Log.getStackTraceString(e1));
 					}
 				} catch (IOException e) {
-					e.printStackTrace();
+					Log.i(HomeActivity.TAG, Log.getStackTraceString(e));
 				}
 			}
 		});
@@ -218,22 +220,23 @@ public class PreferencesActivity extends PreferenceActivity {
 	 * data from the database.
 	 */
 	private void resetDatabase() {
-		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(R.string.reset_database);
 		alert.setMessage(R.string.reset_database_first_warning);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
 
-				AlertDialog.Builder alert2 = new AlertDialog.Builder(
+				final AlertDialog.Builder alert2 = new AlertDialog.Builder(
 						PreferencesActivity.this);
 				alert2.setTitle(R.string.reset_database);
 				alert2.setMessage(R.string.reset_database_second_warning);
 				alert2.setPositiveButton("Ok",
 						new DialogInterface.OnClickListener() {
 							@Override
-							public void onClick(DialogInterface dialog,
-									int whichButton) {
+							public void onClick(final DialogInterface dialog,
+									final int whichButton) {
 
 								mDbHelper.deleteAll();
 							}
@@ -248,31 +251,31 @@ public class PreferencesActivity extends PreferenceActivity {
 	}
 
 	private void unblockNumber() {
-		Cursor c = mDbHelper.fetchBlockedNumbers();
-		startManagingCursor(c);
-		if (c.getCount() == 0) {
-			Toast toast = Toast.makeText(this,
+		final Cursor cur = mDbHelper.fetchBlockedNumbers();
+		startManagingCursor(cur);
+		if (cur.getCount() == 0) {
+			final Toast toast = Toast.makeText(this,
 					getString(R.string.no_blocked_numbers), Toast.LENGTH_SHORT);
 			toast.show();
 			return;
 		}
 
-		final CharSequence[] entries = new CharSequence[c.getCount()];
+		final CharSequence[] entries = new CharSequence[cur.getCount()];
 
-		if (c.getCount() > 0) {
-			c.moveToFirst();
-			int i = 0;
+		if (cur.getCount() > 0) {
+			cur.moveToFirst();
+			int position = 0;
 			do {
-				entries[i] = c.getString(1);
-				++i;
-			} while (c.moveToNext());
+				entries[position] = cur.getString(1);
+				++position;
+			} while (cur.moveToNext());
 		}
 
-		AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(getString(R.string.unblock_number));
 		alert.setItems(entries, new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int item) {
+			public void onClick(final DialogInterface dialog, final int item) {
 				mDbHelper.setNumberIsBlocked((String) entries[item], false);
 			}
 		});

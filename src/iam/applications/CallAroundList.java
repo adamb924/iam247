@@ -26,22 +26,22 @@ import android.widget.TextView;
 public class CallAroundList extends ListActivity {
 
 	/** The database interface */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/**
 	 * A report cursor, which needs to be a field because it is accessed in
 	 * onListItemClick
 	 */
-	private Cursor mReportCur;
+	private transient Cursor mReportCur;
 
 	/**
 	 * An adapter class to format the list items with the data from the database
 	 * query
 	 */
-	private CallaroundAdapter mCallaroundAdapter;
+	private transient CallaroundAdapter mCaAdapter;
 
 	/** An intent filter to catch all broadcast refresh requests. */
-	private IntentFilter mIntentFilter;
+	private transient IntentFilter mIntentFilter;
 
 	/*
 	 * (non-Javadoc)
@@ -49,8 +49,8 @@ public class CallAroundList extends ListActivity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
 
@@ -76,15 +76,15 @@ public class CallAroundList extends ListActivity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		SharedPreferences settings = PreferenceManager
+		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
-		boolean showFuture = settings.getBoolean(
+		final boolean showFuture = settings.getBoolean(
 				HomeActivity.PREFERENCES_CALLAROUNDS_SHOW_FUTURE, false);
 
 		mReportCur = mDbHelper.fetchCallaroundReport(!showFuture);
 		startManagingCursor(mReportCur);
-		mCallaroundAdapter = new CallaroundAdapter(this, mReportCur);
-		getListView().setAdapter(mCallaroundAdapter);
+		mCaAdapter = new CallaroundAdapter(this, mReportCur);
+		getListView().setAdapter(mCaAdapter);
 	}
 
 	/*
@@ -117,16 +117,17 @@ public class CallAroundList extends ListActivity {
 	 * android.view.View, int, long)
 	 */
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
+	protected void onListItemClick(final ListView listView, final View view,
+			final int position, final long itemId) {
+		super.onListItemClick(listView, view, position, itemId);
 
 		mReportCur.moveToPosition(position);
-		String day = mReportCur.getString(mReportCur
+		final String day = mReportCur.getString(mReportCur
 				.getColumnIndex(DbAdapter.KEY_DUEBY));
 
-		Intent i = new Intent(this, CallAroundDetailList.class);
-		i.putExtra(DbAdapter.KEY_DUEBY, day);
-		startActivity(i);
+		final Intent intent = new Intent(this, CallAroundDetailList.class);
+		intent.putExtra(DbAdapter.KEY_DUEBY, day);
+		startActivity(intent);
 	}
 
 	/*
@@ -135,8 +136,8 @@ public class CallAroundList extends ListActivity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.callaround_menu, menu);
 		return true;
 	}
@@ -147,15 +148,15 @@ public class CallAroundList extends ListActivity {
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.add_callarounds:
 			mDbHelper.addCallarounds();
 			fillData();
 			return true;
 		case R.id.add_travel_callaround:
-			Intent i = new Intent(this, AddTravelCallaround.class);
-			startActivity(i);
+			final Intent intent = new Intent(this, AddTravelCallaround.class);
+			startActivity(intent);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -166,9 +167,9 @@ public class CallAroundList extends ListActivity {
 	 * When the refresh request is received, call fillData() to refresh the
 	 * screen.
 	 */
-	public BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
+	public transient BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(final Context context, final Intent intent) {
 			fillData();
 		};
 	};
@@ -189,7 +190,7 @@ public class CallAroundList extends ListActivity {
 		 * @param cur
 		 *            the cur
 		 */
-		public CallaroundAdapter(Context context, Cursor cur) {
+		public CallaroundAdapter(final Context context, final Cursor cur) {
 			super(context, R.layout.twolinelistitem, cur);
 		}
 
@@ -201,9 +202,10 @@ public class CallAroundList extends ListActivity {
 		 * android.database.Cursor, android.view.ViewGroup)
 		 */
 		@Override
-		public View newView(Context context, Cursor cur, ViewGroup parent) {
-			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return li.inflate(R.layout.twolinelistitem, parent, false);
+		public View newView(final Context context, final Cursor cur,
+				final ViewGroup parent) {
+			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			return inflater.inflate(R.layout.twolinelistitem, parent, false);
 		}
 
 		/*
@@ -213,30 +215,32 @@ public class CallAroundList extends ListActivity {
 		 * android.content.Context, android.database.Cursor)
 		 */
 		@Override
-		public void bindView(View view, Context context, Cursor cur) {
-			String day = cur.getString(cur.getColumnIndex(DbAdapter.KEY_DUEBY));
-			long resolved = cur.getLong(cur
+		public void bindView(final View view, final Context context,
+				final Cursor cur) {
+			final String day = cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_DUEBY));
+			final long resolved = cur.getLong(cur
 					.getColumnIndex(DbAdapter.KEY_RESOLVED));
-			long outstanding = cur.getLong(cur
+			final long outstanding = cur.getLong(cur
 					.getColumnIndex(DbAdapter.KEY_OUTSTANDING));
 
-			String callaround_summary;
+			String caSummary;
 			if (outstanding + resolved == 0) {
-				callaround_summary = CallAroundList.this
+				caSummary = CallAroundList.this
 						.getString(R.string.callaround_summary_none);
 			} else if (outstanding == 0) {
-				callaround_summary = CallAroundList.this
+				caSummary = CallAroundList.this
 						.getString(R.string.callaround_summary_allin);
 			} else {
-				callaround_summary = String.format(CallAroundList.this
+				caSummary = String.format(CallAroundList.this
 						.getString(R.string.callaround_summary), String
 						.valueOf(resolved), String.valueOf(outstanding));
 			}
 
-			TextView tvTitle = (TextView) view.findViewById(R.id.text1);
+			final TextView tvTitle = (TextView) view.findViewById(R.id.text1);
 			tvTitle.setText(Time.prettyDate(CallAroundList.this, day));
-			TextView tvDetails = (TextView) view.findViewById(R.id.text2);
-			tvDetails.setText(callaround_summary);
+			final TextView tvDetails = (TextView) view.findViewById(R.id.text2);
+			tvDetails.setText(caSummary);
 		}
 	}
 

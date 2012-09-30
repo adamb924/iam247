@@ -30,16 +30,16 @@ import android.widget.TextView;
 public class UnsentMessageList extends ListActivity {
 
 	/** The database interface */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/**
 	 * Cursor for the database query; this can be left as a field in case we
 	 * want to go back and allow users to click on individual messages.
 	 */
-	private Cursor mReportCur;
+	private transient Cursor mReportCur;
 
 	/** An intent filter to catch all broadcast refresh requests. */
-	private IntentFilter mIntentFilter;
+	private transient IntentFilter mIntentFilter;
 
 	/*
 	 * (non-Javadoc)
@@ -47,8 +47,8 @@ public class UnsentMessageList extends ListActivity {
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		setContentView(R.layout.unsent_messages);
 
@@ -105,7 +105,7 @@ public class UnsentMessageList extends ListActivity {
 		mReportCur = mDbHelper.fetchUnsentUndeliveredMessages();
 		// refactor this class name, since ListAdapter is an Android API class
 		// as well
-		ListAdapter listAdapter = new ListAdapter(this, mReportCur);
+		final ListAdapter listAdapter = new ListAdapter(this, mReportCur);
 		setListAdapter(listAdapter);
 	}
 
@@ -113,9 +113,9 @@ public class UnsentMessageList extends ListActivity {
 	 * When the refresh request is received, call fillData() to refresh the
 	 * screen.
 	 */
-	public BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
+	public transient BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(final Context context, final Intent intent) {
 			fillData();
 		};
 	};
@@ -126,8 +126,8 @@ public class UnsentMessageList extends ListActivity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.unsentmessage_menu, menu);
 		return true;
 	}
@@ -138,18 +138,19 @@ public class UnsentMessageList extends ListActivity {
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean returnValue;
 		// switch (item.getItemId()) {
 		// case R.id.delete_all:
 		if (item.getItemId() == R.id.delete_all) {
-			AlertDialog.Builder alert = new AlertDialog.Builder(this);
+			final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 			alert.setTitle(R.string.delete_all);
 			alert.setMessage(R.string.delete_all_unsent_warning);
 			alert.setPositiveButton("Ok",
 					new DialogInterface.OnClickListener() {
 						@Override
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
+						public void onClick(final DialogInterface dialog,
+								final int whichButton) {
 
 							mDbHelper.deleteUnsentUndelivered();
 							fillData();
@@ -159,13 +160,11 @@ public class UnsentMessageList extends ListActivity {
 					});
 			alert.setNegativeButton("Cancel", null);
 			alert.show();
-			return true;
+			returnValue = true;
 		} else {
-			return super.onOptionsItemSelected(item);
+			returnValue = super.onOptionsItemSelected(item);
 		}
-		// default:
-		// return super.onOptionsItemSelected(item);
-		// }
+		return returnValue;
 	}
 
 	/**
@@ -184,7 +183,7 @@ public class UnsentMessageList extends ListActivity {
 		 * @param cur
 		 *            the cur
 		 */
-		public ListAdapter(Context context, Cursor cur) {
+		public ListAdapter(final Context context, final Cursor cur) {
 			super(context, R.layout.unsent_message_item, cur);
 		}
 
@@ -196,9 +195,11 @@ public class UnsentMessageList extends ListActivity {
 		 * android.database.Cursor, android.view.ViewGroup)
 		 */
 		@Override
-		public View newView(Context context, Cursor cur, ViewGroup parent) {
-			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return li.inflate(R.layout.unsent_message_item, parent, false);
+		public View newView(final Context context, final Cursor cur,
+				final ViewGroup parent) {
+			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			return inflater
+					.inflate(R.layout.unsent_message_item, parent, false);
 		}
 
 		/*
@@ -208,28 +209,28 @@ public class UnsentMessageList extends ListActivity {
 		 * android.content.Context, android.database.Cursor)
 		 */
 		@Override
-		public void bindView(View view, Context context, Cursor cur) {
-			String phoneNumber = cur.getString(cur
+		public void bindView(final View view, final Context context,
+				final Cursor cur) {
+			final String phoneNumber = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_NUMBER));
-			long contactId = mDbHelper.getContactId(phoneNumber);
-			String recipient = contactId == -1 ? phoneNumber : mDbHelper
+			final long contactId = mDbHelper.getContactId(phoneNumber);
+			final String recipient = contactId == -1 ? phoneNumber : mDbHelper
 					.getContactName(contactId);
-			boolean sent = cur.getLong(cur.getColumnIndex(DbAdapter.KEY_SENT)) == 1 ? true
-					: false;
-			boolean delivered = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_DELIVERED)) == 1 ? true
-					: false;
+			final long sent = cur.getLong(cur
+					.getColumnIndex(DbAdapter.KEY_SENT));
+			final long delivered = cur.getLong(cur
+					.getColumnIndex(DbAdapter.KEY_DELIVERED));
 
-			String type = "";
-			if (!sent) {
-				type = context.getString(R.string.unsent);
-			} else if (sent && !delivered) {
+			String type;
+			if (sent == 1 && !(delivered == 1)) {
 				type = context.getString(R.string.unconfirmed);
+			} else {
+				type = context.getString(R.string.unsent);
 			}
 
-			String time = Time.prettyDateTime(cur.getString(cur
+			final String time = Time.prettyDateTime(cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_TIME)));
-			String message = cur.getString(cur
+			final String message = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_MESSAGE));
 
 			((TextView) view.findViewById(R.id.messageRecipient))

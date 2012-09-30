@@ -40,24 +40,24 @@ public class CallAroundDetailList extends ListActivity implements
 		OnInitListener {
 
 	/** The database interface */
-	private DbAdapter mDbHelper;
+	private transient DbAdapter mDbHelper;
 
 	/** An intent filter to catch all broadcast refresh requests. */
-	private IntentFilter mIntentFilter;
+	private transient IntentFilter mIntentFilter;
 
 	/** An ISO 8601 string indicating the day the report is for. */
-	private String mDay;
+	private transient String mDay;
 
 	/** An object for TTS. */
-	TextToSpeech mTts;
+	private transient TextToSpeech mTts;
 
 	/** An arbitrary code for testing the availability of the TTS service. */
 	private static final int TTS_CHECK_CODE = 1234;
 
 	/** The number of missed callarounds for the present day. */
-	private long mMissedCallarounds;
+	private transient long mMissed;
 
-	private boolean mIncludeDelayed;
+	private transient boolean mIncludeDelayed;
 
 	/*
 	 * (non-Javadoc)
@@ -65,8 +65,8 @@ public class CallAroundDetailList extends ListActivity implements
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onCreate(final Bundle bundle) {
+		super.onCreate(bundle);
 
 		// make the phone wake up if necessary (for the call around due alarm)
 		getWindow().addFlags(
@@ -74,7 +74,7 @@ public class CallAroundDetailList extends ListActivity implements
 						| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 						| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-		Bundle extras = getIntent().getExtras();
+		final Bundle extras = getIntent().getExtras();
 		if (extras == null) {
 			return;
 		}
@@ -99,11 +99,11 @@ public class CallAroundDetailList extends ListActivity implements
 		// if the intent tells us that a call around is (over)due, check that,
 		// and if it's true sound the alarm
 		if (getIntent().hasExtra(AlarmReceiver.ALERT_CALLAROUND_DUE)) {
-			mMissedCallarounds = mIncludeDelayed ? mDbHelper
+			mMissed = mIncludeDelayed ? mDbHelper
 					.getNumberOfDueCallaroundsIncludingDelayed() : mDbHelper
 					.getNumberOfDueCallarounds();
-			if (mMissedCallarounds > 0) {
-				Intent checkIntent = new Intent();
+			if (mMissed > 0) {
+				final Intent checkIntent = new Intent();
 				checkIntent
 						.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
 				startActivityForResult(checkIntent, TTS_CHECK_CODE);
@@ -136,10 +136,10 @@ public class CallAroundDetailList extends ListActivity implements
 		if (mDay == null) {
 			return;
 		}
-		Cursor cur = mDbHelper.fetchCallaroundReportForDay(mDay);
+		final Cursor cur = mDbHelper.fetchCallaroundReportForDay(mDay);
 		startManagingCursor(cur);
-		CallaroundAdapter mCallaroundAdapter = new CallaroundAdapter(this, cur);
-		getListView().setAdapter(mCallaroundAdapter);
+		final CallaroundAdapter mCaAdapter = new CallaroundAdapter(this, cur);
+		getListView().setAdapter(mCaAdapter);
 	}
 
 	/*
@@ -148,28 +148,28 @@ public class CallAroundDetailList extends ListActivity implements
 	 * @see android.speech.tts.TextToSpeech.OnInitListener#onInit(int)
 	 */
 	@Override
-	public void onInit(int status) {
+	public void onInit(final int status) {
 		if (status == TextToSpeech.SUCCESS) {
-			int result = mTts.setLanguage(Locale.US);
+			final int result = mTts.setLanguage(Locale.US);
 			if (result == TextToSpeech.LANG_MISSING_DATA
 					|| result == TextToSpeech.LANG_NOT_SUPPORTED) {
-				Log.e("Debug", "Language is not available.");
+				Log.e(HomeActivity.TAG, "Language is not available.");
 			}
 
-			mMissedCallarounds = mIncludeDelayed ? mDbHelper
+			mMissed = mIncludeDelayed ? mDbHelper
 					.getNumberOfDueCallaroundsIncludingDelayed() : mDbHelper
 					.getNumberOfDueCallarounds();
 
-			if (mMissedCallarounds == 1) {
+			if (mMissed == 1) {
 				mTts.speak(getString(R.string.tts_missedcallaround),
 						TextToSpeech.QUEUE_FLUSH, null);
-			} else if (mMissedCallarounds > 1) {
+			} else if (mMissed > 1) {
 				mTts.speak(getString(R.string.tts_missedcallarounds),
 						TextToSpeech.QUEUE_FLUSH, null);
 			}
 		} else {
 			// Initialization failed.
-			Log.e("Debug", "Could not initialize TextToSpeech.");
+			Log.e(HomeActivity.TAG, "Could not initialize TextToSpeech.");
 		}
 	}
 
@@ -180,12 +180,13 @@ public class CallAroundDetailList extends ListActivity implements
 	 * android.content.Intent)
 	 */
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	protected void onActivityResult(final int requestCode,
+			final int resultCode, final Intent data) {
 		if (requestCode == TTS_CHECK_CODE) {
 			if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
 				mTts = new TextToSpeech(this, this);
 			} else {
-				Intent installIntent = new Intent();
+				final Intent installIntent = new Intent();
 				installIntent
 						.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
 				startActivity(installIntent);
@@ -222,37 +223,35 @@ public class CallAroundDetailList extends ListActivity implements
 	 * When the refresh request is received, call fillData() to refresh the
 	 * screen.
 	 */
-	public BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
+	public transient BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(final Context context, final Intent intent) {
 			fillData();
 		};
 	};
 
-	private AlertDialog.Builder mAlert;
-
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		MenuInflater inflater = getMenuInflater();
+	public void onCreateContextMenu(final ContextMenu menu, final View view,
+			final ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, view, menuInfo);
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.callaround_detail_menu, menu);
 
 		if (!mDay.equals(Time.iso8601Date())) {
 			menu.removeItem(R.id.call_guard);
 		}
 
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-		long callaround_id = info.id;
-		long house_id = mDbHelper.getHouseIdFromCallaround(callaround_id);
+		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+		final long callaround_id = info.id;
+		final long house_id = mDbHelper.getHouseIdFromCallaround(callaround_id);
 
-		MenuItem callaroundOutstanding = menu
-				.findItem(R.id.callaround_resolved);
-		callaroundOutstanding.setCheckable(true);
-		callaroundOutstanding.setChecked(mDbHelper
+		final MenuItem caOutstanding = menu.findItem(R.id.callaround_resolved);
+		caOutstanding.setCheckable(true);
+		caOutstanding.setChecked(mDbHelper
 				.getCallaroundResolvedFromId(callaround_id));
 
-		MenuItem callaroundEnabled = menu.findItem(R.id.callaround_enabled);
+		final MenuItem callaroundEnabled = menu
+				.findItem(R.id.callaround_enabled);
 		callaroundEnabled.setCheckable(true);
 		callaroundEnabled.setChecked(mDbHelper.getCallaroundActive(house_id));
 	}
@@ -263,13 +262,13 @@ public class CallAroundDetailList extends ListActivity implements
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+	public boolean onContextItemSelected(final MenuItem item) {
+		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 		final long callaround_id = info.id;
-		long house_id = mDbHelper.getHouseIdFromCallaround(callaround_id);
+		final long house_id = mDbHelper.getHouseIdFromCallaround(callaround_id);
+		boolean newValue = false;
 
-		boolean newValue;
 		switch (item.getItemId()) {
 		case R.id.call_number:
 			callNumber(house_id);
@@ -282,13 +281,14 @@ public class CallAroundDetailList extends ListActivity implements
 			fillData();
 			return true;
 		case R.id.callaround_resolved:
-			newValue = !item.isChecked();
+			// final boolean newValue ^= item.isChecked();
+			newValue ^= item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundResolvedFromId(callaround_id, newValue);
 			fillData();
 			return true;
 		case R.id.callaround_enabled:
-			newValue = !item.isChecked();
+			newValue ^= item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundActive(house_id, newValue);
 			fillData();
@@ -306,34 +306,36 @@ public class CallAroundDetailList extends ListActivity implements
 	 * @param house_id
 	 *            The _id of the house for which to display numbers.
 	 */
-	private void callNumber(long house_id) {
-		Cursor c = mDbHelper.fetchContactsForHouse(house_id);
-		if (c.getCount() == 0) {
-			Toast toast = Toast.makeText(this,
+	private void callNumber(final long house_id) {
+		final Cursor cur = mDbHelper.fetchContactsForHouse(house_id);
+		if (cur.getCount() == 0) {
+			final Toast toast = Toast.makeText(this,
 					getString(R.string.no_house_contacts), Toast.LENGTH_LONG);
 			toast.show();
 			return;
 		}
 
-		mAlert = new AlertDialog.Builder(CallAroundDetailList.this);
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				CallAroundDetailList.this);
 
 		final Spinner spinnerinput = new Spinner(CallAroundDetailList.this);
-		String[] from = new String[] { DbAdapter.KEY_NAME };
-		int[] to = new int[] { android.R.id.text1 };
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_spinner_item, c, from, to);
+		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final int[] toFields = new int[] { android.R.id.text1 };
+		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_spinner_item, cur, fromFields, toFields);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinnerinput.setAdapter(adapter);
 
-		mAlert.setView(spinnerinput);
-		mAlert.setPositiveButton("Call", new DialogInterface.OnClickListener() {
+		alert.setView(spinnerinput);
+		alert.setPositiveButton("Call", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int whichButton) {
-				long number_id = spinnerinput.getSelectedItemId();
-				String number = mDbHelper.getNumber(number_id);
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final long number_id = spinnerinput.getSelectedItemId();
+				final String number = mDbHelper.getNumber(number_id);
 
 				try {
-					Intent callIntent = new Intent(Intent.ACTION_CALL);
+					final Intent callIntent = new Intent(Intent.ACTION_CALL);
 					callIntent.setData(Uri.parse("tel:" + number));
 					startActivity(callIntent);
 				} catch (ActivityNotFoundException activityException) {
@@ -342,8 +344,8 @@ public class CallAroundDetailList extends ListActivity implements
 				}
 			}
 		});
-		mAlert.setNegativeButton("Cancel", null);
-		mAlert.show();
+		alert.setNegativeButton("Cancel", null);
+		alert.show();
 	}
 
 	/**
@@ -352,10 +354,10 @@ public class CallAroundDetailList extends ListActivity implements
 	 * @param house_id
 	 *            The _id of the house for which to display numbers.
 	 */
-	private void callGuard(long house_id) {
-		String number = mDbHelper.getGuardNumberFromDate(house_id, mDay);
+	private void callGuard(final long house_id) {
+		final String number = mDbHelper.getGuardNumberFromDate(house_id, mDay);
 
-		Intent callIntent = new Intent(Intent.ACTION_CALL);
+		final Intent callIntent = new Intent(Intent.ACTION_CALL);
 		callIntent.setData(Uri.parse("tel:" + number));
 		startActivity(callIntent);
 	}
@@ -373,7 +375,7 @@ public class CallAroundDetailList extends ListActivity implements
 		 * @param cur
 		 *            the cur
 		 */
-		public CallaroundAdapter(Context context, Cursor cur) {
+		public CallaroundAdapter(final Context context, final Cursor cur) {
 			super(context, R.layout.callaround_detail_item, cur);
 		}
 
@@ -385,9 +387,11 @@ public class CallAroundDetailList extends ListActivity implements
 		 * android.database.Cursor, android.view.ViewGroup)
 		 */
 		@Override
-		public View newView(Context context, Cursor cur, ViewGroup parent) {
-			LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return li.inflate(R.layout.callaround_detail_item, parent, false);
+		public View newView(final Context context, final Cursor cur,
+				final ViewGroup parent) {
+			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			return inflater.inflate(R.layout.callaround_detail_item, parent,
+					false);
 		}
 
 		/*
@@ -397,44 +401,50 @@ public class CallAroundDetailList extends ListActivity implements
 		 * android.content.Context, android.database.Cursor)
 		 */
 		@Override
-		public void bindView(View view, Context context, Cursor cur) {
-			String houseName = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_NAME));
-
+		public void bindView(final View view, final Context context,
+				final Cursor cur) {
+			String houseName;
 			if (cur.getInt(cur.getColumnIndex(DbAdapter.KEY_DELAYED)) > 0) {
-				houseName = houseName
+				houseName = cur.getString(cur
+						.getColumnIndex(DbAdapter.KEY_NAME))
 						+ context.getString(R.string.delayed_suffix);
+			} else {
+				houseName = cur.getString(cur
+						.getColumnIndex(DbAdapter.KEY_NAME));
 			}
 
-			String dateLabel = cur.getString(cur
+			final String timeReceived = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_TIMERECEIVED));
 
-			long outstanding = cur.getLong(cur
+			final long outstanding = cur.getLong(cur
 					.getColumnIndex(DbAdapter.KEY_OUTSTANDING));
 
-			String dueFrom = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_DUEFROM));
-			dueFrom = Time.prettyTime(dueFrom);
+			final String dueFrom = Time.prettyTime(cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_DUEFROM)));
 
-			String dueBy = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_DUEBY));
-			dueBy = Time.prettyTime(dueBy);
+			final String dueBy = Time.prettyTime(cur.getString(cur
+					.getColumnIndex(DbAdapter.KEY_DUEBY)));
 
-			if (dateLabel == null || outstanding == 1) {
+			String dateLabel;
+			if (timeReceived == null || outstanding == 1) {
 				dateLabel = context.getString(R.string.not_yet_received);
 			} else {
-				dateLabel = Time.prettyTime(dateLabel);
+				dateLabel = Time.prettyTime(timeReceived);
 			}
 
-			TextView tvTitle = (TextView) view.findViewById(R.id.header);
+			final TextView tvTitle = (TextView) view.findViewById(R.id.header);
 			tvTitle.setText(houseName);
-			TextView tvDetails = (TextView) view.findViewById(R.id.subheader);
+
+			final TextView tvDetails = (TextView) view
+					.findViewById(R.id.subheader);
 			tvDetails.setText(dateLabel);
 
-			TextView tvDueTime = (TextView) view.findViewById(R.id.dueTime);
+			final TextView tvDueTime = (TextView) view
+					.findViewById(R.id.dueTime);
 			tvDueTime.setText(dueBy);
 
-			TextView tvEarlyTime = (TextView) view.findViewById(R.id.earlyTime);
+			final TextView tvEarlyTime = (TextView) view
+					.findViewById(R.id.earlyTime);
 			tvEarlyTime.setText(dueFrom);
 		}
 	}

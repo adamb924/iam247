@@ -34,13 +34,14 @@ public class SmsHandler {
 	 *            the old
 	 * @return the normalized phone number
 	 */
-	static public String getNormalizedPhoneNumber(Context context, String old) {
-		String r = old;
-		if (r.startsWith("0")) {
-			r = r.replaceFirst("0",
+	static public String getNormalizedPhoneNumber(final Context context,
+			final String old) {
+		String ret = old;
+		if (ret.charAt(0) == '0') {
+			ret = ret.replaceFirst("0",
 					context.getString(R.string.loc_country_phonecode));
 		}
-		return r;
+		return ret;
 	}
 
 	/**
@@ -53,24 +54,24 @@ public class SmsHandler {
 	 * @param message
 	 *            the message
 	 */
-	static public void sendSms(final Context context, String phoneNumber,
-			String message) {
+	static public void sendSms(final Context context, final String phoneNumber,
+			final String message) {
 		// this application context is required because it's not allowed to
 		// register broadcast receivers from a broadcast receiver (which this
 		// is, being called from SmsReceiver)
-		Context appContext = context.getApplicationContext();
+		final Context appContext = context.getApplicationContext();
 
-		SmsManager sms = SmsManager.getDefault();
-		ArrayList<String> parts = sms.divideMessage(message);
+		final SmsManager sms = SmsManager.getDefault();
+		final ArrayList<String> parts = sms.divideMessage(message);
 
 		// these intents are collected by SmsReceiver
-		ArrayList<PendingIntent> sentPIArray = new ArrayList<PendingIntent>();
-		ArrayList<PendingIntent> deliveredPIArray = new ArrayList<PendingIntent>();
+		final ArrayList<PendingIntent> sentPIArray = new ArrayList<PendingIntent>();
+		final ArrayList<PendingIntent> deliveredPIArray = new ArrayList<PendingIntent>();
+		Intent sentIntent, deliveredIntent;
 		for (int i = 0; i < parts.size(); i++) {
 			// curiously, passing SmsReceiver.SMS_SENT instead of the identical
 			// string literal doesn't work
-			Intent sentIntent = new Intent(
-					"iam.applications.SmsReceiver.SMS_SENT");
+			sentIntent = new Intent("iam.applications.SmsReceiver.SMS_SENT");
 			// This extras are used in SmsReceiver.processSmsSent()
 			sentIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
 			sentIntent.putExtra(SmsHandler.MESSAGE, message);
@@ -79,7 +80,7 @@ public class SmsHandler {
 
 			// curiously, passing SmsReceiver.SMS_DELIVERED instead of the
 			// identical string literal doesn't work
-			Intent deliveredIntent = new Intent(
+			deliveredIntent = new Intent(
 					"iam.applications.SmsReceiver.SMS_DELIVERED");
 			// This extras are used in SmsReceiver.processSmsDelivered()
 			deliveredIntent.putExtra(SmsHandler.PHONE_NUMBER, phoneNumber);
@@ -95,28 +96,28 @@ public class SmsHandler {
 
 		// add the message to the "pending" SQL table, to be corrected when
 		// confirmation of its being sent and being delivered are received
-		DbAdapter dbHelper = new DbAdapter(context);
+		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 		dbHelper.addMessagePending(phoneNumber, message);
 		dbHelper.close();
 	}
 
 	/** The application context. */
-	private final Context mContext;
+	private transient final Context mContext;
 
 	/** The phone number of the SMS. */
-	private final String mPhoneNumber;
+	private transient final String mPhoneNumber;
 
 	/** The message. */
-	private final String mMessage;
+	private transient final String mMessage;
 
 	/** The contact id of the sender (or -1). */
-	private final long mContactId;
+	private transient final long mContactId;
 
 	/** The house id of the sender (or -1). */
-	private final long mHouseId;
+	private transient final long mHouseId;
 	/** The database interface. */
-	private final DbAdapter mDbHelper;
+	private transient final DbAdapter mDbHelper;
 
 	/** The phone number. */
 	static public final String PHONE_NUMBER = "PHONE_NUMBER";
@@ -125,7 +126,7 @@ public class SmsHandler {
 	static public final String MESSAGE = "MESSAGE";
 
 	/** The m settings. */
-	private SharedPreferences mSettings;
+	final transient private SharedPreferences mSettings;
 
 	/**
 	 * Instantiates a new sms handler.
@@ -139,8 +140,8 @@ public class SmsHandler {
 	 * @param failIfUnknown
 	 *            the fail if unknown
 	 */
-	SmsHandler(Context context, String number, String text,
-			boolean failIfUnknown) {
+	SmsHandler(final Context context, final String number, final String text,
+			final boolean failIfUnknown) {
 		mDbHelper = new DbAdapter(context);
 		mDbHelper.open();
 
@@ -227,9 +228,9 @@ public class SmsHandler {
 	 * @param with
 	 *            whether the user is adding a "with" keyword
 	 */
-	private void addCheckin(boolean with) {
+	private void addCheckin(final boolean with) {
 		String[] matches;
-		String place, keyword, withwhom, by;
+		String place, keyword, withWhom, returnBy;
 		if (with) {
 			matches = getMessageMatches(R.string.re_startcheckin_with);
 			if (matches.length < 4) {
@@ -238,8 +239,8 @@ public class SmsHandler {
 			}
 			place = matches[0];
 			keyword = matches[1];
-			withwhom = matches[2];
-			by = matches[3];
+			withWhom = matches[2];
+			returnBy = matches[3];
 		} else {
 			matches = getMessageMatches(R.string.re_startcheckin);
 			if (matches.length < 3) {
@@ -248,11 +249,11 @@ public class SmsHandler {
 			}
 			place = matches[0];
 			keyword = matches[1];
-			withwhom = null;
-			by = matches[2];
+			withWhom = "";
+			returnBy = matches[2];
 		}
 
-		Date time = Time.timeFromString(mContext, by);
+		final Date time = Time.timeFromString(mContext, returnBy);
 		if (time == null) {
 			yourError();
 			return;
@@ -269,13 +270,13 @@ public class SmsHandler {
 			return;
 		}
 
-		int ret = mDbHelper.addCheckin(mContactId, place, keyword, time,
-				withwhom);
+		final int ret = mDbHelper.addCheckin(mContactId, place, keyword, time,
+				withWhom);
 
 		if (ret == DbAdapter.NOTIFY_FAILURE) {
 			ourError();
 		} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
-			String message = String.format(
+			final String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
 					place, Time.timeTodayTomorrow(mContext, time))
 					+ " "
@@ -283,7 +284,7 @@ public class SmsHandler {
 							.getString(R.string.sms_existing_checkin_resolved);
 			sendSms(message);
 		} else {
-			String message = String.format(
+			final String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
 					place, Time.timeTodayTomorrow(mContext, time));
 			sendSms(message);
@@ -301,7 +302,7 @@ public class SmsHandler {
 	 * Process an "arrived" message by resolving the check-in.
 	 */
 	private void arrived() {
-		int ret = mDbHelper.setCheckinResolved(mContactId, true);
+		final int ret = mDbHelper.setCheckinResolved(mContactId, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_acknowledge_arrived_checkin);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
@@ -315,7 +316,7 @@ public class SmsHandler {
 	 * Process a "back" message by resolving an entire trip.
 	 */
 	private void back() {
-		int ret = mDbHelper.setCheckinTripResolved(mContactId, true);
+		final int ret = mDbHelper.setCheckinTripResolved(mContactId, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_acknowledge_trip_resolved_checkin);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
@@ -334,13 +335,13 @@ public class SmsHandler {
 			return;
 		}
 
-		int ret = mDbHelper.setCallaroundDelayed(mHouseId, true);
+		final int ret = mDbHelper.setCallaroundDelayed(mHouseId, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
-			String time = Time.iso8601Time(Time.timeFromSimpleTime(mSettings
-					.getString(
+			final String time = Time.iso8601Time(Time
+					.timeFromSimpleTime(mSettings.getString(
 							HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
 							"23:59")));
-			String message = String.format(mContext
+			final String message = String.format(mContext
 					.getString(R.string.sms_callaround_delay_confirmation),
 					time);
 			sendSms(message);
@@ -358,7 +359,7 @@ public class SmsHandler {
 			return;
 		}
 
-		int ret = mDbHelper.setCallaroundActive(mHouseId, false);
+		final int ret = mDbHelper.setCallaroundActive(mHouseId, false);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_callaround_disabled);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
@@ -377,7 +378,7 @@ public class SmsHandler {
 			return;
 		}
 
-		int ret = mDbHelper.setCallaroundActive(mHouseId, true);
+		final int ret = mDbHelper.setCallaroundActive(mHouseId, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_callaround_enabled);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
@@ -394,9 +395,8 @@ public class SmsHandler {
 	 */
 	@Override
 	protected void finalize() throws Throwable {
-		super.finalize();
-
 		mDbHelper.close();
+		super.finalize();
 	}
 
 	/**
@@ -406,15 +406,15 @@ public class SmsHandler {
 	 *            the resource ID of the regular expression
 	 * @return an array with captured strings from the regular expression
 	 */
-	private String[] getMessageMatches(int stringId) {
-		Resources r = mContext.getResources();
-		Pattern p = Pattern.compile(r.getString(stringId),
+	private String[] getMessageMatches(final int stringId) {
+		final Resources resources = mContext.getResources();
+		final Pattern pattern = Pattern.compile(resources.getString(stringId),
 				Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(mMessage);
-		if (m.find()) {
-			String[] matches = new String[m.groupCount()];
-			for (int i = 1; i <= m.groupCount(); i++) {
-				matches[i - 1] = m.group(i);
+		final Matcher matcher = pattern.matcher(mMessage);
+		if (matcher.find()) {
+			String[] matches = new String[matcher.groupCount()];
+			for (int i = 1; i <= matcher.groupCount(); i++) {
+				matches[i - 1] = matcher.group(i);
 			}
 			return matches;
 		} else {
@@ -431,23 +431,23 @@ public class SmsHandler {
 	 * @return true if the message matches the regular expression in the given
 	 *         resource ID, otherwise false
 	 */
-	private boolean messageMatches(int stringId) {
-		Resources r = mContext.getResources();
-		Pattern p = Pattern.compile(r.getString(stringId),
+	private boolean messageMatches(final int stringId) {
+		final Resources resources = mContext.getResources();
+		final Pattern pattern = Pattern.compile(resources.getString(stringId),
 				Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(mMessage);
+		final Matcher matcher = pattern.matcher(mMessage);
 
-		return m.matches();
+		return matcher.matches();
 	}
 
 	/**
 	 * Need legitimate keyword.
 	 */
 	private void needLegitimateKeyword() {
-		String msg = String.format(
+		final String message = String.format(
 				mContext.getString(R.string.sms_need_location_keyword),
 				mDbHelper.getLocationKeywords());
-		sendSms(msg);
+		sendSms(message);
 	}
 
 	/**
@@ -463,22 +463,22 @@ public class SmsHandler {
 	private void processUnknownNumber() {
 		// perhaps he is identifying himself
 		if (messageMatches(R.string.re_thisis)) {
-			boolean thisisAllowed = mSettings.getBoolean(
+			final boolean thisisAllowed = mSettings.getBoolean(
 					HomeActivity.PREFERENCES_PERMIT_THISIS, false);
 			if (!thisisAllowed) {
 				sendSms(R.string.sms_this_disabled_notification);
 				return;
 			}
 
-			String[] matches = getMessageMatches(R.string.re_thisis);
+			final String[] matches = getMessageMatches(R.string.re_thisis);
 			if (matches.length < 1) {
 				yourError();
 				mDbHelper.close();
 			}
-			String name = matches[0];
+			final String name = matches[0];
 			mDbHelper.addContact(name, mPhoneNumber);
 
-			String message = String.format(
+			final String message = String.format(
 					mContext.getString(R.string.sms_requestid_acknowledgement),
 					name);
 			sendSms(message);
@@ -492,11 +492,11 @@ public class SmsHandler {
 	 * Initiates the Red Alert activity.
 	 */
 	private void redAlert() {
-		Intent i = new Intent(mContext, RedAlert.class);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		i.putExtra(RedAlert.FIELD_ID, mContactId);
-		i.putExtra(RedAlert.FIELD_NUMBER, mPhoneNumber);
-		mContext.startActivity(i);
+		final Intent intent = new Intent(mContext, RedAlert.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.putExtra(RedAlert.FIELD_ID, mContactId);
+		intent.putExtra(RedAlert.FIELD_NUMBER, mPhoneNumber);
+		mContext.startActivity(intent);
 	}
 
 	/**
@@ -526,7 +526,7 @@ public class SmsHandler {
 			return;
 		}
 
-		int ret = mDbHelper.setCallaroundResolved(mHouseId, true);
+		final int ret = mDbHelper.setCallaroundResolved(mHouseId, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_callaround_acknowledgement);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
@@ -544,25 +544,25 @@ public class SmsHandler {
 	 * Records the user as being heading for home.
 	 */
 	private void returning() {
-		String[] matches = getMessageMatches(R.string.re_returning);
+		final String[] matches = getMessageMatches(R.string.re_returning);
 		if (matches.length != 1) {
 			return;
 		}
 
-		Date time = Time.timeFromString(mContext, matches[0]);
+		final Date time = Time.timeFromString(mContext, matches[0]);
 		if (time == null) {
 			yourError();
 			return;
 		}
 
-		String place = mContext.getString(R.string.home);
+		final String place = mContext.getString(R.string.home);
 
-		int ret = mDbHelper.addCheckin(mContactId, place, "--", time, null);
+		final int ret = mDbHelper.addCheckin(mContactId, place, "--", time, "");
 
 		if (ret == DbAdapter.NOTIFY_FAILURE) {
 			ourError();
 		} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
-			String message = String.format(
+			final String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
 					place, Time.timeTodayTomorrow(mContext, time))
 					+ " "
@@ -570,7 +570,7 @@ public class SmsHandler {
 							.getString(R.string.sms_existing_checkin_resolved);
 			sendSms(message);
 		} else {
-			String message = String.format(
+			final String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
 					place, Time.timeTodayTomorrow(mContext, time));
 			sendSms(message);
@@ -590,12 +590,12 @@ public class SmsHandler {
 	 * @param context
 	 *            the context
 	 */
-	private void sendForbiddenLocations(Context context) {
-		String forbidden = mDbHelper.getForbiddenLocations();
+	private void sendForbiddenLocations(final Context context) {
+		final String forbidden = mDbHelper.getForbiddenLocations();
 		if (forbidden == null) {
 			sendSms(R.string.sms_forbidden_none);
 		} else {
-			String message = String.format(
+			final String message = String.format(
 					context.getString(R.string.sms_forbidden), forbidden);
 			sendSms(message);
 		}
@@ -605,10 +605,10 @@ public class SmsHandler {
 	 * Send the user the list of location keywords.
 	 */
 	private void sendLocationKeywords() {
-		String msg = String.format(
+		final String message = String.format(
 				mContext.getString(R.string.sms_location_keywords),
 				mDbHelper.getLocationKeywords());
-		sendSms(msg);
+		sendSms(message);
 	}
 
 	/**
@@ -617,7 +617,7 @@ public class SmsHandler {
 	 * @param messageId
 	 *            the message id
 	 */
-	private void sendSms(int messageId) {
+	private void sendSms(final int messageId) {
 		sendSms(mContext, mPhoneNumber, mContext.getString(messageId));
 	}
 
@@ -627,7 +627,7 @@ public class SmsHandler {
 	 * @param message
 	 *            the message
 	 */
-	private void sendSms(String message) {
+	private void sendSms(final String message) {
 		sendSms(mContext, mPhoneNumber, message);
 	}
 
@@ -635,7 +635,7 @@ public class SmsHandler {
 	 * Turn off checkin reminders for the user.
 	 */
 	private void turnOffReminders() {
-		int ret = mDbHelper.setContactPreference(mContactId,
+		final int ret = mDbHelper.setContactPreference(mContactId,
 				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, false);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_off_confirm);
@@ -650,14 +650,14 @@ public class SmsHandler {
 	 * Turn on checkin reminders for the user.
 	 */
 	private void turnOnReminders() {
-		int ret = mDbHelper.setContactPreference(mContactId,
+		final int ret = mDbHelper.setContactPreference(mContactId,
 				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_on_confirm);
 
 			// add a check-in reminder for the person, if they have an active
 			// check-in
-			long current_checkin = mDbHelper
+			final long current_checkin = mDbHelper
 					.getCurrentCheckinForContact(mContactId);
 			if (current_checkin != -1) {
 				AlarmReceiver
@@ -679,7 +679,7 @@ public class SmsHandler {
 			return;
 		}
 
-		int ret = mDbHelper.setCallaroundResolved(mHouseId, false);
+		final int ret = mDbHelper.setCallaroundResolved(mHouseId, false);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_callaround_undo_acknowledgement);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
