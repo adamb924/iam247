@@ -63,6 +63,7 @@ public class DbAdapter {
 			db.execSQL(DATABASE_CREATE_PENDING);
 			db.execSQL(DATABASE_CREATE_GUARDS);
 			db.execSQL(DATABASE_CREATE_GUARD_CHECKINS);
+			db.execSQL(DATABASE_CREATE_ALARMS);
 		}
 
 		/*
@@ -839,8 +840,8 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_LOG, null, null);
 		mDb.delete(DATABASE_TABLE_LOCATION_LOG, null, null);
 		mDb.delete(DATABASE_TABLE_PENDING, null, null);
-		mDb.delete(DATABASE_CREATE_GUARDS, null, null);
-		mDb.delete(DATABASE_CREATE_GUARD_CHECKINS, null, null);
+		mDb.delete(DATABASE_TABLE_GUARDS, null, null);
+		mDb.delete(DATABASE_TABLE_GUARD_CHECKINS, null, null);
 		mDb.delete(DATABASE_CREATE_ALARMS, null, null);
 	}
 
