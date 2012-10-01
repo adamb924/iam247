@@ -251,6 +251,7 @@
     <string name="sms_callaround_undo_acknowledgement">24/7 says: Your previous call around has been canceled.</string>
     <string name="sms_callaround_nohouse">24/7 says: At the moment you are not associated with any house in our system. This should change soon. Please contact the RTL in the meantime if you need assistance.</string>
     <string name="sms_checkin_resolved_foryou">24/7 says: This is a notification that the RTL has resolved your check-in. If you feel this is a mistake, send another check-in request or contact the RTL.</string>
+    <string name="sms_trip_resolved_foryou">24/7 says: This is a notification that the RTL has resolved your trip. If you are not back home, please send another check-in request or contact the RTL.</string>
     <string name="sms_this_disabled_notification">24/7 says: New users are currently not being accepted. Please contact the RTL if you need help.</string>
     <string name="sms_checkin_reminder">24/7 says: This is a reminder that you have a check-in due in about three minutes.</string>
     <string name="sms_checkin_reminder_on_confirm">24/7 says: Okay, we\'ll send you a reminder three minutes before your check-in is due.</string>
