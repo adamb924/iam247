@@ -2481,7 +2481,7 @@ public class DbAdapter {
 	public int setCheckinTripResolvedFromId(final long checkin_id,
 			final boolean resolved) throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_TRIPRESOLVED, resolved ? 0 : 1);
+		args.put(KEY_TRIPRESOLVED, resolved ? 1 : 0);
 		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }) > 0) {
 			return NOTIFY_SUCCESS;
