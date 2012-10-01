@@ -200,7 +200,7 @@ public class CheckinList extends ListActivity implements OnInitListener {
 		} else {
 			menu.removeItem(R.id.resolve_checkin);
 		}
-		if (mDbHelper.getCheckinTripResolved(checkin_id)) {
+		if (mDbHelper.getTripResolvedFromCheckin(checkin_id)) {
 			menu.removeItem(R.id.resolve_trip);
 		} else {
 			menu.removeItem(R.id.unresolve_trip);
@@ -242,13 +242,13 @@ public class CheckinList extends ListActivity implements OnInitListener {
 			fillData();
 			return true;
 		case R.id.resolve_trip:
-			mDbHelper.setCheckinTripResolvedFromId(info.id, true);
+			mDbHelper.setTripResolvedFromCheckinId(info.id, true);
 			SmsHandler.sendSms(this, mDbHelper.getNumberForCheckin(info.id),
 					getString(R.string.sms_trip_resolved_foryou));
 			fillData();
 			return true;
 		case R.id.unresolve_trip:
-			mDbHelper.setCheckinTripResolvedFromId(info.id, false);
+			mDbHelper.setTripResolvedFromCheckinId(info.id, false);
 			fillData();
 			return true;
 		default:
@@ -321,10 +321,10 @@ public class CheckinList extends ListActivity implements OnInitListener {
 					.getColumnIndex(DbAdapter.KEY_TRIPRESOLVED)) == 1 ? true
 					: false;
 
-			Log.i("Debug", "CheckinAdapter");
-			Log.i("Debug", "Outstanding: " + outstanding);
-			Log.i("Debug", "tripresolved: " + tripresolved);
-			Log.i("Debug", "due: " + due);
+			// Log.i("Debug", "CheckinAdapter");
+			// Log.i("Debug", "Outstanding: " + outstanding);
+			// Log.i("Debug", "tripresolved: " + tripresolved);
+			// Log.i("Debug", "due: " + due);
 
 			final String sWith = cur.getString(cur
 					.getColumnIndex(DbAdapter.KEY_WITH));

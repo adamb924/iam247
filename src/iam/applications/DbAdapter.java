@@ -64,6 +64,8 @@ public class DbAdapter {
 			database.execSQL(DATABASE_CREATE_GUARDS);
 			database.execSQL(DATABASE_CREATE_GUARD_CHECKINS);
 			database.execSQL(DATABASE_CREATE_ALARMS);
+			database.execSQL(DATABASE_CREATE_TRIPS);
+			database.execSQL(DATABASE_CREATE_TRIP_MEMBERS);
 		}
 
 		/*
@@ -93,6 +95,8 @@ public class DbAdapter {
 			database.execSQL(DROP_TABLE_GUARDS);
 			database.execSQL(DROP_TABLE_GUARD_CHECKIN);
 			database.execSQL(DROP_TABLE_ALARMS);
+			database.execSQL(DROP_TABLE_TRIPS);
+			database.execSQL(DROP_TABLE_TRIP_MEMBERS);
 
 			onCreate(database);
 		}
@@ -129,13 +133,19 @@ public class DbAdapter {
 	public static final int NOTIFY_UNTIMELY = 5;
 
 	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 20;
+	private static final int DATABASE_VERSION = 22;
 
 	/** Create Table Commands. */
 	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
 
 	/** The Constant DATABASE_CREATE_CHECKINS. */
-	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, keyword string not null, timedue string not null, timereceived string, outstanding integer default 1, tripresolved integer default 0, checkinrequest integer default 1, with string );";
+	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, keyword string not null, timedue string not null, timereceived string, outstanding integer default 1, checkinrequest integer default 1);";
+
+	/** The Constant DATABASE_CREATE_TRIPS. */
+	private static final String DATABASE_CREATE_TRIPS = "create table if not exists trips ( _id integer primary key autoincrement, contact_id integer not null, with string, tripresolved integer default 0 ) ";
+
+	/** The Constant DATABASE_CREATE_TRIP_MEMBERS. */
+	private static final String DATABASE_CREATE_TRIP_MEMBERS = "create table if not exists tripmembers ( trip_id integer, checkin_id ) ";
 
 	/** The Constant DATABASE_CREATE_CALLAROUNDS. */
 	private static final String DATABASE_CREATE_CALLAROUNDS = "create table if not exists callarounds (_id integer primary key autoincrement, house_id integer not null, duefrom string not null, dueby string not null, timereceived string, outstanding integer default 1, delayed integer default 0, unique(house_id,dueby) on conflict ignore );";
@@ -221,6 +231,12 @@ public class DbAdapter {
 	/** The Constant DROP_TABLE_ALARMS. */
 	private static final String DROP_TABLE_ALARMS = "DROP TABLE IF EXISTS alarms;";
 
+	/** The Constant DROP_TABLE_TRIPS. */
+	private static final String DROP_TABLE_TRIPS = "DROP TABLE IF EXISTS trips;";
+
+	/** The Constant DROP_TABLE_TRIP_MEMBERS. */
+	private static final String DROP_TABLE_TRIP_MEMBERS = "DROP TABLE IF EXISTS tripmembers;";
+
 	/** The Constant DATABASE_NAME. */
 	private static final String DATABASE_NAME = "thedatabase";
 
@@ -268,6 +284,12 @@ public class DbAdapter {
 
 	/** The Constant DATABASE_TABLE_ALARMS. */
 	private static final String DATABASE_TABLE_ALARMS = "alarms";
+
+	/** The Constant DATABASE_TABLE_TRIPS. */
+	private static final String DATABASE_TABLE_TRIPS = "trips";
+
+	/** The Constant DATABASE_TABLE_TRIP_MEMBERS. */
+	private static final String DATABASE_TABLE_TRIP_MEMBERS = "tripmembers";
 
 	/** SQL column names constants. */
 	public static final String KEY_ROWID = "_id";
@@ -373,6 +395,12 @@ public class DbAdapter {
 
 	/** The Constant KEY_REQUESTID. */
 	public static final String KEY_REQUESTID = "request_id";
+
+	/** The Constant KEY_CHECKINID. */
+	public static final String KEY_CHECKINID = "checkin_id";
+
+	/** The Constant KEY_TRIPID. */
+	public static final String KEY_TRIPID = "trip_id";
 
 	/** Log message types. */
 	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
@@ -516,7 +544,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Adds a check-in to the database.
+	 * Adds a check-in to the database. If the contact has no unresolved trip, a
+	 * new one is created.
 	 * 
 	 * @param contact_id
 	 *            the contact_id of the person check-in in
@@ -536,6 +565,44 @@ public class DbAdapter {
 	public int addCheckin(final long contact_id, final String place,
 			final String keyword, final Date time, final String with)
 			throws SQLException {
+		final int count = resolveExistingCheckins(contact_id);
+
+		long tripId = getContactUnresolvedTrip(contact_id);
+		if (tripId == -1) {
+			tripId = addTrip(contact_id, with);
+		}
+
+		final ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_CONTACTID, contact_id);
+		initialValues.put(KEY_LOCATION, place);
+		initialValues.put(KEY_KEYWORD, keyword);
+		initialValues.put(KEY_TIMEDUE, Time.iso8601DateTime(time));
+		initialValues.put(KEY_TIMERECEIVED, Time.iso8601DateTime());
+		final long rowId = mDb.insert(DATABASE_TABLE_CHECKINS, null,
+				initialValues);
+
+		final ContentValues memberValues = new ContentValues();
+		memberValues.put(KEY_TRIPID, tripId);
+		memberValues.put(KEY_CHECKINID, rowId);
+		mDb.insert(DATABASE_TABLE_TRIP_MEMBERS, null, memberValues);
+
+		if (rowId > -1) {
+			AlarmReceiver.setCheckinAlert(mContext, time);
+			if (count > 0) {
+				return NOTIFY_EXISTING_CHECKIN_RESOLVED;
+			} else {
+				return NOTIFY_SUCCESS;
+			}
+		} else {
+			return NOTIFY_FAILURE;
+		}
+	}
+
+	/**
+	 * @param contact_id
+	 * @return
+	 */
+	private int resolveExistingCheckins(final long contact_id) {
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) from checkins where outstanding='1' and contact_id='"
 						+ contact_id + "';", null);
@@ -546,29 +613,7 @@ public class DbAdapter {
 		args.put(KEY_OUTSTANDING, 0);
 		mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "="
 				+ contact_id, null);
-
-		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_CONTACTID, contact_id);
-		initialValues.put(KEY_LOCATION, place);
-		initialValues.put(KEY_KEYWORD, keyword);
-		initialValues.put(KEY_TIMEDUE, Time.iso8601DateTime(time));
-		initialValues.put(KEY_TIMERECEIVED, Time.iso8601DateTime());
-		if (!with.isEmpty()) {
-			initialValues.put(KEY_WITH, with);
-		}
-		final boolean result = mDb.insert(DATABASE_TABLE_CHECKINS, null,
-				initialValues) > -1;
-
-		if (result) {
-			AlarmReceiver.setCheckinAlert(mContext, time);
-			if (count > 0) {
-				return NOTIFY_EXISTING_CHECKIN_RESOLVED;
-			} else {
-				return NOTIFY_SUCCESS;
-			}
-		} else {
-			return NOTIFY_FAILURE;
-		}
+		return count;
 	}
 
 	/**
@@ -787,6 +832,24 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Add a trip to the database.
+	 * 
+	 * @param contact_id
+	 *            the contact id of the lead person
+	 * @param with
+	 *            a string indicating who is with that person
+	 * @return the id of the newly created trip
+	 */
+	public long addTrip(final long contact_id, final String with) {
+		final ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_CONTACTID, contact_id);
+		if (!with.isEmpty()) {
+			initialValues.put(KEY_WITH, with);
+		}
+		return mDb.insert(DATABASE_TABLE_TRIPS, null, initialValues);
+	}
+
+	/**
 	 * Returns the result of the SQLite changes() function.
 	 * 
 	 * @return the the result of the SQLite changes() function
@@ -846,6 +909,8 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_GUARDS, null, null);
 		mDb.delete(DATABASE_TABLE_GUARD_CHECKINS, null, null);
 		mDb.delete(DATABASE_CREATE_ALARMS, null, null);
+		mDb.delete(DATABASE_CREATE_TRIPS, null, null);
+		mDb.delete(DATABASE_CREATE_TRIP_MEMBERS, null, null);
 	}
 
 	/**
@@ -894,6 +959,11 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_CONTACTPHONES, KEY_CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
 		mDb.delete(DATABASE_TABLE_CONTACTEMAILS, KEY_CONTACTID + "=?",
+				new String[] { String.valueOf(contact_id) });
+		mDb.execSQL(
+				"delete from tripmembers where trip_id in (select _id from trips where contact_id='"
+						+ contact_id + "');", null);
+		mDb.delete(DATABASE_TABLE_TRIPS, KEY_CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
 	}
 
@@ -1009,9 +1079,10 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public Cursor fetchAllCheckins() throws SQLException {
+		// TODO this will need to be updated -- DONE
 		return mDb
 				.rawQuery(
-						"select checkins._id,location,keyword,timedue,name,outstanding,with,tripresolved from checkins,contacts where checkins.contact_id=contacts._id order by name,tripresolved asc,outstanding desc,timedue desc;",
+						"select checkins._id,location,keyword,timedue,name,outstanding,with,tripresolved from checkins,contacts,trips,tripmembers where checkins.contact_id=contacts._id and checkins._id=tripmembers.checkin_id and trips._id=tripmembers.trip_id order by name,tripresolved asc,outstanding desc,timedue desc;",
 						null);
 	}
 
@@ -1131,10 +1202,15 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public Cursor fetchCheckedInPeople() throws SQLException {
+		// TODO update this -- DONE
 		return mDb
 				.rawQuery(
-						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id not in (select contact_id from checkins where tripresolved='0');",
+						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id not in (select contact_id from trips where tripresolved='0');",
 						null);
+		// return mDb
+		// .rawQuery(
+		// "select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id not in (select contact_id from checkins where tripresolved='0');",
+		// null);
 	}
 
 	/**
@@ -1146,10 +1222,15 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public Cursor fetchCheckedOutPeople() throws SQLException {
+		// TODO update this -- DONE
 		return mDb
 				.rawQuery(
-						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from checkins where tripresolved='0');",
+						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from trips where tripresolved='0');",
 						null);
+		// return mDb
+		// .rawQuery(
+		// "select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from checkins where tripresolved='0');",
+		// null);
 	}
 
 	/**
@@ -1200,21 +1281,6 @@ public class DbAdapter {
 		return mDb.rawQuery(
 				"select _id,type,message,time from log order by time desc;",
 				null);
-	}
-
-	/**
-	 * Return a cursor with a list of outstanding check-ins. Columns: KEY_ROWID,
-	 * KEY_LOCATION, KEY_TIMEDUE, KEY_NAME
-	 * 
-	 * @return the cursor
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public Cursor fetchOustandingCheckins() throws SQLException {
-		return mDb
-				.rawQuery(
-						"select checkins._id,location,timedue,name from checkins,contacts where checkins.contact_id=contacts._id and outstanding='1';",
-						null);
 	}
 
 	/**
@@ -1442,15 +1508,17 @@ public class DbAdapter {
 
 	/**
 	 * Returns a formatted string with the number of outstanding checkins.
+	 * Currently this is used in HomeActivity as an at-a-glance summary.
 	 * 
 	 * @return the checkin summary
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public String getCheckinSummary() throws SQLException {
+		// TODO update this -- DONE
 		final Cursor cur = mDb
 				.rawQuery(
-						"select count(contact_id) from (select distinct contact_id from checkins where tripresolved='0');",
+						"select count(contact_id) from (select distinct contact_id from trips where tripresolved='0');",
 						null);
 		if (cur.moveToFirst()) {
 			final long outstanding = cur.getLong(0);
@@ -1498,11 +1566,13 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public boolean getCheckinTripResolved(final long checkin_id)
+	public boolean getTripResolvedFromCheckin(final long checkin_id)
 			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_TRIPRESOLVED }, KEY_ROWID + "=?",
-				new String[] { String.valueOf(checkin_id) }, null, null, null);
+		final Cursor cur = mDb
+				.rawQuery(
+						"select tripresolved from trips where _id in (select trip_id from tripmembers where checkin_id="
+								+ checkin_id + ");", null);
+
 		if (!cur.moveToFirst()) {
 			return false;
 		}
@@ -1552,6 +1622,32 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns the id of an unresolved trip for a contact, or -1 if there is no
+	 * unresolved trip.
+	 * 
+	 * @param contact_id
+	 *            the id of the contact
+	 * @return the id of the contact's unresolved trip, or -1 if there is no
+	 *         unresolved trip
+	 * @throws SQLException
+	 */
+	public long getContactUnresolvedTrip(final long contact_id)
+			throws SQLException {
+		final Cursor cur = mDb.query(DATABASE_TABLE_TRIPS,
+				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
+						+ "' and " + KEY_TRIPRESOLVED + "='0'", null, null,
+				null, null);
+		long rowId;
+		if (cur.moveToFirst()) {
+			rowId = cur.getLong(0);
+		} else {
+			rowId = -1;
+		}
+		cur.close();
+		return rowId;
+	}
+
+	/**
 	 * Returns the _id of the contact associated with the phone number.
 	 * 
 	 * @param phoneNumber
@@ -1569,6 +1665,28 @@ public class DbAdapter {
 		} else {
 			return -1;
 		}
+	}
+
+	/**
+	 * Returns the contact_id associated with a given checkin.
+	 * 
+	 * @param checkin_id
+	 *            the checkin_id
+	 * @return true if the check-in is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long getContactIdForCheckin(final long checkin_id)
+			throws SQLException {
+		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
+				new String[] { KEY_CONTACTID }, KEY_ROWID + "=?",
+				new String[] { String.valueOf(checkin_id) }, null, null, null);
+		if (!cur.moveToFirst()) {
+			return -1;
+		}
+		final long ret = cur.getLong(0);
+		cur.close();
+		return ret;
 	}
 
 	/**
@@ -2176,10 +2294,15 @@ public class DbAdapter {
 		final StringBuffer checkin_people_buffer = new StringBuffer();
 		final StringBuffer callaround_houses_buffer = new StringBuffer();
 
+		// TODO update this -- DONE
 		Cursor cur = mDb
 				.rawQuery(
-						"select name,location from checkins left join contacts on contacts._id=checkins.contact_id where outstanding='1';",
+						"select name,location from trips left join contacts on contacts._id=trips.contact_id where tripresolved='0';",
 						null);
+		// Cursor cur = mDb
+		// .rawQuery(
+		// "select name,location from checkins left join contacts on contacts._id=checkins.contact_id where outstanding='1';",
+		// null);
 		if (cur.moveToFirst()) {
 			for (int i = 0; i < cur.getCount(); i++) {
 				checkin_people_buffer.append(cur.getString(0) + " ("
@@ -2440,9 +2563,26 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Set the trip-resolution status of any check-ins associated with a given
-	 * contact. If the trip is resolved, the checkin is also marked as not
-	 * outstanding.
+	 * Resolves (or not) the trip associated with a given checkin id
+	 * 
+	 * @param checkin_id
+	 *            the checkin id
+	 * @param resolved
+	 *            true if the trip should be resolved, false if it should be
+	 *            unresolved
+	 * @throws SQLException
+	 */
+	public void setTripResolvedFromCheckinId(final long checkin_id,
+			final boolean resolved) throws SQLException {
+		long newValue = resolved ? 1 : 0;
+		mDb.execSQL("update trips set tripresolved='"
+				+ newValue
+				+ "' where _id in (select trip_id from tripmembers where checkin_id="
+				+ checkin_id + ");");
+	}
+
+	/**
+	 * Resolves any trip associated with the contact.
 	 * 
 	 * @param contact_id
 	 *            the contact_id
@@ -2452,38 +2592,12 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public int setCheckinTripResolved(final long contact_id,
-			final boolean resolved) throws SQLException {
+	public int setTripResolvedFromContact(final long contact_id)
+			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_TRIPRESOLVED, resolved ? 1 : 0);
-		if (resolved) {
-			args.put(KEY_OUTSTANDING, 0);
-		}
-		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "=?",
+		args.put(KEY_TRIPRESOLVED, 1);
+		if (mDb.update(DATABASE_TABLE_TRIPS, args, KEY_CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) }) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
-	}
-
-	/**
-	 * Trip-resolve a check-in, given its _id.
-	 * 
-	 * @param checkin_id
-	 *            the checkin_id
-	 * @param resolved
-	 *            the resolved
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public int setCheckinTripResolvedFromId(final long checkin_id,
-			final boolean resolved) throws SQLException {
-		final ContentValues args = new ContentValues();
-		args.put(KEY_TRIPRESOLVED, resolved ? 1 : 0);
-		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
-				new String[] { String.valueOf(checkin_id) }) > 0) {
 			return NOTIFY_SUCCESS;
 		} else {
 			return NOTIFY_FAILURE;

@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
+import android.util.Log;
 
 /**
  * This class processes SMS messages, and calls <code>DbAdapter</code> methods,
@@ -90,6 +91,9 @@ public class SmsHandler {
 		}
 
 		AlarmReceiver.sendRefreshAlert(context);
+
+		Log.i("Debug", phoneNumber);
+		Log.i("Debug", message);
 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, sentPIArray,
 				deliveredPIArray);
@@ -316,7 +320,7 @@ public class SmsHandler {
 	 * Process a "back" message by resolving an entire trip.
 	 */
 	private void back() {
-		final int ret = mDbHelper.setCheckinTripResolved(mContactId, true);
+		final int ret = mDbHelper.setTripResolvedFromContact(mContactId);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_acknowledge_trip_resolved_checkin);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -139,11 +140,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	private static void createGuardCheckin(final Context context,
 			final long house_id, final Date checkinTime) {
+
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_GUARD_CHECKIN);
 		intent.putExtra(DbAdapter.KEY_HOUSEID, house_id);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -229,10 +232,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		// removeAlarmsByType(context,
 		// AlarmReceiver.ALERT_RESET_GUARD_SCHEDULE);
 
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_RESET_GUARD_SCHEDULE);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -266,10 +270,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		// removeAlarmsByType(context, AlarmReceiver.ALERT_ADD_CALLAROUNDS);
 
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_ADD_CALLAROUNDS);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -305,12 +310,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
 		}
 
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
 		// removeAlarmsByType(context, AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -341,12 +347,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_CALLAROUND_DUE);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
 		removeAlarmsByType(context, AlarmReceiver.ALERT_CALLAROUND_DUE);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -373,10 +380,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_CHECKIN_DUE);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -417,11 +425,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 						HomeActivity.PREFERENCES_CHECKIN_REMINDER_DELAY, 3);
 		cal.add(Calendar.MINUTE, offset);
 
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_CHECKIN_REMINDER);
 		intent.putExtra(AlarmReceiver.ALERT_CHECKIN_REMINDER, checkin_id);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -448,10 +457,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 
+		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(ALERT_DELAYED_CALLAROUND_DUE);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
-		final int _id = (int) System.currentTimeMillis();
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
@@ -555,6 +565,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * alert.
 	 */
 	private void checkCallaroundDue() {
+		Log.i("Debug", "checkCallaroundDue()");
+
 		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
 			mDbHelper.close();
 
