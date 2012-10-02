@@ -108,7 +108,8 @@ public class TeamMemberList extends Activity {
 
 		if (checkedoutCur.getCount() > 0) {
 			final SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
-					R.layout.teammember_item, checkedoutCur, fromFields, toFields);
+					R.layout.teammember_item, checkedoutCur, fromFields,
+					toFields);
 			mCheckedOut.setAdapter(notes);
 		} else {
 			final ViewGroup viewGroup = (ViewGroup) findViewById(R.id.teammember_layout);
@@ -149,11 +150,10 @@ public class TeamMemberList extends Activity {
 		if (!mDbHelper.getCallaroundActive(house_id) || house_id == -1) {
 			menu.removeItem(R.id.callaround_resolved);
 		} else {
-			final MenuItem caResolved = menu
-					.findItem(R.id.callaround_resolved);
+			final MenuItem caResolved = menu.findItem(R.id.callaround_resolved);
 			caResolved.setCheckable(true);
-			caResolved.setChecked(!mDbHelper
-					.getCallaroundOutstanding(house_id));
+			caResolved
+					.setChecked(!mDbHelper.getCallaroundOutstanding(house_id));
 		}
 
 		final MenuItem callaroundEnabled = menu
@@ -167,11 +167,10 @@ public class TeamMemberList extends Activity {
 		reportsEnabled.setChecked(mDbHelper.getContactPermission(contact_id,
 				DbAdapter.USER_PERMISSION_REPORT));
 
-		final MenuItem remindersEnabled = menu
-				.findItem(R.id.checkin_reminders);
+		final MenuItem remindersEnabled = menu.findItem(R.id.checkin_reminders);
 		remindersEnabled.setCheckable(true);
-		remindersEnabled.setChecked(mDbHelper.getContactPreference(
-				contact_id, DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER));
+		remindersEnabled.setChecked(mDbHelper.getContactPreference(contact_id,
+				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER));
 
 	}
 
@@ -219,23 +218,23 @@ public class TeamMemberList extends Activity {
 			blockNumber(mContactId);
 			return true;
 		case R.id.allow_request_reports:
-			newValue ^= item.isChecked();
+			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPermission(mContactId,
 					DbAdapter.USER_PERMISSION_REPORT, newValue);
 			return true;
 		case R.id.callaround_enabled:
-			newValue ^= item.isChecked();
+			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundActive(house_id, newValue);
 			return true;
 		case R.id.callaround_resolved:
-			newValue ^= item.isChecked();
+			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundResolved(house_id, newValue);
 			return true;
 		case R.id.checkin_reminders:
-			newValue ^= item.isChecked();
+			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPreference(mContactId,
 					DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, newValue);

@@ -281,14 +281,13 @@ public class CallAroundDetailList extends ListActivity implements
 			fillData();
 			return true;
 		case R.id.callaround_resolved:
-			// final boolean newValue ^= item.isChecked();
-			newValue ^= item.isChecked();
+			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundResolvedFromId(callaround_id, newValue);
 			fillData();
 			return true;
 		case R.id.callaround_enabled:
-			newValue ^= item.isChecked();
+			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundActive(house_id, newValue);
 			fillData();
