@@ -2745,8 +2745,8 @@ public class DbAdapter {
 			final long guard_id) {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
-		final int window = settings.getInt(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, 5);
+		final int window = Integer.parseInt(settings.getString(
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"));
 
 		final String checkinTime = getGuardCheckinTime(guard_id);
 		if (checkinTime == null) {
