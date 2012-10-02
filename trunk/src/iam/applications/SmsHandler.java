@@ -12,7 +12,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
-import android.util.Log;
 
 /**
  * This class processes SMS messages, and calls <code>DbAdapter</code> methods,
@@ -92,8 +91,8 @@ public class SmsHandler {
 
 		AlarmReceiver.sendRefreshAlert(context);
 
-		Log.i("Debug", phoneNumber);
-		Log.i("Debug", message);
+		// Log.i("Debug", phoneNumber);
+		// Log.i("Debug", message);
 
 		sms.sendMultipartTextMessage(phoneNumber, null, parts, sentPIArray,
 				deliveredPIArray);
