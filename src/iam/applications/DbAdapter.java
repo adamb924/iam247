@@ -470,6 +470,25 @@ public class DbAdapter {
 			"wednesday", "thursday", "friday", "saturday" };
 
 	/**
+	 * Gets the column name for the guard schedule, for the given day.
+	 * 
+	 * @param forDay
+	 *            the desired day (0-6)
+	 * @param typicalColumn
+	 *            true if the column name for the typical schedule should be
+	 *            returned
+	 * @return the column name
+	 */
+	static public String getGuardScheduleColumnName(final int forDay,
+			final boolean typicalColumn) {
+		if (typicalColumn) {
+			return DbAdapter.DAYS[forDay] + "_guard";
+		} else {
+			return "typical_" + DbAdapter.DAYS[forDay] + "_guard";
+		}
+	}
+
+	/**
 	 * Instantiates a new db adapter.
 	 * 
 	 * @param ctx
@@ -596,24 +615,6 @@ public class DbAdapter {
 		} else {
 			return NOTIFY_FAILURE;
 		}
-	}
-
-	/**
-	 * @param contact_id
-	 * @return
-	 */
-	private int resolveExistingCheckins(final long contact_id) {
-		final Cursor cur = mDb.rawQuery(
-				"select count(_id) from checkins where outstanding='1' and contact_id='"
-						+ contact_id + "';", null);
-		cur.moveToFirst();
-		final int count = cur.getInt(0);
-
-		final ContentValues args = new ContentValues();
-		args.put(KEY_OUTSTANDING, 0);
-		mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "="
-				+ contact_id, null);
-		return count;
 	}
 
 	/**
@@ -1558,30 +1559,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns true if the check-in is trip-resolved, otherwise false.
-	 * 
-	 * @param checkin_id
-	 *            the checkin_id
-	 * @return true if the check-in is outstanding, otherwise false.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean getTripResolvedFromCheckin(final long checkin_id)
-			throws SQLException {
-		final Cursor cur = mDb
-				.rawQuery(
-						"select tripresolved from trips where _id in (select trip_id from tripmembers where checkin_id="
-								+ checkin_id + ");", null);
-
-		if (!cur.moveToFirst()) {
-			return false;
-		}
-		final long ret = cur.getLong(0);
-		cur.close();
-		return ret == 1 ? true : false;
-	}
-
-	/**
 	 * Returns the first email in the database for the contact.
 	 * 
 	 * @param contactId
@@ -1619,32 +1596,6 @@ public class DbAdapter {
 		final boolean ret = cur.moveToFirst();
 		cur.close();
 		return ret;
-	}
-
-	/**
-	 * Returns the id of an unresolved trip for a contact, or -1 if there is no
-	 * unresolved trip.
-	 * 
-	 * @param contact_id
-	 *            the id of the contact
-	 * @return the id of the contact's unresolved trip, or -1 if there is no
-	 *         unresolved trip
-	 * @throws SQLException
-	 */
-	public long getContactUnresolvedTrip(final long contact_id)
-			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_TRIPS,
-				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
-						+ "' and " + KEY_TRIPRESOLVED + "='0'", null, null,
-				null, null);
-		long rowId;
-		if (cur.moveToFirst()) {
-			rowId = cur.getLong(0);
-		} else {
-			rowId = -1;
-		}
-		cur.close();
-		return rowId;
 	}
 
 	/**
@@ -1771,6 +1722,32 @@ public class DbAdapter {
 		final long result = cur.getLong(0);
 		cur.close();
 		return (permissionId & result) > 0;
+	}
+
+	/**
+	 * Returns the id of an unresolved trip for a contact, or -1 if there is no
+	 * unresolved trip.
+	 * 
+	 * @param contact_id
+	 *            the id of the contact
+	 * @return the id of the contact's unresolved trip, or -1 if there is no
+	 *         unresolved trip
+	 * @throws SQLException
+	 */
+	public long getContactUnresolvedTrip(final long contact_id)
+			throws SQLException {
+		final Cursor cur = mDb.query(DATABASE_TABLE_TRIPS,
+				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
+						+ "' and " + KEY_TRIPRESOLVED + "='0'", null, null,
+				null, null);
+		long rowId;
+		if (cur.moveToFirst()) {
+			rowId = cur.getLong(0);
+		} else {
+			rowId = -1;
+		}
+		cur.close();
+		return rowId;
 	}
 
 	/**
@@ -1961,25 +1938,6 @@ public class DbAdapter {
 		final String dayOfWeek = Time.dayOfWeek(date).toLowerCase(Locale.US);
 		final long guardId = getGuard(house_id, dayOfWeek + "_guard");
 		return getGuardNumber(guardId);
-	}
-
-	/**
-	 * Gets the column name for the guard schedule, for the given day.
-	 * 
-	 * @param forDay
-	 *            the desired day (0-6)
-	 * @param typicalColumn
-	 *            true if the column name for the typical schedule should be
-	 *            returned
-	 * @return the column name
-	 */
-	static public String getGuardScheduleColumnName(final int forDay,
-			final boolean typicalColumn) {
-		if (typicalColumn) {
-			return DbAdapter.DAYS[forDay] + "_guard";
-		} else {
-			return "typical_" + DbAdapter.DAYS[forDay] + "_guard";
-		}
 	}
 
 	/**
@@ -2348,6 +2306,30 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns true if the check-in is trip-resolved, otherwise false.
+	 * 
+	 * @param checkin_id
+	 *            the checkin_id
+	 * @return true if the check-in is outstanding, otherwise false.
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public boolean getTripResolvedFromCheckin(final long checkin_id)
+			throws SQLException {
+		final Cursor cur = mDb
+				.rawQuery(
+						"select tripresolved from trips where _id in (select trip_id from tripmembers where checkin_id="
+								+ checkin_id + ");", null);
+
+		if (!cur.moveToFirst()) {
+			return false;
+		}
+		final long ret = cur.getLong(0);
+		cur.close();
+		return ret == 1 ? true : false;
+	}
+
+	/**
 	 * Returns the value of SQLite's last_insert_rowid() function.
 	 * 
 	 * @return the value of SQLite's last_insert_rowid()
@@ -2386,6 +2368,24 @@ public class DbAdapter {
 				Locale.US);
 		mDb.execSQL("update houses set " + todaysDayOfWeek + "_guard=typical_"
 				+ todaysDayOfWeek + "_guard;");
+	}
+
+	/**
+	 * @param contact_id
+	 * @return
+	 */
+	private int resolveExistingCheckins(final long contact_id) {
+		final Cursor cur = mDb.rawQuery(
+				"select count(_id) from checkins where outstanding='1' and contact_id='"
+						+ contact_id + "';", null);
+		cur.moveToFirst();
+		final int count = cur.getInt(0);
+
+		final ContentValues args = new ContentValues();
+		args.put(KEY_OUTSTANDING, 0);
+		mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "="
+				+ contact_id, null);
+		return count;
 	}
 
 	/**
@@ -2556,48 +2556,6 @@ public class DbAdapter {
 		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
 		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
-	}
-
-	/**
-	 * Resolves (or not) the trip associated with a given checkin id
-	 * 
-	 * @param checkin_id
-	 *            the checkin id
-	 * @param resolved
-	 *            true if the trip should be resolved, false if it should be
-	 *            unresolved
-	 * @throws SQLException
-	 */
-	public void setTripResolvedFromCheckinId(final long checkin_id,
-			final boolean resolved) throws SQLException {
-		long newValue = resolved ? 1 : 0;
-		mDb.execSQL("update trips set tripresolved='"
-				+ newValue
-				+ "' where _id in (select trip_id from tripmembers where checkin_id="
-				+ checkin_id + ");");
-	}
-
-	/**
-	 * Resolves any trip associated with the contact.
-	 * 
-	 * @param contact_id
-	 *            the contact_id
-	 * @param resolved
-	 *            the resolved
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public int setTripResolvedFromContact(final long contact_id)
-			throws SQLException {
-		final ContentValues args = new ContentValues();
-		args.put(KEY_TRIPRESOLVED, 1);
-		if (mDb.update(DATABASE_TABLE_TRIPS, args, KEY_CONTACTID + "=?",
-				new String[] { String.valueOf(contact_id) }) > 0) {
 			return NOTIFY_SUCCESS;
 		} else {
 			return NOTIFY_FAILURE;
@@ -3022,6 +2980,54 @@ public class DbAdapter {
 		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
 				+ KEY_MESSAGE + "=?", new String[] { number, message });
 		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
+	}
+
+	/**
+	 * Resolves (or not) the trip associated with a given checkin id
+	 * 
+	 * @param checkin_id
+	 *            the checkin id
+	 * @param resolved
+	 *            true if the trip should be resolved, false if it should be
+	 *            unresolved
+	 * @throws SQLException
+	 */
+	public void setTripResolvedFromCheckinId(final long checkin_id,
+			final boolean resolved) throws SQLException {
+		if (resolved) {
+			resolveExistingCheckins(getContactIdForCheckin(checkin_id));
+		}
+
+		long newValue = resolved ? 1 : 0;
+		mDb.execSQL("update trips set tripresolved='"
+				+ newValue
+				+ "' where _id in (select trip_id from tripmembers where checkin_id="
+				+ checkin_id + ");");
+	}
+
+	/**
+	 * Resolves any trip associated with the contact.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @param resolved
+	 *            the resolved
+	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public int setTripResolvedFromContact(final long contact_id)
+			throws SQLException {
+		resolveExistingCheckins(getContactIdForCheckin(contact_id));
+
+		final ContentValues args = new ContentValues();
+		args.put(KEY_TRIPRESOLVED, 1);
+		if (mDb.update(DATABASE_TABLE_TRIPS, args, KEY_CONTACTID + "=?",
+				new String[] { String.valueOf(contact_id) }) > 0) {
+			return NOTIFY_SUCCESS;
+		} else {
+			return NOTIFY_FAILURE;
+		}
 	}
 
 	/**
