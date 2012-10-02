@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -421,8 +420,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		final int offset = -1
-				* settings.getInt(
-						HomeActivity.PREFERENCES_CHECKIN_REMINDER_DELAY, 3);
+				* Integer.parseInt(settings.getString(
+						HomeActivity.PREFERENCES_CHECKIN_REMINDER_DELAY, "3"));
 		cal.add(Calendar.MINUTE, offset);
 
 		final int _id = (int) System.currentTimeMillis();
@@ -501,10 +500,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
 
-		final int fewestCheckins = settings.getInt(
-				HomeActivity.PREFERENCES_FEWEST_GUARD_CHECKS, 3);
-		final int randomCheckins = settings.getInt(
-				HomeActivity.PREFERENCES_RANDOM_GUARD_CHECKS, 3);
+		final int fewestCheckins = Integer.parseInt(settings.getString(
+				HomeActivity.PREFERENCES_FEWEST_GUARD_CHECKS, "3"));
+		final int randomCheckins = Integer.parseInt(settings.getString(
+				HomeActivity.PREFERENCES_RANDOM_GUARD_CHECKS, "3"));
 
 		final String startTimeString = settings.getString(
 				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
@@ -565,8 +564,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * alert.
 	 */
 	private void checkCallaroundDue() {
-		Log.i("Debug", "checkCallaroundDue()");
-
 		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
 			mDbHelper.close();
 
