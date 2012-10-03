@@ -175,7 +175,6 @@ public class GuardScheduleActivity extends Activity {
 	 */
 	private void setAll() {
 		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-		alert.setTitle(getString(R.string.unblock_number));
 		alert.setCursor(mDbHelper.fetchAllGuards(),
 				new DialogInterface.OnClickListener() {
 					@Override
