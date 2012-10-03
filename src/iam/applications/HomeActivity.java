@@ -86,6 +86,9 @@ public class HomeActivity extends Activity {
 	/** Preference key: how long the guard as to respond. */
 	static public final String PREFERENCES_GUARD_CHECKIN_WINDOW = "PREFERENCES_GUARD_CHECKIN_WINDOW";
 
+	/** Preference key: ignore messages that do not have a certain prefix. */
+	static public final String PREFERENCES_REQUIRE_PREFIX = "PREFERENCES_REQUIRE_PREFIX";
+
 	/** The database interface. */
 	private transient DbAdapter mDbHelper;
 
