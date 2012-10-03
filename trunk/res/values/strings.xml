@@ -188,6 +188,8 @@
     <string name="broadcast_result">Broadcast to %s number(s)</string>
     <string name="no_guard_checkins">This guard has no check-ins at this time.</string>
     <string name="home">Home</string>
+    <string name="require_prefix">Require prefix</string>
+    <string name="require_prefix_summary">Ignore commands without "247" prefix</string>
     
     <string-array name="broadcast_options_array">
         <item>@string/broadcast_to_active</item>
@@ -220,6 +222,7 @@
     <string name="re_delay">.*delay.*</string>
     <string name="re_keywords">.*keywords?.*</string>
     <string name="re_returning">.*returning\\s*by\\s*(.*)</string>
+    <string name="re_command_prefix">247 </string>
     
     <!-- TTS Messages -->
     <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>

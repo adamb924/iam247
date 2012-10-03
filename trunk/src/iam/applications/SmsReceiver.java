@@ -52,6 +52,11 @@ public class SmsReceiver extends BroadcastReceiver {
 	 * @param intent
 	 */
 	private void processSms(final Context context, final Intent intent) {
+		final SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		final boolean requirePrefix = settings.getBoolean(
+				HomeActivity.PREFERENCES_REQUIRE_PREFIX, false);
+
 		final Bundle bundle = intent.getExtras();
 		if (bundle == null || !bundle.containsKey("pdus")) {
 			return;
@@ -62,11 +67,16 @@ public class SmsReceiver extends BroadcastReceiver {
 			final String number = msg.getOriginatingAddress();
 			final String message = msg.getMessageBody();
 
-			// multiple commands can be sent if they are delimited by ... This
-			// might be useful for some applications.
-			final String[] commands = message.split("\\.\\.\\.");
-			for (int j = 0; j < commands.length; j++) {
-				new SmsHandler(context, number, commands[i], false);
+			if (!requirePrefix
+					|| message.startsWith(context
+							.getString(R.string.re_command_prefix))) {
+				// multiple commands can be sent if they are delimited by ...
+				// This
+				// might be useful for some applications.
+				final String[] commands = message.split("\\.\\.\\.");
+				for (int j = 0; j < commands.length; j++) {
+					new SmsHandler(context, number, commands[i], false);
+				}
 			}
 		}
 	}
