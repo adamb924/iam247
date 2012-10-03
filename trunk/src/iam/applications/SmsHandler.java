@@ -37,6 +37,9 @@ public class SmsHandler {
 	static public String getNormalizedPhoneNumber(final Context context,
 			final String old) {
 		String ret = old;
+		if (ret.isEmpty()) {
+			return ret;
+		}
 		if (ret.charAt(0) == '0') {
 			ret = ret.replaceFirst("0",
 					context.getString(R.string.loc_country_phonecode));
