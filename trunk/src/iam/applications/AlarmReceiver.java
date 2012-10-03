@@ -102,29 +102,34 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		final int request_id = intent.getIntExtra(DbAdapter.KEY_REQUESTID, -1);
 		if (request_id != -1) {
-			mDbHelper.deleteAlarm(request_id);
-		}
+			if (mDbHelper.deleteAlarm(request_id) > 0) {
+				// checking to see if the alarm is in the database is not the
+				// most elegant solution, but neither is the Android alarm
+				// documentation very effective
 
-		// call various functions depending on the action of the intent. the
-		// action will have been set in one of the static member functions of
-		// this class.
-		final String action = intent.getAction();
-		if (action.equals(ALERT_CHECKIN_DUE)) {
-			checkinDue();
-		} else if (action.equals(ALERT_ADD_CALLAROUNDS)) {
-			addCallarounds();
-		} else if (action.equals(ALERT_CHECKIN_REMINDER)) {
-			checkCheckinReminder(intent);
-		} else if (action.equals(ALERT_CALLAROUND_DUE)) {
-			checkCallaroundDue();
-		} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
-			checkDelayedCallaroundDue();
-		} else if (action.equals(ALERT_ADD_GUARD_CHECKINS)) {
-			addGuardCheckins();
-		} else if (action.equals(ALERT_GUARD_CHECKIN)) {
-			requestGuardCheckin(intent.getLongExtra(DbAdapter.KEY_HOUSEID, -1));
-		} else if (action.equals(ALERT_RESET_GUARD_SCHEDULE)) {
-			mDbHelper.resetGuardSchedule();
+				// call various functions depending on the action of the intent.
+				// the action will have been set in one of the static member
+				// functions of this class.
+				final String action = intent.getAction();
+				if (action.equals(ALERT_CHECKIN_DUE)) {
+					checkinDue();
+				} else if (action.equals(ALERT_ADD_CALLAROUNDS)) {
+					addCallarounds();
+				} else if (action.equals(ALERT_CHECKIN_REMINDER)) {
+					checkCheckinReminder(intent);
+				} else if (action.equals(ALERT_CALLAROUND_DUE)) {
+					checkCallaroundDue();
+				} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
+					checkDelayedCallaroundDue();
+				} else if (action.equals(ALERT_ADD_GUARD_CHECKINS)) {
+					addGuardCheckins();
+				} else if (action.equals(ALERT_GUARD_CHECKIN)) {
+					requestGuardCheckin(intent.getLongExtra(
+							DbAdapter.KEY_HOUSEID, -1));
+				} else if (action.equals(ALERT_RESET_GUARD_SCHEDULE)) {
+					mDbHelper.resetGuardSchedule();
+				}
+			}
 		}
 
 		mDbHelper.close();
@@ -139,7 +144,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	private static void createGuardCheckin(final Context context,
 			final long house_id, final Date checkinTime) {
-
 		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_GUARD_CHECKIN);
@@ -172,9 +176,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 		final Cursor cur = dbHelper.fetchAlarmsForType(type);
-		dbHelper.close();
 
 		if (!cur.moveToFirst()) {
+			dbHelper.close();
 			return;
 		}
 
@@ -184,12 +188,58 @@ public class AlarmReceiver extends BroadcastReceiver {
 				.getSystemService(Context.ALARM_SERVICE);
 		do {
 			final int _id = cur.getInt(0);
-			toCancel = new Intent(type);
+
+			// toCancel = new Intent(type);
+			toCancel = new Intent(context, AlarmReceiver.class);
+			toCancel.setAction(type);
 			pendingToCancel = PendingIntent.getBroadcast(context, _id,
 					toCancel, PendingIntent.FLAG_CANCEL_CURRENT);
+			alarmManager.cancel(pendingToCancel);
+
+			dbHelper.deleteAlarm(_id);
+		} while (cur.moveToNext());
+
+		dbHelper.close();
+	}
+
+	/**
+	 * 10/03/2012: at this point this function removes the alarm from the
+	 * database. the cancel command, insofar as I can judge, does not have any
+	 * effect
+	 * 
+	 * @param context
+	 *            the context
+	 * @param type
+	 *            the Intent action for the alarm
+	 */
+	static public void removeRepeatingAlarmsByType(final Context context,
+			final String type) {
+		final DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		final Cursor cur = dbHelper.fetchAlarmsForType(type);
+
+		if (!cur.moveToFirst()) {
+			dbHelper.close();
+			return;
+		}
+
+		Intent toCancel;
+		PendingIntent pendingToCancel;
+		final AlarmManager alarmManager = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		do {
+			final int _id = cur.getInt(0);
+
+			toCancel = new Intent(type);
+			pendingToCancel = PendingIntent.getBroadcast(context, _id,
+					toCancel, 0);
 
 			alarmManager.cancel(pendingToCancel);
+
+			dbHelper.deleteAlarm(_id);
 		} while (cur.moveToNext());
+
+		dbHelper.close();
 	}
 
 	/**
@@ -228,9 +278,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
 		}
 
-		// removeAlarmsByType(context,
-		// AlarmReceiver.ALERT_RESET_GUARD_SCHEDULE);
-
 		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmReceiver.ALERT_RESET_GUARD_SCHEDULE);
@@ -241,8 +288,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		final AlarmManager alarmManager = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		// TODO does this call to cancel work?
-		alarmManager.cancel(sender);
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
 				timeToAddAt.getTime(), AlarmManager.INTERVAL_DAY, sender);
 	}
@@ -267,7 +312,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
 		}
 
-		// removeAlarmsByType(context, AlarmReceiver.ALERT_ADD_CALLAROUNDS);
+		removeRepeatingAlarmsByType(context,
+				AlarmReceiver.ALERT_ADD_CALLAROUNDS);
 
 		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
@@ -279,15 +325,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		final AlarmManager alarmManager = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		// TODO does this call to cancel work?
 		alarmManager.cancel(sender);
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
 				timeToAddAt.getTime(), AlarmManager.INTERVAL_DAY, sender);
 
-		// DbAdapter dbHelper = new DbAdapter(context);
-		// dbHelper.open();
-		// dbHelper.addAlarm(_id, AlarmReceiver.ALERT_ADD_CALLAROUNDS);
-		// dbHelper.close();
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_ADD_CALLAROUNDS);
+		dbHelper.close();
 	}
 
 	/**
@@ -315,21 +360,21 @@ public class AlarmReceiver extends BroadcastReceiver {
 		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
 
 		// removeAlarmsByType(context, AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
+		removeRepeatingAlarmsByType(context,
+				AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
 
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);
 
 		final AlarmManager alarmManager = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		// TODO does this call to cancel work?
-		alarmManager.cancel(sender);
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
 				timeToAddAt.getTime(), AlarmManager.INTERVAL_DAY, sender);
 
-		// DbAdapter dbHelper = new DbAdapter(context);
-		// dbHelper.open();
-		// dbHelper.addAlarm(_id, AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
-		// dbHelper.close();
+		DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_ADD_GUARD_CHECKINS);
+		dbHelper.close();
 	}
 
 	/**

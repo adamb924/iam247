@@ -505,15 +505,16 @@ public class DbAdapter {
 	 *            the request_id of the alarm
 	 * @param type
 	 *            the type of alarm (as defined in AlarmManager)
+	 * @return the id of the newly inserted row
 	 * @throws SQLException
 	 *             the sQL exception
 	 */
-	public void addAlarm(final int request_id, final String type)
+	public long addAlarm(final int request_id, final String type)
 			throws SQLException {
 		final ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_REQUESTID, request_id);
 		initialValues.put(KEY_TYPE, type);
-		mDb.insert(DATABASE_TABLE_ALARMS, null, initialValues);
+		return mDb.insert(DATABASE_TABLE_ALARMS, null, initialValues);
 	}
 
 	/**
