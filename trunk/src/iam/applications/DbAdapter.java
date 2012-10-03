@@ -1081,7 +1081,6 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public Cursor fetchAllCheckins() throws SQLException {
-		// TODO this will need to be updated -- DONE
 		return mDb
 				.rawQuery(
 						"select checkins._id,location,keyword,timedue,name,outstanding,with,tripresolved from checkins,contacts,trips,tripmembers where checkins.contact_id=contacts._id and checkins._id=tripmembers.checkin_id and trips._id=tripmembers.trip_id order by name,tripresolved asc,outstanding desc,timedue desc;",
@@ -1204,15 +1203,10 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public Cursor fetchCheckedInPeople() throws SQLException {
-		// TODO update this -- DONE
 		return mDb
 				.rawQuery(
 						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id not in (select contact_id from trips where tripresolved='0');",
 						null);
-		// return mDb
-		// .rawQuery(
-		// "select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id not in (select contact_id from checkins where tripresolved='0');",
-		// null);
 	}
 
 	/**
@@ -1224,15 +1218,10 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public Cursor fetchCheckedOutPeople() throws SQLException {
-		// TODO update this -- DONE
 		return mDb
 				.rawQuery(
 						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from trips where tripresolved='0');",
 						null);
-		// return mDb
-		// .rawQuery(
-		// "select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from checkins where tripresolved='0');",
-		// null);
 	}
 
 	/**
@@ -1517,7 +1506,6 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public String getCheckinSummary() throws SQLException {
-		// TODO update this -- DONE
 		final Cursor cur = mDb
 				.rawQuery(
 						"select count(contact_id) from (select distinct contact_id from trips where tripresolved='0');",
@@ -2253,15 +2241,10 @@ public class DbAdapter {
 		final StringBuffer checkin_people_buffer = new StringBuffer();
 		final StringBuffer callaround_houses_buffer = new StringBuffer();
 
-		// TODO update this -- DONE
 		Cursor cur = mDb
 				.rawQuery(
 						"select name,location from trips left join contacts on contacts._id=trips.contact_id where tripresolved='0';",
 						null);
-		// Cursor cur = mDb
-		// .rawQuery(
-		// "select name,location from checkins left join contacts on contacts._id=checkins.contact_id where outstanding='1';",
-		// null);
 		if (cur.moveToFirst()) {
 			for (int i = 0; i < cur.getCount(); i++) {
 				checkin_people_buffer.append(cur.getString(0) + " ("

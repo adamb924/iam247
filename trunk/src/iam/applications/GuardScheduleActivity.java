@@ -174,13 +174,6 @@ public class GuardScheduleActivity extends Activity {
 	 * Sets the values of all of the spinners.
 	 */
 	private void setAll() {
-		// TODO commenting this creates a FindBugs warning, but I am at a loss
-		// to understand why that happens here and not elsewhere. At some point
-		// I should figure this out.
-		if (mDbHelper == null) {
-			return;
-		}
-
 		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(getString(R.string.unblock_number));
 		alert.setCursor(mDbHelper.fetchAllGuards(),
