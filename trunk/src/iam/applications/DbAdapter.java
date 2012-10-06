@@ -891,6 +891,17 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Delete all alarms from the database.
+	 * 
+	 * @return the number of rows deleted
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public long deleteAllAlarms() throws SQLException {
+		return mDb.delete(DATABASE_TABLE_ALARMS, null, null);
+	}
+
+	/**
 	 * Delete all information from database.
 	 * 
 	 * @throws SQLException
@@ -1272,6 +1283,21 @@ public class DbAdapter {
 		return mDb.rawQuery(
 				"select _id,type,message,time from log order by time desc;",
 				null);
+	}
+
+	/**
+	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
+	 * KEY_CONTACTID, KEY_TIMEDUE
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public Cursor fetchUnresolvedCheckins() throws SQLException {
+		return mDb
+				.rawQuery(
+						"select _id,contact_id,timedue from checkins where outstanding='1';",
+						null);
 	}
 
 	/**

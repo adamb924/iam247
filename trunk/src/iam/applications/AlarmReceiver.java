@@ -122,7 +122,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 				} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
 					checkDelayedCallaroundDue();
 				} else if (action.equals(ALERT_ADD_GUARD_CHECKINS)) {
-					addGuardCheckins();
+					addGuardCheckins(mContext);
 				} else if (action.equals(ALERT_GUARD_CHECKIN)) {
 					requestGuardCheckin(intent.getLongExtra(
 							DbAdapter.KEY_HOUSEID, -1));
@@ -264,8 +264,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * 
 	 * @param context
 	 *            the application context
+	 * @return true if the alarm will go off today, false if it will go off
+	 *         tomorrow
 	 */
-	static public void setGuardScheduleResetAlarm(final Context context) {
+	static public boolean setGuardScheduleResetAlarm(final Context context) {
+		boolean addingToday = true;
+
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		final String old = settings.getString(
@@ -276,6 +280,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Date timeToAddAt = Time.todayAtGivenTime(old);
 		if (timeToAddAt.before(new Date())) {
 			timeToAddAt = Time.tomorrowAtGivenTime(old);
+			addingToday = false;
 		}
 
 		final int _id = (int) System.currentTimeMillis();
@@ -290,6 +295,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 				.getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
 				timeToAddAt.getTime(), AlarmManager.INTERVAL_DAY, sender);
+
+		return addingToday;
 	}
 
 	/**
@@ -536,14 +543,17 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	/**
 	 * Adds guard checkins for today.
+	 * 
+	 * @param context
+	 *            the context
 	 */
-	private void addGuardCheckins() {
+	public static void addGuardCheckins(Context context) {
 
 		// clear out old ones
-		removeAlarmsByType(mContext, AlarmReceiver.ALERT_GUARD_CHECKIN);
+		removeAlarmsByType(context, AlarmReceiver.ALERT_GUARD_CHECKIN);
 
 		final SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(mContext);
+				.getDefaultSharedPreferences(context);
 
 		final int fewestCheckins = Integer.parseInt(settings.getString(
 				HomeActivity.PREFERENCES_FEWEST_GUARD_CHECKS, "3"));
@@ -564,7 +574,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		// 24 hours in milliseconds
 		final int range = (int) (endTime.getTime() - startTime.getTime());
 
-		final DbAdapter dbHelper = new DbAdapter(mContext);
+		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 
 		final Cursor cur = dbHelper.fetchAllHouses();
@@ -583,7 +593,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 			for (int i = 0; i < fewestCheckins; i++) {
 				checkinTime = new Date(startTime.getTime()
 						+ random.nextInt(range));
-				createGuardCheckin(mContext, house_id, checkinTime);
+				createGuardCheckin(context, house_id, checkinTime);
 			}
 
 			// the random checkins
@@ -591,7 +601,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 				if (random.nextBoolean()) {
 					checkinTime = new Date(startTime.getTime()
 							+ random.nextInt(range));
-					createGuardCheckin(mContext, house_id, checkinTime);
+					createGuardCheckin(context, house_id, checkinTime);
 				}
 			}
 		} while (cur.moveToNext());
@@ -702,5 +712,63 @@ public class AlarmReceiver extends BroadcastReceiver {
 		SmsHandler.sendSms(mContext, number,
 				mContext.getString(R.string.sms_guard_checkin));
 		mDbHelper.addGuardCheckin(guard_id, Time.iso8601DateTime());
+	}
+
+	/**
+	 * Resets all of the alarms, based on database and preference information.
+	 * 
+	 * @param context
+	 *            the context
+	 */
+	public static void resetAlarms(Context context) {
+		final DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+
+		// clear the database of any existing alarms
+		dbHelper.deleteAllAlarms();
+
+		// ALERT_CHECKIN_DUE
+		// ALERT_CHECKIN_REMINDER
+		Cursor cur = dbHelper.fetchUnresolvedCheckins();
+		if (cur.moveToFirst()) {
+			do {
+				Date timeDue = Time.iso8601DateTime(cur.getString(cur
+						.getColumnIndex(DbAdapter.KEY_TIMEDUE)));
+				long checkinId = cur.getLong(cur
+						.getColumnIndex(DbAdapter.KEY_ROWID));
+				long contactId = cur.getLong(cur
+						.getColumnIndex(DbAdapter.KEY_CONTACTID));
+				AlarmReceiver.setCheckinAlert(context, timeDue);
+
+				if (dbHelper.getContactPreference(contactId,
+						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
+					AlarmReceiver.setCheckinReminderAlert(context, checkinId);
+				}
+			} while (cur.moveToNext());
+		}
+
+		// TODO confirm that this has the intended effect
+		// Both these handled by one function call
+		// ALERT_CALLAROUND_DUE
+		// ALERT_DELAYED_CALLAROUND_DUE
+		dbHelper.addCallarounds();
+
+		// TODO confirm that this has the intended effect
+		// ALERT_ADD_CALLAROUNDS
+		AlarmReceiver.setAddCallaroundAlarm(context);
+
+		// TODO confirm that this has the intended effect
+		// ALERT_RESET_GUARD_SCHEDULE
+		if (!AlarmReceiver.setGuardScheduleResetAlarm(context)) {
+			// setGuardScheduleResetAlarm returns true if the alarm will go off
+			// todays, so if it's false, that means we need to add the checkins
+			// manually for this day
+
+			// ALERT_ADD_GUARD_CHECKINS
+			// ALERT_GUARD_CHECKIN
+			AlarmReceiver.addGuardCheckins(context);
+		}
+
+		dbHelper.close();
 	}
 }
