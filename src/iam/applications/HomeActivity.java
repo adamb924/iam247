@@ -110,9 +110,10 @@ public class HomeActivity extends Activity {
 						| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 						| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-		// add these two alarms for managing call arounds
+		// add these three alarms for managing call arounds
 		AlarmReceiver.setAddCallaroundAlarm(this);
 		AlarmReceiver.setAddGuardCheckinAlarms(this);
+		AlarmReceiver.setGuardScheduleResetAlarm(this);
 
 		setContentView(R.layout.home_activity);
 

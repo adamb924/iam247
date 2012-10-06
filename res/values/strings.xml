@@ -29,8 +29,8 @@
     <string name="noCheckins">There are no outstanding check-ins.</string>
     <string name="callaround_enabled">Call around Enabled</string>
     <string name="editTeammember">Edit Teammember</string>
-<!--     <string name="checkedout">Not checked in:</string> -->
-<!--     <string name="checkedin">Checked in:</string> -->
+    <!-- <string name="checkedout">Not checked in:</string> -->
+    <!-- <string name="checkedin">Checked in:</string> -->
     <string name="checkedout">Out:</string>
     <string name="checkedin">In:</string>
     <string name="no_teammembers">No teammembers</string>
@@ -56,13 +56,12 @@
     <string name="callaround_summary" formatted="false">%s called in, %s remaining</string>
     <string name="callaround_summary_allin">All in</string>
     <string name="callaround_summary_none">No call arounds are set</string>
-<!--     <string name="checkin_summary_none">No pending check-ins</string> -->
-<!--     <string name="checkin_summary_singular">1 pending check-in</string> -->
-<!--     <string name="checkin_summary" formatted="false">%s pending check-ins</string> -->
-        <string name="checkin_summary_none">No one out</string>
+    <!-- <string name="checkin_summary_none">No pending check-ins</string> -->
+    <!-- <string name="checkin_summary_singular">1 pending check-in</string> -->
+    <!-- <string name="checkin_summary" formatted="false">%s pending check-ins</string> -->
+    <string name="checkin_summary_none">No one out</string>
     <string name="checkin_summary_singular">1 person out</string>
     <string name="checkin_summary" formatted="false">%s people out</string>
-    
     <string name="noCallarounds">There are currently no call arounds.</string>
     <string name="callaround_title">Call arounds: %s</string>
     <string name="home_checkins">Check-ins</string>
@@ -87,15 +86,15 @@
     <string name="edit_phone">Edit phone</string>
     <string name="edit_email">Edit email</string>
     <string name="delete_teammember">Remove teammember</string>
-    <string name="email_database">Email database</string>
-    <string name="email_database_summary">Email a copy of the database to someone (for debugging).</string>
-    <string name="upload_database">Upload database</string>
-    <string name="upload_database_summary">Replaces the 24/7 database with one on the SD card (to fix a damaged database).</string>
+    <string name="email_database">Send database</string>
+    <string name="email_database_summary">Send a copy of the database to someone</string>
+    <string name="upload_database">Copy database from SD</string>
+    <string name="upload_database_summary">Replaces the 24/7 database with one on the SD card (in the bluetooth folder).</string>
     <string name="reset_database">Reset database</string>
     <string name="reset_database_summary">Clear all data from the database, permanently.</string>
     <string name="callaround">Call around</string>
     <string name="database">Database</string>
-    <string name="upload_database_instructions">If you don\'t know exactly what you\'re doing here, hit Cancel now. Otherwise, hit OK to upload a new database. The database should be called "thedatabase" and it should be on the SD card, in the "temp" folder.</string>
+    <string name="upload_database_instructions">If you don\'t know exactly what you\'re doing here, hit Cancel now. Otherwise, hit OK to upload a new database. The database should be called "thedatabase" and it should be on the SD card, in the "bluetooth" folder.</string>
     <string name="reset_database_first_warning">If you don\'t know exactly what you\'re doing here, hit Cancel now. You will lose ALL of the data. You will never get it back.</string>
     <string name="reset_database_second_warning">This is just to confirm that you want to delete EVERYTHING, irrecoverably. This is the last warning! Click Ok to delete everything and start from scratch.</string>
     <string name="noCallaroundsForDay">There are no callarounds for this day.</string>
@@ -190,12 +189,18 @@
     <string name="home">Home</string>
     <string name="require_prefix">Require prefix</string>
     <string name="require_prefix_summary">Ignore commands without "247" prefix</string>
-    
+    <string name="preferences">Preferences</string>
+    <string name="synchronize">Synchronization</string>
+    <string name="synchronize_send">Send to other</string>
+    <string name="synchronize_send_summary">Send the settings from this phone to another phone.</string>
+    <string name="synchronize_receive">Receive from other</string>
+    <string name="synchronize_receive_warning">If you don\'t know exactly what you\'re doing here, hit Cancel now. Otherwise, hit OK to copy the 24/7 database and settings from the SD card (the bluetooth folder). All of the data on this device will be removed, and this cannot be undone.</string>
+    <string name="synchronize_receive_summary">Read settings that you\'ve sent to the SD card from another phone.</string>
+
     <string-array name="broadcast_options_array">
         <item>@string/broadcast_to_active</item>
         <item>@string/broadcast_to_all</item>
     </string-array>
-    
 
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>
@@ -212,7 +217,7 @@
     <string name="re_thisis">.*this\\s*is\\s*(.*)</string>
     <string name="re_startcheckin">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
     <string name="re_startcheckin_with">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*with\\s*(.*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
-<!--     <string name="re_startcheckin_nocheckin">.*going\\s*to\\s*([^\\s]*)\\s*back\\s*(?:by|at)\\s*([^\\s]*)\\s*no\\s*checkin</string> -->
+    <!-- <string name="re_startcheckin_nocheckin">.*going\\s*to\\s*([^\\s]*)\\s*back\\s*(?:by|at)\\s*([^\\s]*)\\s*no\\s*checkin</string> -->
     <string name="re_permission">.*permission|travel.*</string>
     <string name="re_time">^(\\d{1,2})?\\s?[\\p{Punct}]?\\s?(\\d{2}|)(a|p)?m?$</string>
     <string name="re_undocallaround">.*(?:undo|cancel)\\s*call\\s*around.*</string>
@@ -223,7 +228,7 @@
     <string name="re_keywords">.*keywords?.*</string>
     <string name="re_returning">.*returning\\s*by\\s*(.*)</string>
     <string name="re_command_prefix">247 </string>
-    
+
     <!-- TTS Messages -->
     <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>
     <string name="tts_missedcheckin">Attention! Someone has missed a check-in.</string>
@@ -270,10 +275,10 @@
     <string name="sms_guard_checkin_confirmation">Tashakur. Thank you.</string>
     <string name="sms_guard_checkin_rejection">yA wakht bArE checkin nEs, yA wakhtesh tEr shuda. Either it is not the time for checkin, or the time has passed.</string>
     <string name="sms_refuse_permission">24/7 says: You are currently not allowed to go there. You can missed-call 24/7 to get a list of forbidden locations.</string>
-	<string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
+    <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
 
-	<!-- Log Messages -->
-	<string name="log_null_guard" formatted="false">Tried to get the guard associated with %s (%s), but got -1 as a return value.</string>
-	<string name="log_null_number" formatted="false">Tried to get the number associated with guard %s (%s), but got a null return value.</string>
-	
+    <!-- Log Messages -->
+    <string name="log_null_guard" formatted="false">Tried to get the guard associated with %s (%s), but got -1 as a return value.</string>
+    <string name="log_null_number" formatted="false">Tried to get the number associated with guard %s (%s), but got a null return value.</string>
+
 </resources>

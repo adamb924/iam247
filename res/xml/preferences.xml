@@ -109,6 +109,16 @@
             android:summary="@string/reset_database_summary"
             android:title="@string/reset_database" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/synchronize" >
+        <Preference
+            android:key="synchronize_send"
+            android:summary="@string/synchronize_send_summary"
+            android:title="@string/synchronize_send" />
+        <Preference
+            android:key="synchronize_receive"
+            android:summary="@string/synchronize_receive_summary"
+            android:title="@string/synchronize_receive" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/clear_data" >
         <Preference
             android:key="clear_oneweek"
