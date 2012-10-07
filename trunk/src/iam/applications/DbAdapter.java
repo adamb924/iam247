@@ -1307,9 +1307,10 @@ public class DbAdapter {
 	 * @return the cursor
 	 */
 	public Cursor fetchUnsentUndeliveredMessages() {
-		return mDb.rawQuery(
-				"select _id,number,message,time,sent,delivered from pending;",
-				null);
+		return mDb
+				.rawQuery(
+						"select _id,number,message,time,sent,delivered from pending order by time desc;",
+						null);
 	}
 
 	/**

@@ -216,6 +216,12 @@ public class PreferencesActivity extends PreferenceActivity {
 		} catch (IOException e) {
 			Log.i(HomeActivity.TAG, Log.getStackTraceString(e));
 		}
+
+		if (!sourceFile.delete()) {
+			Toast.makeText(this,
+					String.format(getString(R.string.file_delete_error), path),
+					Toast.LENGTH_LONG).show();
+		}
 	}
 
 	private void getPreferencesFromSD(String path) {
@@ -272,6 +278,11 @@ public class PreferencesActivity extends PreferenceActivity {
 			}
 		}
 
+		if (!sourceFile.delete()) {
+			Toast.makeText(this,
+					String.format(getString(R.string.file_delete_error), path),
+					Toast.LENGTH_LONG).show();
+		}
 	}
 
 	/**
