@@ -2021,6 +2021,31 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns a comma separated list of houses.
+	 * 
+	 * @return the comma separated list of houses
+	 * @throws SQLException
+	 */
+	public String getHouses() throws SQLException {
+		final Cursor cursor = fetchAllHouses();
+		if (cursor.moveToFirst()) {
+			final StringBuffer buffer = new StringBuffer();
+			for (int i = 0; i < cursor.getCount(); i++) {
+				buffer.append(cursor.getString(cursor
+						.getColumnIndexOrThrow(DbAdapter.KEY_NAME)));
+				if (!cursor.isLast()) {
+					buffer.append(", ");
+				}
+				cursor.moveToNext();
+			}
+			cursor.close();
+			return buffer.toString();
+		} else {
+			return null;
+		}
+	}
+
+	/**
 	 * Return true if the given location keyword exists in the database;
 	 * otherwise returns false.
 	 * 
