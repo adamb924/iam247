@@ -219,7 +219,7 @@
     <string name="re_startcheckin">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
     <string name="re_startcheckin_with">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*with\\s*(.*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
     <!-- <string name="re_startcheckin_nocheckin">.*going\\s*to\\s*([^\\s]*)\\s*back\\s*(?:by|at)\\s*([^\\s]*)\\s*no\\s*checkin</string> -->
-    <string name="re_permission">.*permission|travel.*</string>
+    <string name="re_permission">.*(?:permission|travel).*</string>
     <string name="re_time">^(\\d{1,2})?\\s?[\\p{Punct}]?\\s?(\\d{2}|)(a|p)?m?$</string>
     <string name="re_undocallaround">.*(?:undo|cancel)\\s*call\\s*around.*</string>
     <string name="re_turnoffreminders">.*(?:turn\\s*off\\s*reminders|turn\\s*reminders\\s*off).*</string>
