@@ -747,13 +747,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 			} while (cur.moveToNext());
 		}
 
-		// TODO confirm that this has the intended effect
 		// Both these handled by one function call
 		// ALERT_CALLAROUND_DUE
 		// ALERT_DELAYED_CALLAROUND_DUE
 		dbHelper.addCallarounds();
 
-		// TODO confirm that this has the intended effect
 		// ALERT_ADD_CALLAROUNDS
 		AlarmReceiver.setAddCallaroundAlarm(context);
 
