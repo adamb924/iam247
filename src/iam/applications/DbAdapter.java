@@ -2486,6 +2486,16 @@ public class DbAdapter {
 	 */
 	public int setCallaroundActive(final long house_id, final boolean active)
 			throws SQLException {
+		final ContentValues args = new ContentValues();
+		final int retVal;
+		args.put(KEY_ACTIVE, active ? 1 : 0);
+		if (mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "=" + house_id,
+				null) > 0) {
+			retVal = NOTIFY_SUCCESS;
+		} else {
+			retVal = NOTIFY_FAILURE;
+		}
+
 		// add today's, or remove it
 		if (active) {
 			addCallarounds();
@@ -2496,15 +2506,7 @@ public class DbAdapter {
 					+ "') <= datetime(dueby) and " + KEY_HOUSEID + "='"
 					+ house_id + "' and outstanding='1'", null);
 		}
-
-		final ContentValues args = new ContentValues();
-		args.put(KEY_ACTIVE, active ? 1 : 0);
-		if (mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "=" + house_id,
-				null) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
+		return retVal;
 	}
 
 	/**
