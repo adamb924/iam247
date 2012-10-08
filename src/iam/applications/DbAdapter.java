@@ -2070,14 +2070,17 @@ public class DbAdapter {
 	 *             the sQL exception
 	 */
 	public String getLocationKeywords() throws SQLException {
-		final Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS,
-				new String[] { KEY_KEYWORD }, null, null, null, null,
-				KEY_KEYWORD);
+		final Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS, new String[] {
+				KEY_LABEL, KEY_KEYWORD }, null, null, null, null, KEY_KEYWORD);
 		if (cursor.moveToFirst()) {
 			final StringBuffer buffer = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
 				buffer.append(cursor.getString(cursor
 						.getColumnIndexOrThrow(DbAdapter.KEY_KEYWORD)));
+				buffer.append(" (");
+				buffer.append(cursor.getString(cursor
+						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL)));
+				buffer.append(")");
 				if (!cursor.isLast()) {
 					buffer.append(", ");
 				}
@@ -2085,6 +2088,26 @@ public class DbAdapter {
 			}
 			cursor.close();
 			return buffer.toString();
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns the keyword of the location.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @return the location name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getLocationKeyword(final long rowId) throws SQLException {
+		final Cursor cur = mDb.query(DATABASE_TABLE_LOCATIONS,
+				new String[] { KEY_KEYWORD }, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(rowId) }, null, null, null);
+		if (cur.moveToFirst()) {
+			return cur.getString(0);
 		} else {
 			return null;
 		}

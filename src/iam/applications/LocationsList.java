@@ -79,7 +79,8 @@ public class LocationsList extends ListActivity {
 	protected void onListItemClick(final ListView listView, final View view,
 			final int position, final long itemId) {
 		super.onListItemClick(listView, view, position, itemId);
-		mDbHelper.setLocationAllowed(itemId, getListView().isItemChecked(position));
+		mDbHelper.setLocationAllowed(itemId,
+				getListView().isItemChecked(position));
 	}
 
 	/**
@@ -202,7 +203,7 @@ public class LocationsList extends ListActivity {
 			final AlertDialog.Builder alert2 = new AlertDialog.Builder(
 					LocationsList.this);
 			final EditText input2 = new EditText(LocationsList.this);
-			input2.setText(mDbHelper.getLocationName(info3.id));
+			input2.setText(mDbHelper.getLocationKeyword(info3.id));
 			alert2.setView(input2);
 			alert2.setPositiveButton("Ok",
 					new DialogInterface.OnClickListener() {
@@ -299,7 +300,8 @@ public class LocationsList extends ListActivity {
 		public View newView(final Context context, final Cursor cur,
 				final ViewGroup parent) {
 			final LayoutInflater inflator = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return inflator.inflate(R.layout.checked_textview_item, parent, false);
+			return inflator.inflate(R.layout.checked_textview_item, parent,
+					false);
 		}
 
 		/*
