@@ -215,7 +215,7 @@
     <string name="re_checkin_back">.*back.*</string>
     <string name="re_checkin_arrived">.*arrived.*</string>
     <string name="re_distress">.*help|666.*</string>
-    <string name="re_thisis">.*this\\s*is\\s*(.*)</string>
+    <string name="re_thisis">.*this\\s*is\\s*(.*)\\s+([^\\s]*)</string>
     <string name="re_startcheckin">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
     <string name="re_startcheckin_with">.*going\\s*to\\s*(.*)\\s*in\\s*([^\\s]*)\\s*with\\s*(.*)\\s*(?:back|check.?in)\\s*(?:by|at)\\s*(.*)</string>
     <!-- <string name="re_startcheckin_nocheckin">.*going\\s*to\\s*([^\\s]*)\\s*back\\s*(?:by|at)\\s*([^\\s]*)\\s*no\\s*checkin</string> -->
@@ -230,7 +230,9 @@
     <string name="re_returning">.*returning\\s*by\\s*(.*)</string>
     <string name="re_command_prefix">247 </string>
     <string name="re_houses">.*houses.*</string>
-
+    <string name="re_staying_at">.*staying\\s*at\\s*(.*)</string>
+    <string name="re_leaving">.*leaving.*</string>
+    
     <!-- TTS Messages -->
     <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>
     <string name="tts_missedcheckin">Attention! Someone has missed a check-in.</string>
@@ -238,7 +240,7 @@
     <string name="tts_missedcallarounds">Attention! There are missed call arounds.</string>
 
     <!-- SMS Messages -->
-    <string name="sms_requestid">24/7 says: I don\'t recognize this number. Please identify yourself with this kind of message: this is John Doe</string>
+    <string name="sms_requestid">24/7 says: I don\'t recognize this number. Please identify yourself and indicate your house with this kind of message: this is John Doe K9</string>
     <string name="sms_requestid_acknowledgement">24/7 says: Thank you. In the future this number will be associated with %s</string>
     <string name="sms_message_error">24/7 says: I\'m sorry I didn\'t recognize that command. Please check your spelling and try again.</string>
     <string name="sms_247_error">24/7 says: I\'m sorry but something\'s gone wrong on our end. Please contact the RTL for help.</string>
@@ -279,6 +281,9 @@
     <string name="sms_refuse_permission">24/7 says: You are currently not allowed to go there. You can missed-call 24/7 to get a list of forbidden locations.</string>
     <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
     <string name="sms_houses">24/7 says: The houses are: %s</string>
+    <string name="sms_not_a_house">24/7 says: I\'m sorry, but that is not the name of a house. The possibilities are: %s</string>
+    <string name="sms_leaving_confirmation">24/7 says: Thank you. We\'ve dissociated you from all houses.</string>
+    <string name="sms_staying_confirmation">24/7 says: Thank you. We\'ve recorded that you\'ll be staying at %s.</string>
     
     <!-- Log Messages -->
     <string name="log_null_guard" formatted="false">Tried to get the guard associated with %s (%s), but got -1 as a return value.</string>

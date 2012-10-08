@@ -219,6 +219,10 @@ public class SmsHandler {
 			sendLocationKeywords();
 		} else if (messageMatches(R.string.re_houses)) {
 			sendHouses();
+		} else if (messageMatches(R.string.re_staying_at)) {
+			joinHouse();
+		} else if (messageMatches(R.string.re_leaving)) {
+			leaveHouse();
 		} else {
 			yourError();
 		}
@@ -430,6 +434,41 @@ public class SmsHandler {
 		}
 	}
 
+	private void joinHouse() {
+		final String[] matches = getMessageMatches(R.string.re_staying_at);
+		if (matches.length < 1) {
+			yourError();
+			mDbHelper.close();
+		}
+		final String house = matches[0];
+		final long houseId = mDbHelper.getHouseId(house);
+
+		if (houseId == -1) {
+			final String message = String.format(
+					mContext.getString(R.string.sms_not_a_house),
+					mDbHelper.getHouses());
+			sendSms(message);
+			return;
+		}
+
+		if (mDbHelper.setHouse(mContactId, houseId) == DbAdapter.NOTIFY_HASHOUSE) {
+			final String message = String.format(
+					mContext.getString(R.string.sms_staying_confirmation),
+					house);
+			sendSms(message);
+		} else {
+			ourError();
+		}
+	}
+
+	private void leaveHouse() {
+		if (mDbHelper.setHouse(mContactId, -1) == DbAdapter.NOTIFY_FAILURE) {
+			ourError();
+		} else {
+			sendSms(R.string.sms_leaving_confirmation);
+		}
+	}
+
 	/**
 	 * Returns true if the message matches the regular expression in the given
 	 * resource ID, otherwise false.
@@ -479,17 +518,33 @@ public class SmsHandler {
 			}
 
 			final String[] matches = getMessageMatches(R.string.re_thisis);
-			if (matches.length < 1) {
+			if (matches.length < 2) {
 				yourError();
 				mDbHelper.close();
 			}
 			final String name = matches[0];
-			mDbHelper.addContact(name, mPhoneNumber);
+			final String house = matches[1];
+			final long contactId = mDbHelper.addContact(name, mPhoneNumber);
+			final long houseId = mDbHelper.getHouseId(house);
 
-			final String message = String.format(
-					mContext.getString(R.string.sms_requestid_acknowledgement),
-					name);
-			sendSms(message);
+			if (houseId == -1) {
+				final String message = String.format(
+						mContext.getString(R.string.sms_not_a_house),
+						mDbHelper.getHouses());
+				sendSms(message);
+				return;
+			}
+
+			mDbHelper.setHouse(contactId, houseId);
+
+			if (contactId > -1) {
+				final String message = String.format(mContext
+						.getString(R.string.sms_requestid_acknowledgement),
+						name);
+				sendSms(message);
+			} else {
+				ourError();
+			}
 
 		} else { // otherwise request that he identify himself
 			requestId();

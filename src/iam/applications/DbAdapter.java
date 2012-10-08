@@ -132,6 +132,12 @@ public class DbAdapter {
 	/** The notify untimely. */
 	public static final int NOTIFY_UNTIMELY = 5;
 
+	/** Return value to indicate the user is associated with a house. */
+	public static final int NOTIFY_HASHOUSE = 5;
+
+	/** Return value to indicate the user is not associated with a house. */
+	public static final int NOTIFY_NOHOUSE = 5;
+
 	/** The version of the current database. */
 	private static final int DATABASE_VERSION = 22;
 
@@ -625,14 +631,15 @@ public class DbAdapter {
 	 *            the name of the person
 	 * @param number
 	 *            the person's phone number
+	 * @return the row id of the added contact, or -1 if the operation fails
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public void addContact(final String name, final String number)
+	public long addContact(final String name, final String number)
 			throws SQLException {
 		final ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_NAME, name);
-		mDb.insert(DATABASE_TABLE_CONTACTS, null, initialValues);
+		long newId = mDb.insert(DATABASE_TABLE_CONTACTS, null, initialValues);
 
 		final int lastId = lastInsertId();
 		if (lastId != -1) {
@@ -641,6 +648,7 @@ public class DbAdapter {
 			initialValues2.put(KEY_NUMBER, number);
 			mDb.insert(DATABASE_TABLE_CONTACTPHONES, null, initialValues2);
 		}
+		return newId;
 	}
 
 	/**
@@ -973,9 +981,8 @@ public class DbAdapter {
 				new String[] { String.valueOf(contact_id) });
 		mDb.delete(DATABASE_TABLE_CONTACTEMAILS, KEY_CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
-		mDb.execSQL(
-				"delete from tripmembers where trip_id in (select _id from trips where contact_id='"
-						+ contact_id + "');", null);
+		mDb.execSQL("delete from tripmembers where trip_id in (select _id from trips where contact_id='"
+				+ contact_id + "');");
 		mDb.delete(DATABASE_TABLE_TRIPS, KEY_CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
 	}
@@ -1957,6 +1964,24 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns the id of the house if it exists, otherwise -1.
+	 * 
+	 * @param house
+	 * @return the id of the house if it exists, otherwise -1
+	 * @throws SQLException
+	 */
+	public long getHouseId(final String house) throws SQLException {
+		final Cursor cur = mDb.rawQuery(
+				"select _id from houses where lower(name)=lower(?);",
+				new String[] { house });
+		if (cur.moveToFirst()) {
+			return cur.getLong(0);
+		} else {
+			return -1;
+		}
+	}
+
+	/**
 	 * Returns the _id of the house associated with the contact.
 	 * 
 	 * @param contact_id
@@ -2864,24 +2889,35 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Sets the house associated with a particular contact.
+	 * Sets the house associated with a particular contact. If the specified
+	 * house_id is -1, then the contact is dissociated from any house he is
+	 * currently associated with.
 	 * 
 	 * @param contact_id
 	 *            the contact_id
 	 * @param house_id
 	 *            the house_id
+	 * @return NOTIFY_HASHOUSE, NOTIFY_NOHOUSE, or NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public void setHouse(final long contact_id, final long house_id)
+	public int setHouse(final long contact_id, final long house_id)
 			throws SQLException {
 		mDb.delete(DATABASE_TABLE_HOUSEMEMBERS, KEY_CONTACTID + "="
 				+ contact_id, null);
 
-		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_CONTACTID, contact_id);
-		initialValues.put(KEY_HOUSEID, house_id);
-		mDb.insert(DATABASE_TABLE_HOUSEMEMBERS, null, initialValues);
+		if (house_id != -1) {
+			final ContentValues initialValues = new ContentValues();
+			initialValues.put(KEY_CONTACTID, contact_id);
+			initialValues.put(KEY_HOUSEID, house_id);
+			if (mDb.insert(DATABASE_TABLE_HOUSEMEMBERS, null, initialValues) > 1) {
+				return NOTIFY_HASHOUSE;
+			} else {
+				return NOTIFY_FAILURE;
+			}
+		} else {
+			return NOTIFY_NOHOUSE;
+		}
 	}
 
 	/**
