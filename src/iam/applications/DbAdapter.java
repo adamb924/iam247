@@ -921,9 +921,9 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_PENDING, null, null);
 		mDb.delete(DATABASE_TABLE_GUARDS, null, null);
 		mDb.delete(DATABASE_TABLE_GUARD_CHECKINS, null, null);
-		mDb.delete(DATABASE_CREATE_ALARMS, null, null);
-		mDb.delete(DATABASE_CREATE_TRIPS, null, null);
-		mDb.delete(DATABASE_CREATE_TRIP_MEMBERS, null, null);
+		mDb.delete(DATABASE_TABLE_ALARMS, null, null);
+		mDb.delete(DATABASE_TABLE_TRIPS, null, null);
+		mDb.delete(DATABASE_TABLE_TRIP_MEMBERS, null, null);
 	}
 
 	/**
