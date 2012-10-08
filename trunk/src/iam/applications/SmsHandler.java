@@ -217,6 +217,8 @@ public class SmsHandler {
 			delayCallaround();
 		} else if (messageMatches(R.string.re_keywords)) {
 			sendLocationKeywords();
+		} else if (messageMatches(R.string.re_houses)) {
+			sendHouses();
 		} else {
 			yourError();
 		}
@@ -605,6 +607,15 @@ public class SmsHandler {
 					context.getString(R.string.sms_forbidden), forbidden);
 			sendSms(message);
 		}
+	}
+
+	/**
+	 * Send the user the list of houses.
+	 */
+	private void sendHouses() {
+		final String message = String.format(
+				mContext.getString(R.string.sms_houses), mDbHelper.getHouses());
+		sendSms(message);
 	}
 
 	/**
