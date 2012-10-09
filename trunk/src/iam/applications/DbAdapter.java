@@ -2543,6 +2543,9 @@ public class DbAdapter {
 			throws SQLException {
 		final ContentValues args = new ContentValues();
 		args.put(KEY_DELAYED, delayed ? 1 : 0);
+		if (delayed) {
+			args.put(KEY_OUTSTANDING, 1);
+		}
 		if (mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_HOUSEID + "="
 				+ house_id, null) > 0) {
 			return NOTIFY_SUCCESS;
