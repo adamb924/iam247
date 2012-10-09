@@ -48,6 +48,11 @@
             android:summary="@string/callaround_due_summary"
             android:title="@string/callaround_due" />
         <iam.applications.TimePreferenceDialog
+            android:defaultValue="21:10"
+            android:key="PREFERENCES_CALLAROUND_ALARM_TIME"
+            android:summary="@string/callaround_alarm_time_summary"
+            android:title="@string/callaround_alarm_time" />
+        <iam.applications.TimePreferenceDialog
             android:defaultValue="17:00"
             android:key="PREFERENCES_CALLAROUND_DUE_FROM"
             android:summary="@string/callaround_earliest_summary"

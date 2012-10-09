@@ -37,6 +37,9 @@ public class HomeActivity extends Activity {
 	/** Preference key: the earliest time to callaround. */
 	static public final String PREFERENCES_CALLAROUND_DUE_FROM = "PREFERENCES_CALLAROUND_DUE_FROM";
 
+	/** Preference key: what time the call around alarm should actually sound. */
+	static public final String PREFERENCES_CALLAROUND_ALARM_TIME = "PREFERENCES_CALLAROUND_ALARM_TIME";
+
 	/** Preference key: what time the callarounds are added for the day. */
 	static public final String PREFERENCES_CALLAROUND_ADD = "PREFERENCES_CALLAROUND_ADD";
 

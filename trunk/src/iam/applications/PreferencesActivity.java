@@ -361,8 +361,6 @@ public class PreferencesActivity extends PreferenceActivity {
 			destination.transferFrom(source, 0, source.size());
 		} catch (FileNotFoundException e) {
 			try {
-				Log.i(HomeActivity.TAG, Log.getStackTraceString(e));
-
 				if (source != null) {
 					source.close();
 				}
