@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -33,9 +34,15 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	/**
 	 * An Intent action string alerting the application to check for overdue
-	 * call arounds.
+	 * call arounds, and then text those people a reminder.
 	 */
 	public static final String ALERT_CALLAROUND_DUE = "ALERT_CALLAROUND_DUE";
+
+	/**
+	 * An Intent action string alerting the application to check for overdue
+	 * call arounds, and sound the alarm if someone has missed.
+	 */
+	public static final String ALERT_CALLAROUND_ALARM = "ALERT_CALLAROUND_ALARM";
 
 	/**
 	 * An Intent action string alerting the application to check for delayed
@@ -117,8 +124,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 					addCallarounds();
 				} else if (action.equals(ALERT_CHECKIN_REMINDER)) {
 					checkCheckinReminder(intent);
-				} else if (action.equals(ALERT_CALLAROUND_DUE)) {
+				} else if (action.equals(ALERT_CALLAROUND_ALARM)) {
 					checkCallaroundDue();
+				} else if (action.equals(ALERT_CALLAROUND_DUE)) {
+					sendCallaroundReminders();
 				} else if (action.equals(ALERT_DELAYED_CALLAROUND_DUE)) {
 					checkDelayedCallaroundDue();
 				} else if (action.equals(ALERT_ADD_GUARD_CHECKINS)) {
@@ -420,6 +429,41 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
+	 * Sets a call around due alarm at the specified date. This alarm will later
+	 * be processed by the onReceive() method of this class.
+	 * 
+	 * @param context
+	 *            the application context
+	 * @param date
+	 *            the date for the callaround due alarm
+	 */
+	static public void setCallaroundAlertAlarm(final Context context,
+			final Date date) {
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+
+		final int _id = (int) System.currentTimeMillis();
+		final Intent intent = new Intent(context, AlarmReceiver.class);
+		intent.setAction(AlarmReceiver.ALERT_CALLAROUND_ALARM);
+		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
+
+		removeAlarmsByType(context, AlarmReceiver.ALERT_CALLAROUND_ALARM);
+
+		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
+				intent, 0);
+
+		final AlarmManager alarmManager = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		alarmManager
+				.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), sender);
+
+		final DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+		dbHelper.addAlarm(_id, AlarmReceiver.ALERT_CALLAROUND_ALARM);
+		dbHelper.close();
+	}
+
+	/**
 	 * Set an alert to check for overdue check-ins at a certain time
 	 * 
 	 * @param context
@@ -628,6 +672,23 @@ public class AlarmReceiver extends BroadcastReceiver {
 			intent.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
 			intent.putExtra(ALERT_CALLAROUND_DUE, ALERT_CALLAROUND_DUE);
 			mContext.startActivity(intent);
+		}
+	}
+
+	/**
+	 * Checks if there are due call arounds, and if so, sends people a reminder
+	 * text.
+	 */
+	private void sendCallaroundReminders() {
+		Cursor cur = mDbHelper.fetchMissedCallaroundNumbers();
+		if (cur.moveToFirst()) {
+			do {
+				String number = cur.getString(cur
+						.getColumnIndex(DbAdapter.KEY_NUMBER));
+				Log.i("Debug", number);
+				SmsHandler.sendSms(mContext, number,
+						mContext.getString(R.string.sms_callaround_reminder));
+			} while (cur.moveToNext());
 		}
 	}
 

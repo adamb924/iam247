@@ -546,7 +546,12 @@ public class DbAdapter {
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "17:00");
 		final Date today_duefrom = Time.todayAtGivenTime(settings_duefrom);
 
+		final String settings_alertTime = settings.getString(
+				HomeActivity.PREFERENCES_CALLAROUND_ALARM_TIME, "21:10");
+		final Date today_alertTime = Time.todayAtGivenTime(settings_alertTime);
+
 		AlarmReceiver.setCallaroundDueAlarm(mContext, today_dueby);
+		AlarmReceiver.setCallaroundAlertAlarm(mContext, today_alertTime);
 		AlarmReceiver.setDelayedCallaroundAlarm(mContext, today_delayed_dueby);
 
 		// if a callaround has already been resolved, update the due times so
@@ -1290,6 +1295,20 @@ public class DbAdapter {
 		return mDb.rawQuery(
 				"select _id,type,message,time from log order by time desc;",
 				null);
+	}
+
+	/**
+	 * Return a cursor with a list of phone numbers associated with houses that
+	 * have not done call around for today. Columns: KEY_NUMBER
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 */
+	public Cursor fetchMissedCallaroundNumbers() throws SQLException {
+		return mDb
+				.rawQuery(
+						"select number from callarounds left join housemembers,contactphones on housemembers.house_id=callarounds.house_id and housemembers.contact_id=contactphones.contact_id where outstanding='1' and date(dueby)='"
+								+ Time.iso8601Date() + "';", null);
 	}
 
 	/**
