@@ -352,7 +352,7 @@ public class SmsHandler {
 			final String time = Time.iso8601Time(Time
 					.timeFromSimpleTime(mSettings.getString(
 							HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-							"0:00")));
+							"11:59")));
 			final String message = String.format(mContext
 					.getString(R.string.sms_callaround_delay_confirmation),
 					time);

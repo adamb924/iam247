@@ -86,7 +86,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * alert.
 	 */
 	private void checkCallaroundDue() {
-		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
+		if (mDbHelper.getNumberOfDueCallaroundsNoDelayed() > 0) {
 			mDbHelper.close();
 
 			final Intent intent = new Intent(mContext,
@@ -123,7 +123,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * alert.
 	 */
 	private void checkDelayedCallaroundDue() {
-		if (mDbHelper.getNumberOfDueCallaroundsIncludingDelayed() > 0) {
+		if (mDbHelper.getNumberOfDueCallarounds() > 0) {
 			mDbHelper.close();
 
 			final Intent intent = new Intent(mContext,

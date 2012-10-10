@@ -530,14 +530,14 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public void addCallarounds() throws SQLException {
-		final Date dueBy = Time.todayAtPreferenceTime(mContext,
+		final Date dueBy = Time.nextDateFromPreferenceString(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		final Date dueFrom = Time.todayAtPreferenceTime(mContext,
+		final Date dueFrom = Time.nextDateFromPreferenceString(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "17:00");
-		final Date alarmTime = Time.todayAtPreferenceTime(mContext,
+		final Date alarmTime = Time.nextDateFromPreferenceString(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_ALARM_TIME, "21:10");
-		final Date delayed = Time.todayAtPreferenceTime(mContext,
-				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "0:00");
+		final Date delayed = Time.nextDateFromPreferenceString(mContext,
+				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "11:59");
 
 		// (re)set daily alarms for when the call around is due, when the alarm
 		// should sound, and when the delayed callaround time is
@@ -1545,7 +1545,7 @@ public class DbAdapter {
 		final String delayedDueTime = Time.iso8601DateTime(Time
 				.nextDateFromPreferenceString(mContext,
 						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-						"0:00"));
+						"11:59"));
 
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where house_id='"
@@ -2306,7 +2306,7 @@ public class DbAdapter {
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public long getNumberOfDueCallarounds() throws SQLException {
+	public long getNumberOfDueCallaroundsNoDelayed() throws SQLException {
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where date(dueby)='"
 						+ Time.iso8601Date()
@@ -2319,14 +2319,15 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the number of call arounds that are due, including delayed
-	 * callarounds.
+	 * Returns the number of call arounds that are due for today (including
+	 * delayed callarounds). This is an odd method because it doesn't tell you
+	 * whether the callarounds should have been made by now.
 	 * 
 	 * @return the number of due call arounds
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public long getNumberOfDueCallaroundsIncludingDelayed() throws SQLException {
+	public long getNumberOfDueCallarounds() throws SQLException {
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where date(dueby)='"
 						+ Time.iso8601Date() + "' and outstanding='1';", null);
@@ -2621,7 +2622,7 @@ public class DbAdapter {
 		final String delayedDueTime = Time.iso8601DateTime(Time
 				.nextDateFromPreferenceString(mContext,
 						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-						"0:00"));
+						"11:59"));
 
 		mDb.execSQL("update callarounds set outstanding='" + sOutstanding
 				+ "',timereceived='" + now + "' where datetime('" + now
