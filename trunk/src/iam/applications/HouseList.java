@@ -185,7 +185,7 @@ public class HouseList extends ListActivity {
 	private void editTypicalGuardSchedule(final long guardId) {
 		final Intent intent = new Intent(this, GuardScheduleActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		intent.putExtra(GuardScheduleActivity.SET_DEFAULT, true);
+		intent.putExtra(GuardScheduleActivity.SET_TYPICAL, true);
 		intent.putExtra(DbAdapter.KEY_HOUSEID, guardId);
 		startActivity(intent);
 	}
@@ -196,7 +196,7 @@ public class HouseList extends ListActivity {
 	private void editTodaysGuardSchedule(final long guardId) {
 		final Intent intent = new Intent(this, GuardScheduleActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		intent.putExtra(GuardScheduleActivity.SET_DEFAULT, false);
+		intent.putExtra(GuardScheduleActivity.SET_TYPICAL, false);
 		intent.putExtra(DbAdapter.KEY_HOUSEID, guardId);
 		startActivity(intent);
 	}
