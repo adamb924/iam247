@@ -100,8 +100,8 @@ public class CallAroundDetailList extends ListActivity implements
 		// and if it's true sound the alarm
 		if (getIntent().hasExtra(AlarmAdapter.ALERT_CALLAROUND_DUE)) {
 			mMissed = mIncludeDelayed ? mDbHelper
-					.getNumberOfDueCallaroundsIncludingDelayed() : mDbHelper
-					.getNumberOfDueCallarounds();
+					.getNumberOfDueCallarounds() : mDbHelper
+					.getNumberOfDueCallaroundsNoDelayed();
 			if (mMissed > 0) {
 				final Intent checkIntent = new Intent();
 				checkIntent
@@ -157,8 +157,8 @@ public class CallAroundDetailList extends ListActivity implements
 			}
 
 			mMissed = mIncludeDelayed ? mDbHelper
-					.getNumberOfDueCallaroundsIncludingDelayed() : mDbHelper
-					.getNumberOfDueCallarounds();
+					.getNumberOfDueCallarounds() : mDbHelper
+					.getNumberOfDueCallaroundsNoDelayed();
 
 			if (mMissed == 1) {
 				mTts.speak(getString(R.string.tts_missedcallaround),
