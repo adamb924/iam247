@@ -158,7 +158,7 @@ public class UnsentMessageList extends ListActivity {
 		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		alert.setTitle(R.string.delete_all);
 		alert.setMessage(R.string.delete_all_unsent_warning);
-		alert.setPositiveButton("Ok",
+		alert.setPositiveButton(getString(R.string.ok),
 				new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(final DialogInterface dialog,
@@ -166,11 +166,10 @@ public class UnsentMessageList extends ListActivity {
 
 						mDbHelper.deleteUnsentUndelivered();
 						fillData();
-						HomeActivity
-								.sendRefreshAlert(UnsentMessageList.this);
+						HomeActivity.sendRefreshAlert(UnsentMessageList.this);
 					}
 				});
-		alert.setNegativeButton("Cancel", null);
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 

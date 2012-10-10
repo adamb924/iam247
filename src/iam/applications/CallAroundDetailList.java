@@ -99,9 +99,8 @@ public class CallAroundDetailList extends ListActivity implements
 		// if the intent tells us that a call around is (over)due, check that,
 		// and if it's true sound the alarm
 		if (getIntent().hasExtra(AlarmAdapter.ALERT_CALLAROUND_DUE)) {
-			mMissed = mIncludeDelayed ? mDbHelper
-					.getNumberOfDueCallarounds() : mDbHelper
-					.getNumberOfDueCallaroundsNoDelayed();
+			mMissed = mIncludeDelayed ? mDbHelper.getNumberOfDueCallarounds()
+					: mDbHelper.getNumberOfDueCallaroundsNoDelayed();
 			if (mMissed > 0) {
 				final Intent checkIntent = new Intent();
 				checkIntent
@@ -156,9 +155,8 @@ public class CallAroundDetailList extends ListActivity implements
 				Log.e(HomeActivity.TAG, "Language is not available.");
 			}
 
-			mMissed = mIncludeDelayed ? mDbHelper
-					.getNumberOfDueCallarounds() : mDbHelper
-					.getNumberOfDueCallaroundsNoDelayed();
+			mMissed = mIncludeDelayed ? mDbHelper.getNumberOfDueCallarounds()
+					: mDbHelper.getNumberOfDueCallaroundsNoDelayed();
 
 			if (mMissed == 1) {
 				mTts.speak(getString(R.string.tts_missedcallaround),
@@ -343,7 +341,7 @@ public class CallAroundDetailList extends ListActivity implements
 				}
 			}
 		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
