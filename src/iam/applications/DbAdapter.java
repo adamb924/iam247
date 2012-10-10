@@ -537,7 +537,7 @@ public class DbAdapter {
 		final Date alarmTime = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_ALARM_TIME, "21:10");
 		final Date delayed = Time.todayAtPreferenceTime(mContext,
-				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
+				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "0:00");
 
 		// (re)set daily alarms for when the call around is due, when the alarm
 		// should sound, and when the delayed callaround time is
@@ -1542,12 +1542,16 @@ public class DbAdapter {
 	 */
 	public boolean getCallaroundTimely(final long house_id) throws SQLException {
 		final String now = Time.iso8601DateTime();
+		final String delayedDueTime = Time.iso8601DateTime(Time
+				.nextDateFromPreferenceString(mContext,
+						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
+						"0:00"));
 
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where house_id='"
 						+ house_id + "' and outstanding='1' and datetime('"
 						+ now + "') >= datetime(duefrom) and datetime('" + now
-						+ "') <= datetime(dueby);", null);
+						+ "') <= datetime('" + delayedDueTime + "');", null);
 
 		if (cur.moveToFirst()) {
 			return cur.getLong(0) > 0 ? true : false;
@@ -2614,10 +2618,16 @@ public class DbAdapter {
 
 		final String sOutstanding = resolved ? "0" : "1";
 		final String now = Time.iso8601DateTime();
+		final String delayedDueTime = Time.iso8601DateTime(Time
+				.nextDateFromPreferenceString(mContext,
+						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
+						"0:00"));
+
 		mDb.execSQL("update callarounds set outstanding='" + sOutstanding
 				+ "',timereceived='" + now + "' where datetime('" + now
 				+ "') >= datetime(duefrom) and datetime('" + now
-				+ "') <= datetime(dueby) and house_id='" + house_id + "';");
+				+ "') <= datetime('" + delayedDueTime + "') and house_id='"
+				+ house_id + "';");
 
 		if (changes() > 0) {
 			return NOTIFY_SUCCESS;
