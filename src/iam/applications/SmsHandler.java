@@ -92,7 +92,7 @@ public class SmsHandler {
 					deliveredIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 		}
 
-		AlarmReceiver.sendRefreshAlert(context);
+		HomeActivity.sendRefreshAlert(context);
 
 		// Log.i("Debug", phoneNumber);
 		// Log.i("Debug", message);
@@ -228,7 +228,7 @@ public class SmsHandler {
 		}
 
 		// send a notification for any active activity to update
-		AlarmReceiver.sendRefreshAlert(context);
+		HomeActivity.sendRefreshAlert(context);
 
 		mDbHelper.close();
 	}
@@ -305,7 +305,7 @@ public class SmsHandler {
 		if (ret != DbAdapter.NOTIFY_FAILURE
 				&& mDbHelper.getContactPreference(mContactId,
 						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
-			AlarmReceiver.setCheckinReminderAlert(mContext,
+			AlarmAdapter.setCheckinReminderAlert(mContext,
 					mDbHelper.lastInsertId());
 		}
 	}
@@ -642,7 +642,7 @@ public class SmsHandler {
 		if (ret != DbAdapter.NOTIFY_FAILURE
 				&& mDbHelper.getContactPreference(mContactId,
 						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
-			AlarmReceiver.setCheckinReminderAlert(mContext,
+			AlarmAdapter.setCheckinReminderAlert(mContext,
 					mDbHelper.lastInsertId());
 		}
 	}
@@ -732,8 +732,7 @@ public class SmsHandler {
 			final long current_checkin = mDbHelper
 					.getCurrentCheckinForContact(mContactId);
 			if (current_checkin != -1) {
-				AlarmReceiver
-						.setCheckinReminderAlert(mContext, current_checkin);
+				AlarmAdapter.setCheckinReminderAlert(mContext, current_checkin);
 			}
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
 			ourError();

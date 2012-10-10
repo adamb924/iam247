@@ -113,14 +113,11 @@ public class HomeActivity extends Activity {
 						| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 						| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-		// add these three alarms for managing call arounds
-		AlarmReceiver.setAddCallaroundAlarm(this);
-		AlarmReceiver.setAddGuardCheckinAlarms(this);
-		AlarmReceiver.setGuardScheduleResetAlarm(this);
+		setAlarms();
 
 		setContentView(R.layout.home_activity);
 
-		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
 
 		final LinearLayout checkinsButton = (LinearLayout) findViewById(R.id.checkins_button);
 		checkinsButton.setOnClickListener(new View.OnClickListener() {
@@ -206,6 +203,16 @@ public class HomeActivity extends Activity {
 		mDbHelper.open();
 
 		fillData();
+	}
+
+	/**
+	 * This method sets alarms daily alarms that we want to be sure are going
+	 * off.
+	 */
+	private void setAlarms() {
+		AlarmAdapter.setAddCallaroundAlarm(this);
+		AlarmAdapter.setAddGuardCheckinAlarms(this);
+		AlarmAdapter.setGuardScheduleResetAlarm(this);
 	}
 
 	/*
@@ -313,5 +320,18 @@ public class HomeActivity extends Activity {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	/**
+	 * Send an alert that activities should refresh their screens. Currently
+	 * this is called only in the constructor of SmsHandler. Any activity which
+	 * has SMS-dependent information should update in response to this message.
+	 * 
+	 * @param context
+	 *            the application context
+	 */
+	static public void sendRefreshAlert(final Context context) {
+		final Intent intent = new Intent(AlarmAdapter.ALERT_REFRESH);
+		context.sendBroadcast(intent);
 	}
 }

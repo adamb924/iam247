@@ -9,7 +9,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -132,6 +134,62 @@ final public class Time {
 				return null;
 			}
 		}
+	}
+
+	/**
+	 * Returns a date object corresponding to the next time it will be the time
+	 * specified in the specified preference string. It is acknowleged that this
+	 * is poor documentation.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param preference
+	 *            the preference name
+	 * @param defaultValue
+	 *            the default value
+	 * @return the date
+	 */
+	public static Date nextDateFromPreferenceString(final Context context,
+			final String preference, final String defaultValue) {
+		final SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		final String old = settings.getString(preference, defaultValue);
+
+		// make sure that the time for the alarm is in the future, so that these
+		// events aren't really added every time you go to the home activity
+		Date timeToAddAt = Time.todayAtGivenTime(old);
+		if (timeToAddAt.before(new Date())) {
+			timeToAddAt = Time.tomorrowAtGivenTime(old);
+		}
+		return timeToAddAt;
+	}
+
+	/**
+	 * Return a Date object set to today's date, at the time specified by the
+	 * preference.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param preference
+	 *            the preference string, from HomeActivity
+	 * @param defaultValue
+	 *            the default value of the preference
+	 * @return the Date object
+	 */
+	static public Date todayAtPreferenceTime(final Context context,
+			final String preference, final String defaultValue) {
+		final SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		final String simpleTime = settings.getString(preference, defaultValue);
+
+		final Date targetTime = Time.timeFromSimpleTime(simpleTime);
+		final Date today = new Date();
+
+		today.setHours(targetTime.getHours());
+		today.setMinutes(targetTime.getMinutes());
+		today.setSeconds(targetTime.getSeconds());
+
+		return today;
 	}
 
 	/**

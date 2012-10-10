@@ -52,7 +52,7 @@ public class CallAroundList extends ListActivity {
 	protected void onCreate(final Bundle bundle) {
 		super.onCreate(bundle);
 
-		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();

@@ -59,7 +59,7 @@ public class TeamMemberList extends Activity {
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
 
-		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
 
 		mCheckedOut = (ListView) findViewById(R.id.checkedout);
 		mCheckedIn = (ListView) findViewById(R.id.checkedin);

@@ -62,10 +62,10 @@ public class CheckinList extends ListActivity implements OnInitListener {
 
 		setContentView(R.layout.checkin_list);
 
-		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
 
 		final Intent intent = getIntent();
-		if (intent.getBooleanExtra(AlarmReceiver.ALERT_CHECKIN_DUE, false)) {
+		if (intent.getBooleanExtra(AlarmAdapter.ALERT_CHECKIN_DUE, false)) {
 			// play the alert ... eventually
 			final Intent checkIntent = new Intent();
 			checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
