@@ -86,7 +86,7 @@ public class CallAroundDetailList extends ListActivity implements
 
 		setContentView(R.layout.callaround_detail);
 
-		mIntentFilter = new IntentFilter(AlarmReceiver.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
@@ -98,7 +98,7 @@ public class CallAroundDetailList extends ListActivity implements
 
 		// if the intent tells us that a call around is (over)due, check that,
 		// and if it's true sound the alarm
-		if (getIntent().hasExtra(AlarmReceiver.ALERT_CALLAROUND_DUE)) {
+		if (getIntent().hasExtra(AlarmAdapter.ALERT_CALLAROUND_DUE)) {
 			mMissed = mIncludeDelayed ? mDbHelper
 					.getNumberOfDueCallaroundsIncludingDelayed() : mDbHelper
 					.getNumberOfDueCallarounds();

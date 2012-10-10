@@ -530,48 +530,61 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public void addCallarounds() throws SQLException {
-		final SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(mContext);
-
-		final String settings_dueby = settings.getString(
+		final Date dueBy = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		final Date today_dueby = Time.todayAtGivenTime(settings_dueby);
-
-		final String settings_delayed_dueby = settings.getString(
-				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
-		final Date today_delayed_dueby = Time
-				.todayAtGivenTime(settings_delayed_dueby);
-
-		final String settings_duefrom = settings.getString(
+		final Date dueFrom = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "17:00");
-		final Date today_duefrom = Time.todayAtGivenTime(settings_duefrom);
-
-		final String settings_alertTime = settings.getString(
+		final Date alarmTime = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_ALARM_TIME, "21:10");
-		final Date today_alertTime = Time.todayAtGivenTime(settings_alertTime);
+		final Date delayed = Time.todayAtPreferenceTime(mContext,
+				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
 
-		AlarmReceiver.setCallaroundDueAlarm(mContext, today_dueby);
-		AlarmReceiver.setCallaroundAlertAlarm(mContext, today_alertTime);
-		AlarmReceiver.setDelayedCallaroundAlarm(mContext, today_delayed_dueby);
+		// (re)set daily alarms for when the call around is due, when the alarm
+		// should sound, and when the delayed callaround time is
+		AlarmAdapter.setDailyAlarm(mContext, AlarmAdapter.ALERT_CALLAROUND_DUE,
+				dueBy);
+		AlarmAdapter.setDailyAlarm(mContext,
+				AlarmAdapter.ALERT_CALLAROUND_ALARM, alarmTime);
+		AlarmAdapter.setDailyAlarm(mContext,
+				AlarmAdapter.ALERT_DELAYED_CALLAROUND_DUE, delayed);
 
-		// if a callaround has already been resolved, update the due times so
-		// that a duplicate is not created by the insert time. this is
-		// admittedly clunky
+		updateTimesOfResolvedCallarounds(dueBy, dueFrom);
+
+		deleteTodaysUnresolvedCallarounds();
+
+		mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) select _id,'"
+				+ Time.iso8601DateTime(dueBy)
+				+ "','"
+				+ Time.iso8601DateTime(dueFrom)
+				+ "' from houses where active='1';");
+	}
+
+	/**
+	 * If a call around scheduled for today has already been resolved, update
+	 * the due times.
+	 * 
+	 * @param dueby
+	 *            the date the call around is due by
+	 * @param duefrom
+	 *            the date the call around is due from
+	 */
+	private void updateTimesOfResolvedCallarounds(final Date dueby,
+			final Date duefrom) {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_DUEBY, Time.iso8601DateTime(today_dueby));
-		args.put(KEY_DUEFROM, Time.iso8601DateTime(today_duefrom));
-		mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_OUTSTANDING + "='0'",
-				null);
-		// delete unresolved callarounds
+		args.put(KEY_DUEBY, Time.iso8601DateTime(dueby));
+		args.put(KEY_DUEFROM, Time.iso8601DateTime(duefrom));
+		mDb.update(DATABASE_TABLE_CALLAROUNDS, args,
+				"date(dueby) = date('now','localtime') and " + KEY_OUTSTANDING
+						+ "='0'", null);
+	}
+
+	/**
+	 * Delete unresolved call arounds that match today's date.
+	 */
+	private void deleteTodaysUnresolvedCallarounds() {
 		mDb.delete(DATABASE_TABLE_CALLAROUNDS,
 				"date(dueby) = date('now','localtime') and outstanding='1'",
 				null);
-
-		mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) select _id,'"
-				+ Time.iso8601DateTime(today_dueby)
-				+ "','"
-				+ Time.iso8601DateTime(today_duefrom)
-				+ "' from houses where active='1';");
 	}
 
 	/**
@@ -618,7 +631,7 @@ public class DbAdapter {
 		mDb.insert(DATABASE_TABLE_TRIP_MEMBERS, null, memberValues);
 
 		if (rowId > -1) {
-			AlarmReceiver.setCheckinAlert(mContext, time);
+			AlarmAdapter.setCheckinAlert(mContext, time);
 			if (count > 0) {
 				return NOTIFY_EXISTING_CHECKIN_RESOLVED;
 			} else {
@@ -819,7 +832,8 @@ public class DbAdapter {
 			final String firstEarliest = Time.iso8601Date(from.getTime()) + " "
 					+ firstTimeEarliest;
 
-			AlarmReceiver.setCallaroundDueAlarm(mContext,
+			AlarmAdapter.setDailyAlarm(mContext,
+					AlarmAdapter.ALERT_CALLAROUND_DUE,
 					Time.iso8601DateTime(first));
 
 			mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
@@ -831,7 +845,8 @@ public class DbAdapter {
 				final String secondEarliest = Time.iso8601Date(from.getTime())
 						+ " " + secondTimeEarliest;
 
-				AlarmReceiver.setCallaroundDueAlarm(mContext,
+				AlarmAdapter.setDailyAlarm(mContext,
+						AlarmAdapter.ALERT_CALLAROUND_DUE,
 						Time.iso8601DateTime(second));
 
 				mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
@@ -901,6 +916,19 @@ public class DbAdapter {
 	public long deleteAlarm(final int request_id) throws SQLException {
 		return mDb.delete(DATABASE_TABLE_ALARMS, KEY_REQUESTID + "=?",
 				new String[] { String.valueOf(request_id) });
+	}
+
+	/**
+	 * Deletes alarms of the specified type from the database.
+	 * 
+	 * @param type
+	 *            the type of alarm to delete
+	 * @return the number of rows deleted
+	 * @throws SQLException
+	 */
+	public long deleteAlarmsByType(final String type) throws SQLException {
+		return mDb.delete(DATABASE_TABLE_ALARMS, KEY_TYPE + "=?",
+				new String[] { type });
 	}
 
 	/**

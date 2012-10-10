@@ -100,7 +100,7 @@ public class SmsReceiver extends BroadcastReceiver {
 		// if the message was successful, delete it from the pending-sent table
 		if (getResultCode() == Activity.RESULT_OK) {
 			dbHelper.setPendingMessageSent(number, message);
-			AlarmReceiver.sendRefreshAlert(context);
+			HomeActivity.sendRefreshAlert(context);
 		}
 
 		dbHelper.close();
@@ -126,7 +126,7 @@ public class SmsReceiver extends BroadcastReceiver {
 		// table
 		if (getResultCode() == Activity.RESULT_OK) {
 			dbHelper.setPendingMessageDelivered(number, message);
-			AlarmReceiver.sendRefreshAlert(context);
+			HomeActivity.sendRefreshAlert(context);
 		}
 
 		dbHelper.close();

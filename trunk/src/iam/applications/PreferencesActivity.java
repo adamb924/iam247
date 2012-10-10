@@ -157,7 +157,7 @@ public class PreferencesActivity extends PreferenceActivity {
 		// prefs.registerOnSharedPreferenceChangeListener(listener);
 
 		mDbHelper.addCallarounds();
-		AlarmReceiver.sendRefreshAlert(this);
+		HomeActivity.sendRefreshAlert(this);
 
 		mDbHelper.close();
 	}
@@ -423,7 +423,7 @@ public class PreferencesActivity extends PreferenceActivity {
 							final int whichButton) {
 						getPreferencesFromSD(PREFERENCES_SD_PATH);
 						getDatabaseFromSD(DATABASE_SD_PATH);
-						AlarmReceiver.resetAlarms(PreferencesActivity.this);
+						AlarmAdapter.resetAlarms(PreferencesActivity.this);
 
 						// this is a cheaty thing, because the preference
 						// activity doesn't automatically refresh, so the
