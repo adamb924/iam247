@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -175,54 +177,102 @@ public class LocationsList extends ListActivity {
 			fillData();
 			return true;
 		case R.id.location_edit:
-			final AdapterContextMenuInfo info2 = (AdapterContextMenuInfo) item
-					.getMenuInfo();
-			final AlertDialog.Builder alert = new AlertDialog.Builder(
-					LocationsList.this);
-			final EditText input = new EditText(LocationsList.this);
-			input.setText(mDbHelper.getLocationName(info2.id));
-			alert.setView(input);
-			alert.setPositiveButton(getString(R.string.ok),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int whichButton) {
-							final String value = input.getText().toString();
-							if (value.length() > 0) {
-								mDbHelper.setLocationName(info2.id, value);
-								fillData();
-							}
-						}
-					});
-			alert.setNegativeButton(getString(R.string.cancel), null);
-			alert.show();
+			editLocationLabel(item);
 			return true;
 		case R.id.location_edit_keyword:
-			final AdapterContextMenuInfo info3 = (AdapterContextMenuInfo) item
-					.getMenuInfo();
-			final AlertDialog.Builder alert2 = new AlertDialog.Builder(
-					LocationsList.this);
-			final EditText input2 = new EditText(LocationsList.this);
-			input2.setText(mDbHelper.getLocationKeyword(info3.id));
-			alert2.setView(input2);
-			alert2.setPositiveButton("Ok",
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int whichButton) {
-							final String value = input2.getText().toString();
-							if (value.length() > 0) {
-								mDbHelper.setLocationKeyword(info3.id, value);
-								fillData();
-							}
-						}
-					});
-			alert2.setNegativeButton(getString(R.string.cancel), null);
-			alert2.show();
+			editLocationKeyword(item);
 			return true;
 		default:
 			return super.onContextItemSelected(item);
 		}
+	}
+
+	/**
+	 * Prompt the user to edit the location's keyword.
+	 * 
+	 * @param item
+	 */
+	private void editLocationKeyword(final MenuItem item) {
+		final AdapterContextMenuInfo info3 = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				LocationsList.this);
+		final EditText input = new EditText(LocationsList.this);
+		input.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+		input.setText(mDbHelper.getLocationKeyword(info3.id));
+
+		alert.setView(input);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog,
+					final int whichButton) {
+				final String value = input.getText().toString();
+				if (value.length() > 0) {
+					mDbHelper.setLocationKeyword(info3.id, value);
+					fillData();
+				}
+			}
+		});
+		alert.setNegativeButton(getString(R.string.cancel), null);
+
+		final AlertDialog dlg = alert.create();
+		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
+	}
+
+	/**
+	 * Prompt the user to edit the location's label.
+	 * 
+	 * @param item
+	 */
+	private void editLocationLabel(final MenuItem item) {
+		final AdapterContextMenuInfo info2 = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		final AlertDialog.Builder alert = new AlertDialog.Builder(
+				LocationsList.this);
+		final EditText input = new EditText(LocationsList.this);
+		input.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+		input.setText(mDbHelper.getLocationName(info2.id));
+		alert.setView(input);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = input.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setLocationName(info2.id, value);
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
+
+		final AlertDialog dlg = alert.create();
+		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
 	}
 
 	/**
@@ -233,6 +283,9 @@ public class LocationsList extends ListActivity {
 		final AlertDialog.Builder alert = new AlertDialog.Builder(
 				LocationsList.this);
 		final EditText input = new EditText(LocationsList.this);
+		input.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+
 		alert.setView(input);
 		alert.setTitle(R.string.name);
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -246,6 +299,9 @@ public class LocationsList extends ListActivity {
 					final AlertDialog.Builder alert2 = new AlertDialog.Builder(
 							LocationsList.this);
 					final EditText input2 = new EditText(LocationsList.this);
+					input2.setInputType(InputType.TYPE_CLASS_TEXT
+							| InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+
 					alert2.setView(input2);
 					alert2.setTitle(R.string.keyword);
 					alert2.setPositiveButton("Ok",
@@ -264,12 +320,38 @@ public class LocationsList extends ListActivity {
 								}
 							});
 					alert2.setNegativeButton(getString(R.string.cancel), null);
-					alert2.show();
+
+					final AlertDialog dlg = alert2.create();
+					input2.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+						@Override
+						public void onFocusChange(View v, boolean hasFocus) {
+							if (hasFocus) {
+
+								dlg.getWindow()
+										.setSoftInputMode(
+												WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+							}
+						}
+					});
+					dlg.show();
 				}
 			}
 		});
 		alert.setNegativeButton(getString(R.string.cancel), null);
-		alert.show();
+
+		final AlertDialog dlg = alert.create();
+		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
 	}
 
 	/**

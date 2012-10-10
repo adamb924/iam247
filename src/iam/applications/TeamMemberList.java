@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -18,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -277,6 +279,7 @@ public class TeamMemberList extends Activity {
 	private void editEmail(final long contact_id) {
 		final EditText editinput = new EditText(TeamMemberList.this);
 		editinput.setText(mDbHelper.getContactEmail(contact_id));
+		editinput.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 
 		final AlertDialog.Builder alert = new AlertDialog.Builder(
 				TeamMemberList.this);
@@ -294,7 +297,20 @@ public class TeamMemberList extends Activity {
 					}
 				});
 		alert.setNegativeButton(getString(R.string.cancel), null);
-		alert.show();
+
+		final AlertDialog dlg = alert.create();
+		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
 	}
 
 	/**
@@ -307,6 +323,7 @@ public class TeamMemberList extends Activity {
 	private void editPhone(final long contact_id) {
 		final EditText editinput = new EditText(TeamMemberList.this);
 		editinput.setText(mDbHelper.getContactNumber(contact_id));
+		editinput.setInputType(InputType.TYPE_CLASS_PHONE);
 
 		final AlertDialog.Builder alert = new AlertDialog.Builder(
 				TeamMemberList.this);
@@ -324,7 +341,20 @@ public class TeamMemberList extends Activity {
 					}
 				});
 		alert.setNegativeButton(getString(R.string.cancel), null);
-		alert.show();
+
+		final AlertDialog dlg = alert.create();
+		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
 	}
 
 	/**
@@ -335,6 +365,8 @@ public class TeamMemberList extends Activity {
 	 */
 	private void editName(final long contact_id) {
 		final EditText editinput = new EditText(TeamMemberList.this);
+		editinput.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_WORDS);
 		editinput.setText(mDbHelper.getContactName(contact_id));
 
 		final AlertDialog.Builder alert = new AlertDialog.Builder(
@@ -353,7 +385,20 @@ public class TeamMemberList extends Activity {
 					}
 				});
 		alert.setNegativeButton(getString(R.string.cancel), null);
-		alert.show();
+
+		final AlertDialog dlg = alert.create();
+		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
 	}
 
 	/**
