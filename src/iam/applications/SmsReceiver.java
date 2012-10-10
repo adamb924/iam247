@@ -70,13 +70,8 @@ public class SmsReceiver extends BroadcastReceiver {
 			if (!requirePrefix
 					|| message.startsWith(context
 							.getString(R.string.re_command_prefix))) {
-				// multiple commands can be sent if they are delimited by ...
-				// This
-				// might be useful for some applications.
-				final String[] commands = message.split("\\.\\.\\.");
-				for (int j = 0; j < commands.length; j++) {
-					new SmsHandler(context, number, commands[i], false);
-				}
+
+				new SmsHandler(context, number, message, false);
 			}
 		}
 	}
