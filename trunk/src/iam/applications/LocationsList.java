@@ -203,17 +203,18 @@ public class LocationsList extends ListActivity {
 		input.setText(mDbHelper.getLocationKeyword(info3.id));
 
 		alert.setView(input);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog,
-					final int whichButton) {
-				final String value = input.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setLocationKeyword(info3.id, value);
-					fillData();
-				}
-			}
-		});
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = input.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setLocationKeyword(info3.id, value);
+							fillData();
+						}
+					}
+				});
 		alert.setNegativeButton(getString(R.string.cancel), null);
 
 		final AlertDialog dlg = alert.create();
@@ -288,55 +289,59 @@ public class LocationsList extends ListActivity {
 
 		alert.setView(input);
 		alert.setTitle(R.string.name);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog,
-					final int whichButton) {
-				final String value = input.getText().toString();
-				if (value.length() > 0) {
-					final String label = value;
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = input.getText().toString();
+						if (value.length() > 0) {
+							final String label = value;
 
-					final AlertDialog.Builder alert2 = new AlertDialog.Builder(
-							LocationsList.this);
-					final EditText input2 = new EditText(LocationsList.this);
-					input2.setInputType(InputType.TYPE_CLASS_TEXT
-							| InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+							final AlertDialog.Builder alert2 = new AlertDialog.Builder(
+									LocationsList.this);
+							final EditText input2 = new EditText(
+									LocationsList.this);
+							input2.setInputType(InputType.TYPE_CLASS_TEXT
+									| InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
 
-					alert2.setView(input2);
-					alert2.setTitle(R.string.keyword);
-					alert2.setPositiveButton("Ok",
-							new DialogInterface.OnClickListener() {
+							alert2.setView(input2);
+							alert2.setTitle(R.string.keyword);
+							alert2.setPositiveButton(getString(R.string.ok),
+									new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(
+												final DialogInterface dialog,
+												final int whichButton) {
+											final String value = input2
+													.getText().toString();
+											if (value.length() > 0) {
+												mDbHelper.addLocation(label,
+														true, value);
+												fillData();
+											}
+										}
+									});
+							alert2.setNegativeButton(
+									getString(R.string.cancel), null);
+
+							final AlertDialog dlg = alert2.create();
+							input2.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 								@Override
-								public void onClick(
-										final DialogInterface dialog,
-										final int whichButton) {
-									final String value = input2.getText()
-											.toString();
-									if (value.length() > 0) {
-										mDbHelper.addLocation(label, true,
-												value);
-										fillData();
+								public void onFocusChange(View v,
+										boolean hasFocus) {
+									if (hasFocus) {
+
+										dlg.getWindow()
+												.setSoftInputMode(
+														WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 									}
 								}
 							});
-					alert2.setNegativeButton(getString(R.string.cancel), null);
-
-					final AlertDialog dlg = alert2.create();
-					input2.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-						@Override
-						public void onFocusChange(View v, boolean hasFocus) {
-							if (hasFocus) {
-
-								dlg.getWindow()
-										.setSoftInputMode(
-												WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-							}
+							dlg.show();
 						}
-					});
-					dlg.show();
-				}
-			}
-		});
+					}
+				});
 		alert.setNegativeButton(getString(R.string.cancel), null);
 
 		final AlertDialog dlg = alert.create();

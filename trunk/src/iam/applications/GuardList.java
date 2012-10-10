@@ -185,18 +185,19 @@ public class GuardList extends ListActivity {
 		alert = new AlertDialog.Builder(GuardList.this);
 		alert.setTitle(getString(R.string.name));
 		alert.setView(editinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog,
-					final int whichButton) {
-				final String value = editinput.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setGuardName(guard_id, value);
-					fillData();
-				}
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = editinput.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setGuardName(guard_id, value);
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 		alert.show();
 	}
 
@@ -214,19 +215,21 @@ public class GuardList extends ListActivity {
 		alert = new AlertDialog.Builder(GuardList.this);
 		alert.setTitle(getString(R.string.number));
 		alert.setView(editinput);
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog,
-					final int whichButton) {
-				final String value = editinput.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setGuardNumber(guard_id, SmsHandler
-							.getNormalizedPhoneNumber(GuardList.this, value));
-					fillData();
-				}
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = editinput.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setGuardNumber(guard_id, SmsHandler
+									.getNormalizedPhoneNumber(GuardList.this,
+											value));
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 
 		final AlertDialog dlg = alert.create();
 		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -256,20 +259,21 @@ public class GuardList extends ListActivity {
 		alert = new AlertDialog.Builder(GuardList.this);
 		alert.setView(editinput);
 		alert.setTitle(getString(R.string.name));
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog,
-					final int whichButton) {
-				final String value = editinput.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.addGuard(value);
-					final long lastId = mDbHelper.lastInsertId();
-					editPhone(lastId);
-					fillData();
-				}
-			}
-		});
-		alert.setNegativeButton("Cancel", null);
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = editinput.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.addGuard(value);
+							final long lastId = mDbHelper.lastInsertId();
+							editPhone(lastId);
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
 
 		final AlertDialog dlg = alert.create();
 		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
