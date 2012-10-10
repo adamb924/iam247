@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 /**
  * Alarm receiver receives all alarms from the system, and starts the
@@ -162,6 +161,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 			return;
 		}
 		final long guard_id = mDbHelper.getGuardForHouse(house_id);
+
 		if (guard_id == -1) {
 			mDbHelper
 					.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String.format(
@@ -195,7 +195,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 			do {
 				String number = cur.getString(cur
 						.getColumnIndex(DbAdapter.KEY_NUMBER));
-				Log.i("Debug", number);
 				SmsHandler.sendSms(mContext, number,
 						mContext.getString(R.string.sms_callaround_reminder));
 			} while (cur.moveToNext());

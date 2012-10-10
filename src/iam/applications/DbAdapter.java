@@ -488,9 +488,9 @@ public class DbAdapter {
 	static public String getGuardScheduleColumnName(final int forDay,
 			final boolean typicalColumn) {
 		if (typicalColumn) {
-			return DbAdapter.DAYS[forDay] + "_guard";
-		} else {
 			return "typical_" + DbAdapter.DAYS[forDay] + "_guard";
+		} else {
+			return DbAdapter.DAYS[forDay] + "_guard";
 		}
 	}
 

@@ -37,7 +37,7 @@ public class GuardScheduleActivity extends Activity {
 	 * Static string used as an extra key, indicating whether this is the
 	 * default schedule or not.
 	 */
-	static public final String SET_DEFAULT = "SET_DEFAULT";
+	static public final String SET_TYPICAL = "SET_TYPICAL";
 
 	/** The database interface. */
 	private transient DbAdapter mDbHelper;
@@ -57,8 +57,8 @@ public class GuardScheduleActivity extends Activity {
 		setContentView(R.layout.guard_schedule);
 
 		final Bundle extras = getIntent().getExtras();
-		final boolean setDefault = extras == null ? false : extras
-				.getBoolean(SET_DEFAULT);
+		final boolean typical = extras == null ? false : extras
+				.getBoolean(SET_TYPICAL);
 		final long houseId = extras == null ? -1 : extras
 				.getLong(DbAdapter.KEY_HOUSEID);
 
@@ -71,7 +71,7 @@ public class GuardScheduleActivity extends Activity {
 
 		mSpinners = new Spinner[7];
 
-		if (setDefault) {
+		if (typical) {
 			// for the default configuration, just list a typical weekly
 			// schedule
 
@@ -93,7 +93,7 @@ public class GuardScheduleActivity extends Activity {
 				layout.addView(label);
 
 				mSpinners[i] = new GuardSpinner(this, mDbHelper,
-						DbAdapter.getGuardScheduleColumnName(day, setDefault),
+						DbAdapter.getGuardScheduleColumnName(day, typical),
 						houseId);
 				layout.addView(mSpinners[i]);
 			}
@@ -102,7 +102,10 @@ public class GuardScheduleActivity extends Activity {
 
 			// let today be the first day displayed
 			final Calendar cur = Calendar.getInstance();
-			final int first = cur.get(Calendar.DAY_OF_WEEK);
+			final int first = cur.get(Calendar.DAY_OF_WEEK) - 1; // subtract 1
+																	// to make
+																	// it
+																	// 0-indexed
 
 			TextView label;
 			for (int i = 0; i < 7; i++) {
@@ -113,7 +116,7 @@ public class GuardScheduleActivity extends Activity {
 				layout.addView(label);
 
 				mSpinners[i] = new GuardSpinner(this, mDbHelper,
-						DbAdapter.getGuardScheduleColumnName(day, setDefault),
+						DbAdapter.getGuardScheduleColumnName(day, typical),
 						houseId);
 				layout.addView(mSpinners[i]);
 
