@@ -143,28 +143,35 @@ public class UnsentMessageList extends ListActivity {
 		// switch (item.getItemId()) {
 		// case R.id.delete_all:
 		if (item.getItemId() == R.id.delete_all) {
-			final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-			alert.setTitle(R.string.delete_all);
-			alert.setMessage(R.string.delete_all_unsent_warning);
-			alert.setPositiveButton("Ok",
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int whichButton) {
-
-							mDbHelper.deleteUnsentUndelivered();
-							fillData();
-							HomeActivity
-									.sendRefreshAlert(UnsentMessageList.this);
-						}
-					});
-			alert.setNegativeButton("Cancel", null);
-			alert.show();
+			warnThenDeleteUnsentUndelivered();
 			returnValue = true;
 		} else {
 			returnValue = super.onOptionsItemSelected(item);
 		}
 		return returnValue;
+	}
+
+	/**
+	 * 
+	 */
+	private void warnThenDeleteUnsentUndelivered() {
+		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		alert.setTitle(R.string.delete_all);
+		alert.setMessage(R.string.delete_all_unsent_warning);
+		alert.setPositiveButton("Ok",
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+
+						mDbHelper.deleteUnsentUndelivered();
+						fillData();
+						HomeActivity
+								.sendRefreshAlert(UnsentMessageList.this);
+					}
+				});
+		alert.setNegativeButton("Cancel", null);
+		alert.show();
 	}
 
 	/**

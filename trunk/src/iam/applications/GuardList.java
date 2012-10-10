@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -15,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -176,6 +178,8 @@ public class GuardList extends ListActivity {
 	private void editName(final long guard_id) {
 		final EditText editinput = new EditText(GuardList.this);
 		editinput.setText(mDbHelper.getGuardName(guard_id));
+		editinput.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_WORDS);
 
 		AlertDialog.Builder alert;
 		alert = new AlertDialog.Builder(GuardList.this);
@@ -205,6 +209,7 @@ public class GuardList extends ListActivity {
 		AlertDialog.Builder alert;
 		final EditText editinput = new EditText(GuardList.this);
 		editinput.setText(mDbHelper.getContactNumber(guard_id));
+		editinput.setInputType(InputType.TYPE_CLASS_PHONE);
 
 		alert = new AlertDialog.Builder(GuardList.this);
 		alert.setTitle(getString(R.string.number));
@@ -222,7 +227,20 @@ public class GuardList extends ListActivity {
 			}
 		});
 		alert.setNegativeButton("Cancel", null);
-		alert.show();
+
+		final AlertDialog dlg = alert.create();
+		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
 	}
 
 	/**
@@ -232,6 +250,9 @@ public class GuardList extends ListActivity {
 	private void newGuard() {
 		AlertDialog.Builder alert;
 		final EditText editinput = new EditText(GuardList.this);
+		editinput.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+
 		alert = new AlertDialog.Builder(GuardList.this);
 		alert.setView(editinput);
 		alert.setTitle(getString(R.string.name));
@@ -249,7 +270,20 @@ public class GuardList extends ListActivity {
 			}
 		});
 		alert.setNegativeButton("Cancel", null);
-		alert.show();
+
+		final AlertDialog dlg = alert.create();
+		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+				}
+			}
+		});
+		dlg.show();
 	}
 
 	/**

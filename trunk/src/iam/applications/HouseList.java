@@ -7,12 +7,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -70,8 +72,8 @@ public class HouseList extends ListActivity {
 	protected void onListItemClick(final ListView listView, final View view,
 			final int position, final long itemId) {
 		super.onListItemClick(listView, view, position, itemId);
-		mDbHelper
-				.setCallaroundActive(itemId, getListView().isItemChecked(position));
+		mDbHelper.setCallaroundActive(itemId,
+				getListView().isItemChecked(position));
 	}
 
 	/**
@@ -225,23 +227,39 @@ public class HouseList extends ListActivity {
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(HouseList.this);
+		input.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_WORDS);
 		input.setText(mDbHelper.getHouseName(item));
 		alert.setView(input);
 
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = input.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.setHouseName(item, value);
+							fillData();
+						}
+					}
+				});
+
+		alert.setNegativeButton(getString(R.string.cancel), null);
+
+		final AlertDialog dlg = alert.create();
+		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onClick(final DialogInterface dialog,
-					final int whichButton) {
-				final String value = input.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.setHouseName(item, value);
-					fillData();
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 				}
 			}
 		});
-
-		alert.setNegativeButton("Cancel", null);
-		alert.show();
+		dlg.show();
 	}
 
 	/**
@@ -254,24 +272,41 @@ public class HouseList extends ListActivity {
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(HouseList.this);
+		input.setInputType(InputType.TYPE_CLASS_TEXT
+				| InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+
 		alert.setView(input);
 
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+		alert.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int whichButton) {
+						final String value = input.getText().toString();
+						if (value.length() > 0) {
+							mDbHelper.addHouse(value);
+							// this call will not create duplicates, so it's
+							// convenient just to try to add them all
+							mDbHelper.addCallarounds();
+							fillData();
+						}
+					}
+				});
+		alert.setNegativeButton(getString(R.string.cancel), null);
+
+		final AlertDialog dlg = alert.create();
+		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onClick(final DialogInterface dialog,
-					final int whichButton) {
-				final String value = input.getText().toString();
-				if (value.length() > 0) {
-					mDbHelper.addHouse(value);
-					// this call will not create duplicates, so it's convenient
-					// just to try to add them all
-					mDbHelper.addCallarounds();
-					fillData();
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (hasFocus) {
+
+					dlg.getWindow()
+							.setSoftInputMode(
+									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 				}
 			}
 		});
-		alert.setNegativeButton("Cancel", null);
-		alert.show();
+		dlg.show();
 	}
 
 	/**
