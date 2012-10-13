@@ -138,8 +138,34 @@ final public class Time {
 
 	/**
 	 * Returns a date object corresponding to the next time it will be the time
-	 * specified in the specified preference string. It is acknowleged that this
-	 * is poor documentation.
+	 * specified in the specified preference string.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param preference
+	 *            the preference name
+	 * @param defaultValue
+	 *            the default value
+	 * @return the date
+	 */
+	public static Date previousDateFromPreferenceString(final Context context,
+			final String preference, final String defaultValue) {
+		final SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		final String old = settings.getString(preference, defaultValue);
+
+		// make sure that the time for the alarm is in the future, so that these
+		// events aren't really added every time you go to the home activity
+		Date timeToAddAt = Time.todayAtGivenTime(old);
+		if (timeToAddAt.after(new Date())) {
+			timeToAddAt = Time.yesterdayAtGivenTime(old);
+		}
+		return timeToAddAt;
+	}
+
+	/**
+	 * Returns a date object corresponding to the last time it was the time
+	 * specified in the specified preference string.
 	 * 
 	 * @param context
 	 *            the context
@@ -514,6 +540,27 @@ final public class Time {
 
 		final Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.DATE, 1);
+
+		final Date tomorrow = calendar.getTime();
+		tomorrow.setHours(targetTime.getHours());
+		tomorrow.setMinutes(targetTime.getMinutes());
+		tomorrow.setSeconds(targetTime.getSeconds());
+		return tomorrow;
+	}
+
+	/**
+	 * Returns a Date object at yesterday's date, and with the time specified by
+	 * the supplied simple time.
+	 * 
+	 * @param simpleTime
+	 *            the simple time
+	 * @return the date
+	 */
+	static public Date yesterdayAtGivenTime(final String simpleTime) {
+		final Date targetTime = Time.timeFromSimpleTime(simpleTime);
+
+		final Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DATE, -1);
 
 		final Date tomorrow = calendar.getTime();
 		tomorrow.setHours(targetTime.getHours());

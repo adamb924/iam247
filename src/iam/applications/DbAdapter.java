@@ -1925,8 +1925,13 @@ public class DbAdapter {
 	 * @return the guard for house
 	 */
 	public long getGuardForHouse(final long house_id) {
-		final String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase(
-				Locale.US);
+		Date checkinStartTime = Time.previousDateFromPreferenceString(mContext,
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
+
+		// by using checkinStartTime, we get the time when the guard check-in
+		// period began (which will actually generally be "yesterday")
+		final String todaysDayOfWeek = Time.dayOfWeek(checkinStartTime)
+				.toLowerCase(Locale.US);
 
 		final Cursor cur = mDb.rawQuery("select " + todaysDayOfWeek
 				+ "_guard from houses where _id=?;",
