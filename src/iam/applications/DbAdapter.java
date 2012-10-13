@@ -537,7 +537,7 @@ public class DbAdapter {
 		final Date alarmTime = Time.nextDateFromPreferenceString(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_ALARM_TIME, "21:10");
 		final Date delayed = Time.nextDateFromPreferenceString(mContext,
-				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "11:59");
+				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
 
 		// (re)set daily alarms for when the call around is due, when the alarm
 		// should sound, and when the delayed callaround time is
@@ -1545,7 +1545,7 @@ public class DbAdapter {
 		final String delayedDueTime = Time.iso8601DateTime(Time
 				.nextDateFromPreferenceString(mContext,
 						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-						"11:59"));
+						"23:59"));
 
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where house_id='"
@@ -2627,7 +2627,7 @@ public class DbAdapter {
 		final String delayedDueTime = Time.iso8601DateTime(Time
 				.nextDateFromPreferenceString(mContext,
 						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-						"11:59"));
+						"23:59"));
 
 		mDb.execSQL("update callarounds set outstanding='" + sOutstanding
 				+ "',timereceived='" + now + "' where datetime('" + now
