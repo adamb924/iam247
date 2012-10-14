@@ -530,13 +530,19 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public void addCallarounds() throws SQLException {
-		final Date dueBy = Time.nextDateFromPreferenceString(mContext,
+		// 10/13/2012: I forget right now why I had been calling
+		// nextDateFromPreferenceString. But this function should always set the
+		// alarms for the current day. If we start requesting the next time it's
+		// 9:00pm, for instance, that can lead into tomorrow, and if we're
+		// between the duefrom and the dueby, that will make the dueby *after*
+		// the duefrom, which makes it impossible to do call around.
+		final Date dueBy = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
-		final Date dueFrom = Time.nextDateFromPreferenceString(mContext,
+		final Date dueFrom = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "17:00");
-		final Date alarmTime = Time.nextDateFromPreferenceString(mContext,
+		final Date alarmTime = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_ALARM_TIME, "21:10");
-		final Date delayed = Time.nextDateFromPreferenceString(mContext,
+		final Date delayed = Time.todayAtPreferenceTime(mContext,
 				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
 
 		// (re)set daily alarms for when the call around is due, when the alarm
