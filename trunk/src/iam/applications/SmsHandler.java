@@ -366,6 +366,11 @@ public class SmsHandler {
 	 * Deactivates call around for the user.
 	 */
 	private void disableCallaround() {
+		if (!mSettings.getBoolean(
+				HomeActivity.PREFERENCES_PERMIT_CALLAROUND_CONTROL, false)) {
+			return;
+		}
+
 		if (mHouseId == -1) {
 			sendSms(R.string.sms_callaround_nohouse);
 			return;
@@ -385,6 +390,11 @@ public class SmsHandler {
 	 * Activates call around for the user.
 	 */
 	private void enableCallaround() {
+		if (!mSettings.getBoolean(
+				HomeActivity.PREFERENCES_PERMIT_CALLAROUND_CONTROL, false)) {
+			return;
+		}
+
 		if (mHouseId == -1) {
 			sendSms(R.string.sms_callaround_nohouse);
 			return;

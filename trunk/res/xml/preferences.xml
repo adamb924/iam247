@@ -16,7 +16,7 @@
         android:key="PREFERENCES_REQUIRE_PREFIX"
         android:summary="@string/require_prefix_summary"
         android:title="@string/require_prefix" />
-    
+
     <EditTextPreference
         android:defaultValue="5000"
         android:inputType="number"
@@ -37,6 +37,11 @@
             android:title="@string/unblock_number" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/callaround_preferences" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="PREFERENCES_PERMIT_CALLAROUND_CONTROL"
+            android:summary="@string/permit_callaround_control_summary"
+            android:title="@string/permit_callaround_control" />
         <iam.applications.TimePreferenceDialog
             android:defaultValue="05:00"
             android:key="PREFERENCES_CALLAROUND_ADD"
@@ -91,7 +96,8 @@
             android:summary="@string/guard_response_window_summary"
             android:title="@string/guard_response_window" >
         </EditTextPreference>
-                <iam.applications.TimePreferenceDialog
+
+        <iam.applications.TimePreferenceDialog
             android:defaultValue="22:00"
             android:key="PREFERENCES_GUARD_CHECKIN_START"
             android:title="@string/guard_checkin_start" />

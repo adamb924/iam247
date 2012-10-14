@@ -19,13 +19,14 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+// TODO: Auto-generated Javadoc
 /**
  * This is the home activity of the app, i.e., the first screen that is
  * displayed.
  */
 public class HomeActivity extends Activity {
 
-	/** The debug tag */
+	/** The debug tag. */
 	static public final String TAG = "Debug";
 
 	/** The name of the application preferences. */
@@ -91,6 +92,9 @@ public class HomeActivity extends Activity {
 
 	/** Preference key: ignore messages that do not have a certain prefix. */
 	static public final String PREFERENCES_REQUIRE_PREFIX = "PREFERENCES_REQUIRE_PREFIX";
+
+	/** Preference key: allow users to enable or disable call around. */
+	static public final String PREFERENCES_PERMIT_CALLAROUND_CONTROL = "PREFERENCES_PERMIT_CALLAROUND_CONTROL";
 
 	/** The database interface. */
 	private transient DbAdapter mDbHelper;
