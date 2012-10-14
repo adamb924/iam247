@@ -134,8 +134,12 @@ public class HomeActivity extends Activity {
 			@Override
 			public void onClick(final View view) {
 				final Intent intent = new Intent(HomeActivity.this,
-						CallAroundList.class);
+						CallAroundDetailList.class);
+				intent.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
 				startActivity(intent);
+				// final Intent intent = new Intent(HomeActivity.this,
+				// CallAroundList.class);
+				// startActivity(intent);
 			}
 		});
 

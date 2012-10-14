@@ -106,6 +106,7 @@
     <string name="clear_log_summary">Clear logged events from before one week ago</string>
     <string name="callaround_due">Call around due time</string>
     <string name="callaround_due_summary">What time daily call around is due</string>
+    <string name="previous_days">Previous days</string>
 
         <string name="callaround_alarm_time">Call around alarm time</string>
     <string name="callaround_alarm_time_summary">What time the call around alarm should sound, if no one has checked in</string>

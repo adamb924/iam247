@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -233,7 +234,7 @@ public class CallAroundDetailList extends ListActivity implements
 			final ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, view, menuInfo);
 		final MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.callaround_detail_menu, menu);
+		inflater.inflate(R.menu.callaround_detail_context, menu);
 
 		if (!mDay.equals(Time.iso8601Date())) {
 			menu.removeItem(R.id.call_guard);
@@ -292,6 +293,35 @@ public class CallAroundDetailList extends ListActivity implements
 			return true;
 		default:
 			return super.onContextItemSelected(item);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		final MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.callaround_detail_menu, menu);
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.previous_days) {
+			final Intent intent = new Intent(CallAroundDetailList.this,
+					CallAroundList.class);
+			startActivity(intent);
+			return true;
+		} else {
+			return super.onOptionsItemSelected(item);
 		}
 	}
 
