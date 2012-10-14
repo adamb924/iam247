@@ -92,8 +92,7 @@ public class GuardScheduleActivity extends Activity {
 				label.setText(dayNames[day + 1]);
 				layout.addView(label);
 
-				mSpinners[i] = new GuardSpinner(this, mDbHelper,
-						DbAdapter.getGuardScheduleColumnName(day, typical),
+				mSpinners[i] = new GuardSpinner(this, mDbHelper, day, typical,
 						houseId);
 				layout.addView(mSpinners[i]);
 			}
@@ -115,8 +114,7 @@ public class GuardScheduleActivity extends Activity {
 				label.setText(Time.prettyDate(this, cur.getTime()));
 				layout.addView(label);
 
-				mSpinners[i] = new GuardSpinner(this, mDbHelper,
-						DbAdapter.getGuardScheduleColumnName(day, typical),
+				mSpinners[i] = new GuardSpinner(this, mDbHelper, day, typical,
 						houseId);
 				layout.addView(mSpinners[i]);
 
@@ -196,20 +194,20 @@ public class GuardScheduleActivity extends Activity {
 	 */
 	static private class GuardSpinner extends Spinner {
 
-		/** The m db helper. */
+		/** The database adapter. */
 		private transient final DbAdapter mDbHelper;
 
-		/** The m column. */
-		private transient final String mColumn;
-
-		/** The m house id. */
+		/** The house id for the spinner. */
 		private transient final long mHouseId;
 
-		/** The m cur. */
+		/** The cursor for the list of guards. */
 		private transient final Cursor mCur;
 
-		/** The m guard. */
-		private transient final long mGuard;
+		/** The 0-indexed day of the week of the spinner. */
+		private transient final int mDay;
+
+		/** True if this is a spinner for a typical day. */
+		private transient final boolean mTypical;
 
 		/**
 		 * Instantiates a new guard spinner.
@@ -217,21 +215,22 @@ public class GuardScheduleActivity extends Activity {
 		 * @param context
 		 *            the context
 		 * @param database
-		 *            the db
-		 * @param column
-		 *            the column
+		 *            the database
+		 * @param day
+		 *            the 0-indexed day of the week
+		 * @param typical
+		 *            true if this is for setting the typical schedule
 		 * @param house_id
 		 *            the house_id
 		 */
 		public GuardSpinner(final Context context, final DbAdapter database,
-				final String column, final long house_id) {
+				final int day, final boolean typical, final long house_id) {
 			super(context);
 
 			mDbHelper = database;
-			mColumn = column;
 			mHouseId = house_id;
-
-			mGuard = mDbHelper.getGuard(mHouseId, mColumn);
+			mDay = day;
+			mTypical = typical;
 
 			mCur = mDbHelper.fetchAllGuards();
 
@@ -243,13 +242,17 @@ public class GuardScheduleActivity extends Activity {
 					fromFields, toFields);
 			setAdapter(adapter);
 
-			setCurrent();
+			setCurrent(mDbHelper.getGuard(mHouseId, mDay));
 
 			setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
 				public void onItemSelected(final AdapterView<?> arg0,
 						final View view, final int position, final long itemId) {
-					mDbHelper.setGuard(mHouseId, itemId, mColumn);
+					if (mTypical) {
+						mDbHelper.setTypicalGuard(house_id, itemId, mDay);
+					} else {
+						mDbHelper.setGuardForDay(house_id, itemId, mDay);
+					}
 				}
 
 				@Override
@@ -274,14 +277,14 @@ public class GuardScheduleActivity extends Activity {
 		/**
 		 * Sets the current item.
 		 */
-		private void setCurrent() {
-			if (mGuard == -1 || !mCur.moveToFirst()) {
+		private void setCurrent(long guard) {
+			if (guard == -1 || !mCur.moveToFirst()) {
 				return;
 			}
 
 			int position = 0;
 			do {
-				if (mCur.getLong(0) == mGuard) {
+				if (mCur.getLong(0) == guard) {
 					setSelection(position);
 					break;
 				}

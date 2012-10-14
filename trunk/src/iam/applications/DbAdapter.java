@@ -1046,6 +1046,26 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public long deleteGuard(final long rowId) throws SQLException {
+		final ContentValues args = new ContentValues();
+		for (int i = 0; i < 7; i++) {
+			args.clear();
+
+			final String typicalColumn = DbAdapter.getGuardScheduleColumnName(
+					i, true);
+			args.put(typicalColumn, -1);
+			mDb.update(DATABASE_CREATE_HOUSES, args, typicalColumn + "=?",
+					new String[] { String.valueOf(rowId) });
+
+			args.clear();
+
+			final String otherColumn = DbAdapter.getGuardScheduleColumnName(i,
+					false);
+			args.put(otherColumn, -1);
+			mDb.update(DATABASE_CREATE_HOUSES, args, otherColumn + "=?",
+					new String[] { String.valueOf(rowId) });
+
+		}
+
 		return mDb.delete(DATABASE_TABLE_GUARDS, KEY_ROWID + "=" + rowId, null);
 	}
 
@@ -1884,16 +1904,22 @@ public class DbAdapter {
 	 * 
 	 * @param house_id
 	 *            the house_id
-	 * @param which
-	 *            the which
+	 * @param day
+	 *            the 0-index day of the week
 	 * @return the guard
 	 * @throws SQLException
 	 *             the sQL exception
 	 */
-	public long getGuard(final long house_id, final String which)
+	public long getGuard(final long house_id, final int day)
 			throws SQLException {
-		final Cursor cur = mDb.rawQuery("select " + which
-				+ " from houses where _id=?;",
+		final String typicalDay = DbAdapter.getGuardScheduleColumnName(day,
+				true);
+		final String otherDay = DbAdapter
+				.getGuardScheduleColumnName(day, false);
+
+		final Cursor cur = mDb.rawQuery("select case when " + otherDay
+				+ "='-1' then " + typicalDay + " else " + otherDay
+				+ " end from houses where _id=?;",
 				new String[] { String.valueOf(house_id) });
 		if (cur.moveToFirst()) {
 			return cur.getLong(0);
@@ -2016,12 +2042,15 @@ public class DbAdapter {
 	 * @param house_id
 	 *            the house_id
 	 * @param date
-	 *            the date
+	 *            the date as an ISO 8601 date time string
 	 * @return the guard number from date
 	 */
 	public String getGuardNumberFromDate(final long house_id, final String date) {
-		final String dayOfWeek = Time.dayOfWeek(date).toLowerCase(Locale.US);
-		final long guardId = getGuard(house_id, dayOfWeek + "_guard");
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(Time.iso8601DateTime(date));
+		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+		final long guardId = getGuard(house_id, dayOfWeek);
 		return getGuardNumber(guardId);
 	}
 
@@ -2877,17 +2906,29 @@ public class DbAdapter {
 	 *            the id of the house to change
 	 * @param guard_id
 	 *            the id of the guard to assign
+	 * @param day
+	 *            the 0-indexed day of the week
+	 * @param typical
+	 *            if the function is to set the typical guard schedule (instead
+	 *            of this week's schedule)
 	 * @param which
 	 *            one of SUNDAY_GUARD, SUNDAY_GUARD_DEFAULT, etc. from DbAdapter
 	 * @throws SQLException
 	 *             the SQL exception
 	 */
-	public void setGuard(final long house_id, final long guard_id,
-			final String which) throws SQLException {
+	public void setGuardForDay(final long house_id, final long guard_id,
+			final int day) throws SQLException {
+		final String which = DbAdapter.getGuardScheduleColumnName(day, false);
+		final String typical = DbAdapter.getGuardScheduleColumnName(day, true);
+
 		final ContentValues args = new ContentValues();
 		args.put(which, guard_id);
-		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "= ?",
-				new String[] { String.valueOf(house_id) });
+		mDb.update(
+				DATABASE_TABLE_HOUSES,
+				args,
+				KEY_ROWID + "=? and " + typical + "!=?",
+				new String[] { String.valueOf(house_id),
+						String.valueOf(guard_id) });
 	}
 
 	/**
@@ -3197,6 +3238,27 @@ public class DbAdapter {
 		} else {
 			return NOTIFY_FAILURE;
 		}
+	}
+
+	/**
+	 * Set the typical guard for the specified house, on the specified day.
+	 * 
+	 * @param house_id
+	 *            The id of the house.
+	 * @param guard_id
+	 *            The id of the guard.
+	 * @param day
+	 *            The 0-indexed day of the week.
+	 * @throws SQLException
+	 */
+	public void setTypicalGuard(final long house_id, final long guard_id,
+			final int day) throws SQLException {
+		final String which = DbAdapter.getGuardScheduleColumnName(day, true);
+
+		final ContentValues args = new ContentValues();
+		args.put(which, guard_id);
+		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "= ?",
+				new String[] { String.valueOf(house_id) });
 	}
 
 	/**
