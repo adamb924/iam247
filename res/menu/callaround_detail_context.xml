@@ -1,27 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item
-        android:id="@+id/call_number"
-        android:title="@string/call_house">
-    </item>
-    <item
-        android:id="@+id/call_guard"
-        android:title="@string/call_guard">
-    </item>
-    <group android:checkableBehavior="all" >
         <item
-            android:id="@+id/callaround_enabled"
-            android:title="@string/callaround_enabled">
-        </item>
-        <item
-            android:id="@+id/callaround_resolved"
-            android:title="@string/callaround_resolved">
-        </item>
-    </group>
-    <item
-        android:id="@+id/delete_callaround"
-        android:title="@string/delete_callaround">
+        android:id="@+id/previous_days"
+        android:title="@string/previous_days">
     </item>
 
 </menu>
