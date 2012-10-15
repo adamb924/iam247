@@ -111,11 +111,14 @@ public class GuardList extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean retVal;
 		if (item.getItemId() == R.id.newGuard) {
 			newGuard();
-			return true;
+			retVal = true;
+		} else {
+			retVal = super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+		return retVal;
 
 		// switch (item.getItemId()) {
 		// case R.id.newGuard:
@@ -151,23 +154,30 @@ public class GuardList extends ListActivity {
 				.getMenuInfo();
 		final long guardId = info == null ? -1 : info.id;
 
+		boolean retVal;
+
 		switch (item.getItemId()) {
 		case R.id.call_number:
 			callNumber(guardId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.edit_name:
 			editName(guardId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.edit_phone:
 			editPhone(guardId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.delete:
 			mDbHelper.deleteGuard(guardId);
 			fillData();
-			return true;
+			retVal = true;
+			break;
 		default:
-			return super.onContextItemSelected(item);
+			retVal = super.onContextItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**

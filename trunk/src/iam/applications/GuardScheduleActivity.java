@@ -157,11 +157,14 @@ public class GuardScheduleActivity extends Activity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean retVal;
 		if (item.getItemId() == R.id.set_all) {
 			setAll();
-			return true;
+			retVal = true;
+		} else {
+			retVal = super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+		return retVal;
 		// switch (item.getItemId()) {
 		// case R.id.set_all:
 		// setAll();
@@ -281,7 +284,7 @@ public class GuardScheduleActivity extends Activity {
 		/**
 		 * Sets the current item.
 		 */
-		private void setCurrent(long guard) {
+		private void setCurrent(final long guard) {
 			if (guard == -1 || !mCur.moveToFirst()) {
 				return;
 			}

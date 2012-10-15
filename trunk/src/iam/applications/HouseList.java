@@ -121,11 +121,14 @@ public class HouseList extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean retVal;
 		if (item.getItemId() == R.id.newHouse) {
 			newHouse();
-			return true;
+			retVal = true;
+		} else {
+			retVal = super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+		return retVal;
 		// switch (item.getItemId()) {
 		// case R.id.newHouse:
 		// newHouse();
@@ -160,25 +163,32 @@ public class HouseList extends ListActivity {
 		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 
+		boolean retVal;
 		switch (item.getItemId()) {
 		case R.id.call_guard:
 			callGuard(info.id);
-			return true;
+			retVal = true;
+			break;
 		case R.id.delete:
 			deleteHouse(info.id);
-			return true;
+			retVal = true;
+			break;
 		case R.id.edit:
 			editHouse(info.id);
-			return true;
+			retVal = true;
+			break;
 		case R.id.guard_today:
 			editTodaysGuardSchedule(info.id);
-			return true;
+			retVal = true;
+			break;
 		case R.id.guard_normal:
 			editTypicalGuardSchedule(info.id);
-			return true;
+			retVal = true;
+			break;
 		default:
-			return super.onContextItemSelected(item);
+			retVal = super.onContextItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**
@@ -250,7 +260,7 @@ public class HouseList extends ListActivity {
 		final AlertDialog dlg = alert.create();
 		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()
@@ -297,7 +307,7 @@ public class HouseList extends ListActivity {
 		final AlertDialog dlg = alert.create();
 		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()

@@ -73,14 +73,16 @@ final public class Time {
 	 * @return the date
 	 */
 	static public Date iso8601DateTime(final String date) {
+		Date retVal;
 		try {
 			final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
 					Locale.US);
-			return format.parse(date);
+			retVal = format.parse(date);
 		} catch (ParseException e) {
 			Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
-			return null;
+			retVal = null;
 		}
+		return retVal;
 	}
 
 	/**
@@ -119,21 +121,23 @@ final public class Time {
 	 * @return the date
 	 */
 	static public Date iso8601Date(final String date) {
+		Date retVal;
 		try {
 			final SimpleDateFormat format = new SimpleDateFormat(ISO8601_DAY,
 					Locale.US);
-			return format.parse(date);
+			retVal = format.parse(date);
 		} catch (ParseException e) {
 			try {
 				final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
 						Locale.US);
-				return format.parse(date);
+				retVal = format.parse(date);
 			} catch (ParseException e2) {
 				Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
 				Log.v(HomeActivity.TAG, Log.getStackTraceString(e2));
-				return null;
+				retVal = null;
 			}
 		}
+		return retVal;
 	}
 
 	/**
@@ -227,13 +231,15 @@ final public class Time {
 	 * @return the string
 	 */
 	static public String prettyDateTime(final Date date) {
+		String retVal;
 		if (date == null) {
-			return "";
+			retVal = "";
 		} else {
-			return java.text.DateFormat.getDateTimeInstance(
+			retVal = java.text.DateFormat.getDateTimeInstance(
 					java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT)
 					.format(date);
 		}
+		return retVal;
 	}
 
 	/**
@@ -270,12 +276,14 @@ final public class Time {
 	 * @return the string
 	 */
 	static public String prettyTime(final Date date) {
+		String retVal;
 		if (date == null) {
-			return "";
+			retVal = "";
 		} else {
-			return java.text.DateFormat.getTimeInstance(
+			retVal = java.text.DateFormat.getTimeInstance(
 					java.text.DateFormat.SHORT).format(date);
 		}
+		return retVal;
 	}
 
 	/**
@@ -305,15 +313,17 @@ final public class Time {
 	 */
 	static public String timeTodayTomorrow(final Context context,
 			final Date date) {
+		String retVal;
 		if (date == null) {
-			return "";
+			retVal = "";
 		} else {
 			final String timebit = java.text.DateFormat.getTimeInstance(
 					java.text.DateFormat.SHORT).format(date);
 			final String datebit = Time.prettyDate(context, date);
-			return String.format("%s (%s)", timebit,
+			retVal = String.format("%s (%s)", timebit,
 					datebit.toLowerCase(Locale.US));
 		}
+		return retVal;
 	}
 
 	/**
@@ -327,25 +337,30 @@ final public class Time {
 	 * @return the string
 	 */
 	static public String prettyDate(final Context context, final Date date) {
+		String retVal;
 		if (date == null) {
-			return "";
+			retVal = "";
 		} else {
 			final Calendar today = Calendar.getInstance();
 
 			if (iso8601Date(date).equals(iso8601Date(today.getTime()))) {
-				return context.getString(R.string.today);
+				retVal = context.getString(R.string.today);
+			} else {
+				today.add(Calendar.DAY_OF_MONTH, -1); // now it's yesterday
+				if (iso8601Date(date).equals(iso8601Date(today.getTime()))) {
+					retVal = context.getString(R.string.yesterday);
+				} else {
+					today.add(Calendar.DAY_OF_MONTH, 2); // now it's tomorrow
+					if (iso8601Date(date).equals(iso8601Date(today.getTime()))) {
+						retVal = context.getString(R.string.tomorrow);
+					} else {
+						retVal = java.text.DateFormat.getDateInstance(
+								java.text.DateFormat.MEDIUM).format(date);
+					}
+				}
 			}
-			today.add(Calendar.DAY_OF_MONTH, -1); // now it's yesterday
-			if (iso8601Date(date).equals(iso8601Date(today.getTime()))) {
-				return context.getString(R.string.yesterday);
-			}
-			today.add(Calendar.DAY_OF_MONTH, 2); // now it's tomorrow
-			if (iso8601Date(date).equals(iso8601Date(today.getTime()))) {
-				return context.getString(R.string.tomorrow);
-			}
-			return java.text.DateFormat.getDateInstance(
-					java.text.DateFormat.MEDIUM).format(date);
 		}
+		return retVal;
 	}
 
 	/**
@@ -366,6 +381,9 @@ final public class Time {
 				.compile(resources.getString(R.string.re_time),
 						Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(timeString);
+
+		Date retVal = null;
+
 		if (matcher.matches()) {
 			final Calendar date = Calendar.getInstance();
 
@@ -386,36 +404,36 @@ final public class Time {
 				} else if (ampm.isEmpty()) {
 					Log.e(HomeActivity.TAG, "Empty");
 				}
-				return null;
+			} else {
+				final long nowH = date.get(Calendar.HOUR_OF_DAY);
+				final long nowM = date.get(Calendar.MINUTE);
+
+				if ("a".equals(ampm) && hour == 12) {
+					hour -= 12;
+				} else if ("p".equals(ampm) && hour < 12) {
+					hour += 12;
+				}
+
+				// if it's later than it is already, then it must be about
+				// tomorrow
+				boolean nextDay = false;
+				if ((nowH == hour && nowM > minute) || nowH > hour) {
+					nextDay = true;
+				}
+
+				date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH),
+						date.get(Calendar.DAY_OF_MONTH), (int) hour,
+						(int) minute, 0);
+				if (nextDay) {
+					date.add(Calendar.DAY_OF_MONTH, 1);
+				}
+
+				retVal = date.getTime();
 			}
-
-			final long nowH = date.get(Calendar.HOUR_OF_DAY);
-			final long nowM = date.get(Calendar.MINUTE);
-
-			if ("a".equals(ampm) && hour == 12) {
-				hour -= 12;
-			} else if ("p".equals(ampm) && hour < 12) {
-				hour += 12;
-			}
-
-			// if it's later than it is already, then it must be about tomorrow
-			boolean nextDay = false;
-			if ((nowH == hour && nowM > minute) || nowH > hour) {
-				nextDay = true;
-			}
-
-			date.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH),
-					date.get(Calendar.DAY_OF_MONTH), (int) hour, (int) minute,
-					0);
-			if (nextDay) {
-				date.add(Calendar.DAY_OF_MONTH, 1);
-			}
-
-			return date.getTime();
 		} else {
 			Log.e("Parsing time", "Simple non-match");
-			return null;
 		}
+		return retVal;
 	}
 
 	/**
@@ -430,15 +448,13 @@ final public class Time {
 	 */
 	static public Date timeFromSimpleTime(final String timeString) {
 		final String[] pieces = timeString.split(":");
+		final Date ret = null;
 		if (pieces.length == 2) {
-			final Date ret = new Date();
 			ret.setHours(Integer.parseInt(pieces[0]));
 			ret.setMinutes(Integer.parseInt(pieces[1]));
 			ret.setSeconds(0);
-			return ret;
-		} else {
-			return null;
 		}
+		return ret;
 	}
 
 	/**
@@ -450,21 +466,23 @@ final public class Time {
 	 * @return the day of the week
 	 */
 	static public String dayOfWeek(final String date) {
+		String retVal;
 		try {
 			final SimpleDateFormat format = new SimpleDateFormat(ISO8601_DAY,
 					Locale.US);
-			return dayOfWeek(format.parse(date));
+			retVal = dayOfWeek(format.parse(date));
 		} catch (ParseException e) {
 			try {
 				final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
 						Locale.US);
-				return dayOfWeek(format.parse(date));
+				retVal = dayOfWeek(format.parse(date));
 			} catch (ParseException e2) {
 				Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
 				Log.v(HomeActivity.TAG, Log.getStackTraceString(e2));
-				return null;
+				retVal = "";
 			}
 		}
+		return retVal;
 	}
 
 	/**
@@ -578,6 +596,7 @@ final public class Time {
 	 * @return a time object n minutes after the time indicated
 	 */
 	static public String nMinutesAfter(final String isoTime, final int nMinutes) {
+		String retVal;
 		try {
 			final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
 					Locale.US);
@@ -585,11 +604,12 @@ final public class Time {
 			final Calendar cal = Calendar.getInstance();
 			cal.setTime(initialTime);
 			cal.add(Calendar.MINUTE, nMinutes);
-			return Time.iso8601DateTime(cal.getTime());
+			retVal = Time.iso8601DateTime(cal.getTime());
 		} catch (ParseException e) {
 			Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
-			return null;
+			retVal = "";
 		}
+		return retVal;
 	}
 
 	/**

@@ -893,7 +893,6 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	private int changes() throws SQLException {
-		int retVal;
 		final Cursor cur = mDb.rawQuery("select changes();", null);
 		return cur.moveToFirst() ? cur.getInt(0) : 0;
 	}

@@ -190,60 +190,75 @@ public class TeamMemberList extends Activity {
 		final long house_id = mDbHelper.getHouseId(mContactId);
 		boolean newValue = false;
 
+		boolean retVal;
+
 		switch (item.getItemId()) {
 		case R.id.call_number:
 			callNumber(mContactId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.set_house:
 			setHouse(mContactId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.resolve_checkin:
 			mDbHelper.setCheckinResolved(mContactId, true);
 			SmsHandler.sendSms(this, mDbHelper.getContactNumber(mContactId),
 					getString(R.string.sms_checkin_resolved_foryou));
 			fillData();
-			return true;
+			retVal = true;
+			break;
 		case R.id.delete_teammember:
 			mDbHelper.deleteContact(mContactId);
 			fillData();
-			return true;
+			retVal = true;
+			break;
 		case R.id.edit_name:
 			editName(mContactId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.edit_phone:
 			editPhone(mContactId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.edit_email:
 			editEmail(mContactId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.block_number:
 			blockNumber(mContactId);
-			return true;
+			retVal = true;
+			break;
 		case R.id.allow_request_reports:
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPermission(mContactId,
 					DbAdapter.USER_PERMISSION_REPORT, newValue);
-			return true;
+			retVal = true;
+			break;
 		case R.id.callaround_enabled:
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundActive(house_id, newValue);
-			return true;
+			retVal = true;
+			break;
 		case R.id.callaround_resolved:
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundResolved(house_id, newValue);
-			return true;
+			retVal = true;
+			break;
 		case R.id.checkin_reminders:
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPreference(mContactId,
 					DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, newValue);
-			return true;
+			retVal = true;
+			break;
 		default:
-			return super.onContextItemSelected(item);
+			retVal = super.onContextItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**
@@ -301,7 +316,7 @@ public class TeamMemberList extends Activity {
 		final AlertDialog dlg = alert.create();
 		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()
@@ -345,9 +360,8 @@ public class TeamMemberList extends Activity {
 		final AlertDialog dlg = alert.create();
 		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
-
 					dlg.getWindow()
 							.setSoftInputMode(
 									WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
@@ -389,7 +403,7 @@ public class TeamMemberList extends Activity {
 		final AlertDialog dlg = alert.create();
 		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()
