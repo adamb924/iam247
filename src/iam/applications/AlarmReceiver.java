@@ -163,7 +163,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 								mDbHelper.getHouseName(house_id)));
 			} else {
 				final String number = mDbHelper.getGuardNumber(guard_id);
-				if (number == null) {
+				if (number.isEmpty()) {
 					mDbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String
 							.format(mContext
 									.getString(R.string.log_null_number),

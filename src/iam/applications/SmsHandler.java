@@ -669,7 +669,7 @@ public class SmsHandler {
 	 */
 	private void sendForbiddenLocations(final Context context) {
 		final String forbidden = mDbHelper.getForbiddenLocations();
-		if (forbidden == null) {
+		if (forbidden.isEmpty()) {
 			sendSms(R.string.sms_forbidden_none);
 		} else {
 			final String message = String.format(
