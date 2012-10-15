@@ -448,7 +448,7 @@ final public class Time {
 	 */
 	static public Date timeFromSimpleTime(final String timeString) {
 		final String[] pieces = timeString.split(":");
-		final Date ret = null;
+		final Date ret = new Date();
 		if (pieces.length == 2) {
 			ret.setHours(Integer.parseInt(pieces[0]));
 			ret.setMinutes(Integer.parseInt(pieces[1]));
