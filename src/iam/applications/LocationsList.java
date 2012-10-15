@@ -134,11 +134,14 @@ public class LocationsList extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean retVal;
 		if (item.getItemId() == R.id.newlocation) {
 			newLocation();
-			return true;
+			retVal = true;
+		} else {
+			retVal = super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
+		return retVal;
 		// switch (item.getItemId()) {
 		// case R.id.newlocation:
 		// newLocation();
@@ -170,21 +173,26 @@ public class LocationsList extends ListActivity {
 	@Override
 	public boolean onContextItemSelected(final MenuItem item) {
 		AdapterContextMenuInfo info;
+		boolean retVal;
 		switch (item.getItemId()) {
 		case R.id.location_delete:
 			info = (AdapterContextMenuInfo) item.getMenuInfo();
 			mDbHelper.deleteLocation(info.id);
 			fillData();
-			return true;
+			retVal = true;
+			break;
 		case R.id.location_edit:
 			editLocationLabel(item);
-			return true;
+			retVal = true;
+			break;
 		case R.id.location_edit_keyword:
 			editLocationKeyword(item);
-			return true;
+			retVal = true;
+			break;
 		default:
-			return super.onContextItemSelected(item);
+			retVal = super.onContextItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**
@@ -220,7 +228,7 @@ public class LocationsList extends ListActivity {
 		final AlertDialog dlg = alert.create();
 		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()
@@ -264,7 +272,7 @@ public class LocationsList extends ListActivity {
 		final AlertDialog dlg = alert.create();
 		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()
@@ -328,8 +336,8 @@ public class LocationsList extends ListActivity {
 							final AlertDialog dlg = alert2.create();
 							input2.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 								@Override
-								public void onFocusChange(View v,
-										boolean hasFocus) {
+								public void onFocusChange(final View view,
+										final boolean hasFocus) {
 									if (hasFocus) {
 
 										dlg.getWindow()
@@ -347,7 +355,7 @@ public class LocationsList extends ListActivity {
 		final AlertDialog dlg = alert.create();
 		input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()

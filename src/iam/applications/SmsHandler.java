@@ -37,10 +37,7 @@ public class SmsHandler {
 	static public String getNormalizedPhoneNumber(final Context context,
 			final String old) {
 		String ret = old;
-		if (ret.isEmpty()) {
-			return ret;
-		}
-		if (ret.charAt(0) == '0') {
+		if (!ret.isEmpty() && ret.charAt(0) == '0') {
 			ret = ret.replaceFirst("0",
 					context.getString(R.string.loc_country_phonecode));
 		}
@@ -178,53 +175,59 @@ public class SmsHandler {
 			return;
 		}
 
-		// is the user unknown?
-		if (mContactId == -1) {
-			processUnknownNumber();
-		} else if (messageMatches(R.string.re_turnoffcallaround)) {
-			disableCallaround();
-		} else if (messageMatches(R.string.re_turnoncallaround)) {
-			enableCallaround();
-		} else if (messageMatches(R.string.re_callaround_ok)) {
-			resolveCallaround();
-		} else if (messageMatches(R.string.re_undocallaround)) {
-			unresolveCallaround();
-		} else if (messageMatches(R.string.re_startcheckin_with)) {
-			addCheckin(true);
-		} else if (messageMatches(R.string.re_startcheckin)) {
-			addCheckin(false);
-		} else if (messageMatches(R.string.re_checkin_back)) {
-			// we must check R.string.re_startcheckin before
-			// R.string.re_checkin_back, since the "back" keyword would
-			// otherwise be caught. This would be resolved with improved
-			// parsing.
-			back();
-		} else if (messageMatches(R.string.re_checkin_arrived)) {
-			arrived();
-		} else if (messageMatches(R.string.re_permission)) {
-			sendForbiddenLocations(context);
-		} else if (messageMatches(R.string.re_turnoffreminders)) {
-			turnOffReminders();
-		} else if (messageMatches(R.string.re_turnonreminders)) {
-			turnOnReminders();
-		} else if (messageMatches(R.string.re_returning)) {
-			returning();
-		} else if (messageMatches(R.string.re_thisis)) {
-			sendSms(R.string.sms_contact_exists);
-		} else if (messageMatches(R.string.re_report)) {
-			requestReport();
-		} else if (messageMatches(R.string.re_delay)) {
-			delayCallaround();
-		} else if (messageMatches(R.string.re_keywords)) {
-			sendLocationKeywords();
-		} else if (messageMatches(R.string.re_houses)) {
-			sendHouses();
-		} else if (messageMatches(R.string.re_staying_at)) {
-			joinHouse();
-		} else if (messageMatches(R.string.re_leaving)) {
-			leaveHouse();
-		} else {
-			yourError();
+		try {
+			// is the user unknown?
+			if (mContactId == -1) {
+				processUnknownNumber();
+			} else if (messageMatches(R.string.re_turnoffcallaround)) {
+				disableCallaround();
+			} else if (messageMatches(R.string.re_turnoncallaround)) {
+				enableCallaround();
+			} else if (messageMatches(R.string.re_callaround_ok)) {
+				resolveCallaround();
+			} else if (messageMatches(R.string.re_undocallaround)) {
+				unresolveCallaround();
+			} else if (messageMatches(R.string.re_startcheckin_with)) {
+				addCheckin(true);
+			} else if (messageMatches(R.string.re_startcheckin)) {
+				addCheckin(false);
+			} else if (messageMatches(R.string.re_checkin_back)) {
+				// we must check R.string.re_startcheckin before
+				// R.string.re_checkin_back, since the "back" keyword would
+				// otherwise be caught. This would be resolved with improved
+				// parsing.
+				back();
+			} else if (messageMatches(R.string.re_checkin_arrived)) {
+				arrived();
+			} else if (messageMatches(R.string.re_permission)) {
+				sendForbiddenLocations(context);
+			} else if (messageMatches(R.string.re_turnoffreminders)) {
+				turnOffReminders();
+			} else if (messageMatches(R.string.re_turnonreminders)) {
+				turnOnReminders();
+			} else if (messageMatches(R.string.re_returning)) {
+				returning();
+			} else if (messageMatches(R.string.re_thisis)) {
+				sendSms(R.string.sms_contact_exists);
+			} else if (messageMatches(R.string.re_report)) {
+				requestReport();
+			} else if (messageMatches(R.string.re_delay)) {
+				delayCallaround();
+			} else if (messageMatches(R.string.re_keywords)) {
+				sendLocationKeywords();
+			} else if (messageMatches(R.string.re_houses)) {
+				sendHouses();
+			} else if (messageMatches(R.string.re_staying_at)) {
+				joinHouse();
+			} else if (messageMatches(R.string.re_leaving)) {
+				leaveHouse();
+			} else {
+				throw new YourErrorException();
+			}
+		} catch (OurErrorException e) {
+			sendSms(R.string.sms_247_error);
+		} catch (YourErrorException e1) {
+			sendSms(R.string.sms_message_error);
 		}
 
 		// send a notification for any active activity to update
@@ -239,15 +242,17 @@ public class SmsHandler {
 	 * 
 	 * @param with
 	 *            whether the user is adding a "with" keyword
+	 * @throws YourErrorException
+	 * @throws OurErrorException
 	 */
-	private void addCheckin(final boolean with) {
+	private void addCheckin(final boolean with) throws YourErrorException,
+			OurErrorException {
 		String[] matches;
 		String place, keyword, withWhom, returnBy;
 		if (with) {
 			matches = getMessageMatches(R.string.re_startcheckin_with);
 			if (matches.length < 4) {
-				yourError();
-				return;
+				throw new YourErrorException();
 			}
 			place = matches[0];
 			keyword = matches[1];
@@ -256,8 +261,7 @@ public class SmsHandler {
 		} else {
 			matches = getMessageMatches(R.string.re_startcheckin);
 			if (matches.length < 3) {
-				yourError();
-				return;
+				throw new YourErrorException();
 			}
 			place = matches[0];
 			keyword = matches[1];
@@ -267,58 +271,57 @@ public class SmsHandler {
 
 		final Date time = Time.timeFromString(mContext, returnBy);
 		if (time == null) {
-			yourError();
-			return;
+			throw new YourErrorException();
 		}
 
-		if (!mDbHelper.getLocationKeywordExists(keyword)) {
-			needLegitimateKeyword();
-			return;
-		}
+		if (mDbHelper.getLocationKeywordExists(keyword)) {
+			// send a message if the person is not allowed to go there
+			if (mDbHelper.getLocationKeywordPermitted(keyword)) {
+				final int ret = mDbHelper.addCheckin(mContactId, place,
+						keyword, time, withWhom);
 
-		// send a message if the person is not allowed to go there
-		if (!mDbHelper.getLocationKeywordPermitted(keyword)) {
-			sendSms(R.string.sms_refuse_permission);
-			return;
-		}
+				if (ret == DbAdapter.NOTIFY_FAILURE) {
+					throw new OurErrorException();
+				} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
+					final String message = String.format(mContext
+							.getString(R.string.sms_confirm_checkin_request),
+							place, Time.timeTodayTomorrow(mContext, time))
+							+ " "
+							+ mContext
+									.getString(R.string.sms_existing_checkin_resolved);
+					sendSms(message);
+				} else {
+					final String message = String.format(mContext
+							.getString(R.string.sms_confirm_checkin_request),
+							place, Time.timeTodayTomorrow(mContext, time));
+					sendSms(message);
+				}
 
-		final int ret = mDbHelper.addCheckin(mContactId, place, keyword, time,
-				withWhom);
-
-		if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
-		} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
-			final String message = String.format(
-					mContext.getString(R.string.sms_confirm_checkin_request),
-					place, Time.timeTodayTomorrow(mContext, time))
-					+ " "
-					+ mContext
-							.getString(R.string.sms_existing_checkin_resolved);
-			sendSms(message);
+				if (ret != DbAdapter.NOTIFY_FAILURE
+						&& mDbHelper.getContactPreference(mContactId,
+								DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
+					AlarmAdapter.setCheckinReminderAlert(mContext,
+							mDbHelper.lastInsertId());
+				}
+			} else {
+				sendSms(R.string.sms_refuse_permission);
+			}
 		} else {
-			final String message = String.format(
-					mContext.getString(R.string.sms_confirm_checkin_request),
-					place, Time.timeTodayTomorrow(mContext, time));
-			sendSms(message);
-		}
-
-		if (ret != DbAdapter.NOTIFY_FAILURE
-				&& mDbHelper.getContactPreference(mContactId,
-						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
-			AlarmAdapter.setCheckinReminderAlert(mContext,
-					mDbHelper.lastInsertId());
+			needLegitimateKeyword();
 		}
 	}
 
 	/**
 	 * Process an "arrived" message by resolving the check-in.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void arrived() {
+	private void arrived() throws OurErrorException {
 		final int ret = mDbHelper.setCheckinResolved(mContactId, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_acknowledge_arrived_checkin);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
 			sendSms(R.string.sms_alreadyin);
 		}
@@ -326,13 +329,15 @@ public class SmsHandler {
 
 	/**
 	 * Process a "back" message by resolving an entire trip.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void back() {
+	private void back() throws OurErrorException {
 		final int ret = mDbHelper.setTripResolvedFromContact(mContactId);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_acknowledge_trip_resolved_checkin);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
 			sendSms(R.string.sms_alreadyin);
 		}
@@ -340,8 +345,10 @@ public class SmsHandler {
 
 	/**
 	 * Delays callaround for the user.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void delayCallaround() {
+	private void delayCallaround() throws OurErrorException {
 		if (mHouseId == -1) {
 			sendSms(R.string.sms_callaround_nohouse);
 			return;
@@ -358,55 +365,53 @@ public class SmsHandler {
 					time);
 			sendSms(message);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		}
 	}
 
 	/**
 	 * Deactivates call around for the user.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void disableCallaround() {
-		if (!mSettings.getBoolean(
+	private void disableCallaround() throws OurErrorException {
+		if (mSettings.getBoolean(
 				HomeActivity.PREFERENCES_PERMIT_CALLAROUND_CONTROL, false)) {
-			return;
-		}
-
-		if (mHouseId == -1) {
-			sendSms(R.string.sms_callaround_nohouse);
-			return;
-		}
-
-		final int ret = mDbHelper.setCallaroundActive(mHouseId, false);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
-			sendSms(R.string.sms_callaround_disabled);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
-			sendSms(R.string.sms_callaround_disabled_already);
+			if (mHouseId == -1) {
+				sendSms(R.string.sms_callaround_nohouse);
+			} else {
+				final int ret = mDbHelper.setCallaroundActive(mHouseId, false);
+				if (ret == DbAdapter.NOTIFY_SUCCESS) {
+					sendSms(R.string.sms_callaround_disabled);
+				} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+					throw new OurErrorException();
+				} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+					sendSms(R.string.sms_callaround_disabled_already);
+				}
+			}
 		}
 	}
 
 	/**
 	 * Activates call around for the user.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void enableCallaround() {
-		if (!mSettings.getBoolean(
+	private void enableCallaround() throws OurErrorException {
+		if (mSettings.getBoolean(
 				HomeActivity.PREFERENCES_PERMIT_CALLAROUND_CONTROL, false)) {
-			return;
-		}
-
-		if (mHouseId == -1) {
-			sendSms(R.string.sms_callaround_nohouse);
-			return;
-		}
-
-		final int ret = mDbHelper.setCallaroundActive(mHouseId, true);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
-			sendSms(R.string.sms_callaround_enabled);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
-			sendSms(R.string.sms_callaround_enabled_already);
+			if (mHouseId == -1) {
+				sendSms(R.string.sms_callaround_nohouse);
+			} else {
+				final int ret = mDbHelper.setCallaroundActive(mHouseId, true);
+				if (ret == DbAdapter.NOTIFY_SUCCESS) {
+					sendSms(R.string.sms_callaround_enabled);
+				} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+					throw new OurErrorException();
+				} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+					sendSms(R.string.sms_callaround_enabled_already);
+				}
+			}
 		}
 	}
 
@@ -433,22 +438,22 @@ public class SmsHandler {
 		final Pattern pattern = Pattern.compile(resources.getString(stringId),
 				Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(mMessage);
+		String[] matches;
 		if (matcher.find()) {
-			String[] matches = new String[matcher.groupCount()];
+			matches = new String[matcher.groupCount()];
 			for (int i = 1; i <= matcher.groupCount(); i++) {
 				matches[i - 1] = matcher.group(i);
 			}
-			return matches;
 		} else {
-			return new String[0];
+			matches = new String[0];
 		}
+		return matches;
 	}
 
-	private void joinHouse() {
+	private void joinHouse() throws YourErrorException, OurErrorException {
 		final String[] matches = getMessageMatches(R.string.re_staying_at);
 		if (matches.length < 1) {
-			yourError();
-			mDbHelper.close();
+			throw new YourErrorException();
 		}
 		final String house = matches[0];
 		final long houseId = mDbHelper.getHouseId(house);
@@ -467,13 +472,13 @@ public class SmsHandler {
 					house);
 			sendSms(message);
 		} else {
-			ourError();
+			throw new OurErrorException();
 		}
 	}
 
-	private void leaveHouse() {
+	private void leaveHouse() throws OurErrorException {
 		if (mDbHelper.setHouse(mContactId, -1) == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		} else {
 			sendSms(R.string.sms_leaving_confirmation);
 		}
@@ -508,52 +513,47 @@ public class SmsHandler {
 	}
 
 	/**
-	 * Send the user an SMS indicating a system error that is not his/her fault.
-	 */
-	private void ourError() {
-		sendSms(R.string.sms_247_error);
-	}
-
-	/**
 	 * Handle the situation where the phone number is unrecognized.
+	 * 
+	 * @throws YourErrorException
+	 * @throws OurErrorException
 	 */
-	private void processUnknownNumber() {
+	private void processUnknownNumber() throws YourErrorException,
+			OurErrorException {
 		// perhaps he is identifying himself
 		if (messageMatches(R.string.re_thisis)) {
 			final boolean thisisAllowed = mSettings.getBoolean(
 					HomeActivity.PREFERENCES_PERMIT_THISIS, false);
-			if (!thisisAllowed) {
-				sendSms(R.string.sms_this_disabled_notification);
-				return;
-			}
+			if (thisisAllowed) {
+				final String[] matches = getMessageMatches(R.string.re_thisis);
+				if (matches.length < 2) {
+					throw new YourErrorException();
+				}
+				final String name = matches[0];
+				final String house = matches[1];
+				final long contactId = mDbHelper.addContact(name, mPhoneNumber);
+				final long houseId = mDbHelper.getHouseId(house);
 
-			final String[] matches = getMessageMatches(R.string.re_thisis);
-			if (matches.length < 2) {
-				yourError();
-				mDbHelper.close();
-			}
-			final String name = matches[0];
-			final String house = matches[1];
-			final long contactId = mDbHelper.addContact(name, mPhoneNumber);
-			final long houseId = mDbHelper.getHouseId(house);
+				if (houseId == -1) {
+					final String message = String.format(
+							mContext.getString(R.string.sms_not_a_house),
+							mDbHelper.getHouses());
+					sendSms(message);
+				} else {
+					mDbHelper.setHouse(contactId, houseId);
 
-			if (houseId == -1) {
-				final String message = String.format(
-						mContext.getString(R.string.sms_not_a_house),
-						mDbHelper.getHouses());
-				sendSms(message);
-				return;
-			}
-
-			mDbHelper.setHouse(contactId, houseId);
-
-			if (contactId > -1) {
-				final String message = String.format(mContext
-						.getString(R.string.sms_requestid_acknowledgement),
-						name);
-				sendSms(message);
+					if (contactId > -1) {
+						final String message = String
+								.format(mContext
+										.getString(R.string.sms_requestid_acknowledgement),
+										name);
+						sendSms(message);
+					} else {
+						throw new OurErrorException();
+					}
+				}
 			} else {
-				ourError();
+				sendSms(R.string.sms_this_disabled_notification);
 			}
 
 		} else { // otherwise request that he identify himself
@@ -592,8 +592,10 @@ public class SmsHandler {
 
 	/**
 	 * Resolves the user's call around.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void resolveCallaround() {
+	private void resolveCallaround() throws OurErrorException {
 		if (mHouseId == -1) {
 			sendSms(R.string.sms_callaround_nohouse);
 			return;
@@ -603,7 +605,7 @@ public class SmsHandler {
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_callaround_acknowledgement);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
 			sendSms(R.string.sms_callaround_unnecessary);
 		} else if (ret == DbAdapter.NOTIFY_INACTIVE) {
@@ -615,17 +617,19 @@ public class SmsHandler {
 
 	/**
 	 * Records the user as being heading for home.
+	 * 
+	 * @throws OurErrorException
+	 * @throws YourErrorException
 	 */
-	private void returning() {
+	private void returning() throws OurErrorException, YourErrorException {
 		final String[] matches = getMessageMatches(R.string.re_returning);
 		if (matches.length != 1) {
-			return;
+			throw new OurErrorException();
 		}
 
 		final Date time = Time.timeFromString(mContext, matches[0]);
 		if (time == null) {
-			yourError();
-			return;
+			throw new YourErrorException();
 		}
 
 		final String place = mContext.getString(R.string.home);
@@ -633,7 +637,7 @@ public class SmsHandler {
 		final int ret = mDbHelper.addCheckin(mContactId, place, "--", time, "");
 
 		if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
 			final String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
@@ -715,14 +719,16 @@ public class SmsHandler {
 
 	/**
 	 * Turn off checkin reminders for the user.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void turnOffReminders() {
+	private void turnOffReminders() throws OurErrorException {
 		final int ret = mDbHelper.setContactPreference(mContactId,
 				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, false);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_off_confirm);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
 			sendSms(R.string.sms_already);
 		}
@@ -730,8 +736,10 @@ public class SmsHandler {
 
 	/**
 	 * Turn on checkin reminders for the user.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void turnOnReminders() {
+	private void turnOnReminders() throws OurErrorException {
 		final int ret = mDbHelper.setContactPreference(mContactId,
 				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, true);
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
@@ -745,7 +753,7 @@ public class SmsHandler {
 				AlarmAdapter.setCheckinReminderAlert(mContext, current_checkin);
 			}
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
 			sendSms(R.string.sms_already);
 		}
@@ -753,8 +761,10 @@ public class SmsHandler {
 
 	/**
 	 * Undoes the user's call around.
+	 * 
+	 * @throws OurErrorException
 	 */
-	private void unresolveCallaround() {
+	private void unresolveCallaround() throws OurErrorException {
 		if (mHouseId == -1) {
 			sendSms(R.string.sms_callaround_nohouse);
 			return;
@@ -764,16 +774,26 @@ public class SmsHandler {
 		if (ret == DbAdapter.NOTIFY_SUCCESS) {
 			sendSms(R.string.sms_callaround_undo_acknowledgement);
 		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
-			ourError();
+			throw new OurErrorException();
 		}
 	}
 
-	/**
-	 * Send the user an SMS indicating that their input was unrecognizable.
-	 * 
-	 */
-	private void yourError() {
-		sendSms(R.string.sms_message_error);
+	static private class OurErrorException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+	}
+
+	static private class YourErrorException extends Exception {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 	}
 
 }

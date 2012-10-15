@@ -318,16 +318,20 @@ public class HomeActivity extends Activity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean retVal;
 		switch (item.getItemId()) {
 		case R.id.customization:
 			startActivity(new Intent(this, PreferencesActivity.class));
-			return true;
+			retVal = true;
+			break;
 		case R.id.log:
 			startActivity(new Intent(this, LogList.class));
-			return true;
+			retVal = true;
+			break;
 		default:
-			return super.onOptionsItemSelected(item);
+			retVal = super.onOptionsItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**

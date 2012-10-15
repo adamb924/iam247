@@ -113,18 +113,17 @@ public class PreferencesActivity extends PreferenceActivity {
 					}
 				});
 
-		final Preference synchronizeSend = findPreference("synchronize_send");
-		synchronizeSend
-				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-					@Override
-					public boolean onPreferenceClick(final Preference preference) {
-						synchronizeSend();
-						return false;
-					}
-				});
+		final Preference synchSend = findPreference("synchronize_send");
+		synchSend.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(final Preference preference) {
+				synchronizeSend();
+				return false;
+			}
+		});
 
-		final Preference synchronizeReceive = findPreference("synchronize_receive");
-		synchronizeReceive
+		final Preference synchReceive = findPreference("synchronize_receive");
+		synchReceive
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 					@Override
 					public boolean onPreferenceClick(final Preference preference) {
@@ -224,10 +223,10 @@ public class PreferencesActivity extends PreferenceActivity {
 		}
 	}
 
-	private void getPreferencesFromSD(String path) {
+	private void getPreferencesFromSD(final String path) {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor editor = settings.edit();
+		final SharedPreferences.Editor editor = settings.edit();
 
 		// wipe away existing preferences
 		editor.clear();
@@ -239,24 +238,24 @@ public class PreferencesActivity extends PreferenceActivity {
 		try {
 			fis = new FileInputStream(sourceFile);
 		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
+			Log.e(HomeActivity.TAG, HomeActivity.TAG, e1);
 			return;
 		}
 		try {
-			StringBuffer buf = new StringBuffer();
-			int ch;
-			while ((ch = fis.read()) != -1) {
-				buf.append((char) ch);
+			final StringBuffer buf = new StringBuffer();
+			int character;
+			while ((character = fis.read()) != -1) {
+				buf.append((char) character);
 			}
 			fis.close();
 
-			String preferenceString = buf.toString();
-			String prefs[] = preferenceString.replaceFirst("\\{", "").split(
-					"[{},=\\s]+");
+			final String preferenceString = buf.toString();
+			final String prefs[] = preferenceString.replaceFirst("\\{", "")
+					.split("[{},=\\s]+");
 
 			for (int i = 0; i < (prefs.length - 1); i += 2) {
-				String key = prefs[i];
-				String value = prefs[i + 1];
+				final String key = prefs[i];
+				final String value = prefs[i + 1];
 
 				if ("true".equals(value) || "false".equals(value)) {
 					editor.putBoolean(key, Boolean.parseBoolean(value));
@@ -268,12 +267,12 @@ public class PreferencesActivity extends PreferenceActivity {
 			editor.commit();
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e(HomeActivity.TAG, HomeActivity.TAG, e);
 			if (fis != null) {
 				try {
 					fis.close();
 				} catch (IOException e1) {
-					e1.printStackTrace();
+					Log.e(HomeActivity.TAG, HomeActivity.TAG, e1);
 				}
 			}
 		}
@@ -385,7 +384,7 @@ public class PreferencesActivity extends PreferenceActivity {
 	private File savePreferencesToSD(final String path) {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(this);
-		Map<String, ?> preferences = settings.getAll();
+		final Map<String, ?> preferences = settings.getAll();
 
 		final File sdcard = Environment.getExternalStorageDirectory();
 		final File destFile = new File(sdcard, path);
@@ -393,20 +392,20 @@ public class PreferencesActivity extends PreferenceActivity {
 		FileOutputStream fos;
 		try {
 			fos = new FileOutputStream(destFile);
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-			return null;
-		}
-		try {
-			fos.write(preferences.toString().getBytes("UTF-8"));
-			fos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+
 			try {
+				fos.write(preferences.toString().getBytes("UTF-8"));
 				fos.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
+			} catch (IOException e) {
+				Log.e(HomeActivity.TAG, HomeActivity.TAG, e);
+				try {
+					fos.close();
+				} catch (IOException e1) {
+					Log.e(HomeActivity.TAG, HomeActivity.TAG, e1);
+				}
 			}
+		} catch (FileNotFoundException e1) {
+			Log.e(HomeActivity.TAG, HomeActivity.TAG, e1);
 		}
 
 		return destFile;
@@ -445,7 +444,7 @@ public class PreferencesActivity extends PreferenceActivity {
 		final File databaseFile = saveDatabaseToSD(DATABASE_SD_PATH);
 		final File preferencesFile = savePreferencesToSD(PREFERENCES_SD_PATH);
 
-		ArrayList<Uri> uris = new ArrayList<Uri>();
+		final ArrayList<Uri> uris = new ArrayList<Uri>();
 		uris.add(Uri.fromFile(databaseFile));
 		uris.add(Uri.fromFile(preferencesFile));
 
