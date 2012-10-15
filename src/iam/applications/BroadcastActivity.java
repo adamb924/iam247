@@ -87,28 +87,27 @@ public class BroadcastActivity extends Activity {
 
 		if (toWhom.equals(getString(R.string.broadcast_to_all))) {
 			cur = mDbHelper.fetchAllContactNumbers();
-		} else if (toWhom.equals(getString(R.string.broadcast_to_active))) {
-			cur = mDbHelper.fetchActiveContactNumbers();
 		} else {
-			return;
+			cur = mDbHelper.fetchActiveContactNumbers();
 		}
 
-		if (!cur.moveToFirst()) {
+		if (cur.moveToFirst()) {
+			long count = 0;
+			do {
+				final String number = cur.getString(0);
+				SmsHandler.sendSms(this, number, message);
+				count++;
+			} while (cur.moveToNext());
+			Toast.makeText(
+					this,
+					String.format(getString(R.string.broadcast_result),
+							String.valueOf(count)), Toast.LENGTH_LONG).show();
+		} else {
 			Toast.makeText(
 					this,
 					String.format(getString(R.string.broadcast_result),
 							String.valueOf(0)), Toast.LENGTH_LONG).show();
 			return;
 		}
-		long count = 0;
-		do {
-			final String number = cur.getString(0);
-			SmsHandler.sendSms(this, number, message);
-			count++;
-		} while (cur.moveToNext());
-		Toast.makeText(
-				this,
-				String.format(getString(R.string.broadcast_result),
-						String.valueOf(count)), Toast.LENGTH_LONG).show();
 	}
 }

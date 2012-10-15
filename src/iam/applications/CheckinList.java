@@ -217,6 +217,8 @@ public class CheckinList extends ListActivity implements OnInitListener {
 		final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 
+		boolean retVal = true;
+
 		switch (item.getItemId()) {
 		case R.id.call_number:
 			try {
@@ -230,30 +232,31 @@ public class CheckinList extends ListActivity implements OnInitListener {
 				Log.e("Calling a Phone Number", "Call failed",
 						activityException);
 			}
-			return true;
+			break;
 		case R.id.resolve_checkin:
 			mDbHelper.setCheckinResolvedFromId(info.id, true);
 			SmsHandler.sendSms(this, mDbHelper.getNumberForCheckin(info.id),
 					getString(R.string.sms_checkin_resolved_foryou));
 			fillData();
-			return true;
+			break;
 		case R.id.unresolve_checkin:
 			mDbHelper.setCheckinResolvedFromId(info.id, false);
 			fillData();
-			return true;
+			break;
 		case R.id.resolve_trip:
 			mDbHelper.setTripResolvedFromCheckinId(info.id, true);
 			SmsHandler.sendSms(this, mDbHelper.getNumberForCheckin(info.id),
 					getString(R.string.sms_trip_resolved_foryou));
 			fillData();
-			return true;
+			break;
 		case R.id.unresolve_trip:
 			mDbHelper.setTripResolvedFromCheckinId(info.id, false);
 			fillData();
-			return true;
+			break;
 		default:
-			return super.onContextItemSelected(item);
+			retVal = super.onContextItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**

@@ -41,39 +41,35 @@ public class AlarmReceiver extends BroadcastReceiver {
 		mDbHelper.open();
 
 		final int request_id = intent.getIntExtra(DbAdapter.KEY_REQUESTID, -1);
-		if (request_id != -1) {
-			if (mDbHelper.deleteAlarm(request_id) > 0) {
-				// checking to see if the alarm is in the database is not the
-				// most elegant solution, but neither is the Android alarm
-				// documentation very effective
+		if (request_id != -1 && mDbHelper.deleteAlarm(request_id) > 0) {
+			// checking to see if the alarm is in the database is not the
+			// most elegant solution, but neither is the Android alarm
+			// documentation very effective
 
-				// call various functions depending on the action of the intent.
-				// the action will have been set in one of the static member
-				// functions of this class.
-				final String action = intent.getAction();
-				if (action.equals(AlarmAdapter.ALERT_CHECKIN_DUE)) {
-					checkinDue();
-				} else if (action.equals(AlarmAdapter.ALERT_ADD_CALLAROUNDS)) {
-					mDbHelper.addCallarounds();
-					HomeActivity.sendRefreshAlert(mContext);
-				} else if (action.equals(AlarmAdapter.ALERT_CHECKIN_REMINDER)) {
-					checkCheckinReminder(intent);
-				} else if (action.equals(AlarmAdapter.ALERT_CALLAROUND_ALARM)) {
-					checkCallaroundDue();
-				} else if (action.equals(AlarmAdapter.ALERT_CALLAROUND_DUE)) {
-					sendCallaroundReminders();
-				} else if (action
-						.equals(AlarmAdapter.ALERT_DELAYED_CALLAROUND_DUE)) {
-					checkDelayedCallaroundDue();
-				} else if (action.equals(AlarmAdapter.ALERT_ADD_GUARD_CHECKINS)) {
-					AlarmAdapter.addGuardCheckins(mContext);
-				} else if (action.equals(AlarmAdapter.ALERT_GUARD_CHECKIN)) {
-					requestGuardCheckin(intent.getLongExtra(
-							DbAdapter.KEY_HOUSEID, -1));
-				} else if (action
-						.equals(AlarmAdapter.ALERT_RESET_GUARD_SCHEDULE)) {
-					mDbHelper.resetGuardSchedule();
-				}
+			// call various functions depending on the action of the intent.
+			// the action will have been set in one of the static member
+			// functions of this class.
+			final String action = intent.getAction();
+			if (action.equals(AlarmAdapter.ALERT_CHECKIN_DUE)) {
+				checkinDue();
+			} else if (action.equals(AlarmAdapter.ALERT_ADD_CALLAROUNDS)) {
+				mDbHelper.addCallarounds();
+				HomeActivity.sendRefreshAlert(mContext);
+			} else if (action.equals(AlarmAdapter.ALERT_CHECKIN_REMINDER)) {
+				checkCheckinReminder(intent);
+			} else if (action.equals(AlarmAdapter.ALERT_CALLAROUND_ALARM)) {
+				checkCallaroundDue();
+			} else if (action.equals(AlarmAdapter.ALERT_CALLAROUND_DUE)) {
+				sendCallaroundReminders();
+			} else if (action.equals(AlarmAdapter.ALERT_DELAYED_CALLAROUND_DUE)) {
+				checkDelayedCallaroundDue();
+			} else if (action.equals(AlarmAdapter.ALERT_ADD_GUARD_CHECKINS)) {
+				AlarmAdapter.addGuardCheckins(mContext);
+			} else if (action.equals(AlarmAdapter.ALERT_GUARD_CHECKIN)) {
+				requestGuardCheckin(intent.getLongExtra(DbAdapter.KEY_HOUSEID,
+						-1));
+			} else if (action.equals(AlarmAdapter.ALERT_RESET_GUARD_SCHEDULE)) {
+				mDbHelper.resetGuardSchedule();
 			}
 		}
 
@@ -157,32 +153,29 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @param guard_id
 	 */
 	private void requestGuardCheckin(final long house_id) {
-		if (house_id == -1) {
-			return;
-		}
-		final long guard_id = mDbHelper.getGuardForHouse(house_id);
+		if (house_id != -1) {
+			final long guard_id = mDbHelper.getCurrentGuardForHouse(house_id);
 
-		if (guard_id == -1) {
-			mDbHelper
-					.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String.format(
-							mContext.getString(R.string.log_null_guard),
-							String.valueOf(house_id),
-							mDbHelper.getHouseName(house_id)));
-			return;
+			if (guard_id == -1) {
+				mDbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String
+						.format(mContext.getString(R.string.log_null_guard),
+								String.valueOf(house_id),
+								mDbHelper.getHouseName(house_id)));
+			} else {
+				final String number = mDbHelper.getGuardNumber(guard_id);
+				if (number == null) {
+					mDbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String
+							.format(mContext
+									.getString(R.string.log_null_number),
+									String.valueOf(guard_id), mDbHelper
+											.getGuardName(guard_id)));
+				} else {
+					SmsHandler.sendSms(mContext, number,
+							mContext.getString(R.string.sms_guard_checkin));
+					mDbHelper.addGuardCheckin(guard_id, Time.iso8601DateTime());
+				}
+			}
 		}
-		final String number = mDbHelper.getGuardNumber(guard_id);
-		if (number == null) {
-			mDbHelper
-					.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String.format(
-							mContext.getString(R.string.log_null_number),
-							String.valueOf(guard_id),
-							mDbHelper.getGuardName(guard_id)));
-			return;
-		}
-
-		SmsHandler.sendSms(mContext, number,
-				mContext.getString(R.string.sms_guard_checkin));
-		mDbHelper.addGuardCheckin(guard_id, Time.iso8601DateTime());
 	}
 
 	/**
@@ -190,10 +183,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * text.
 	 */
 	private void sendCallaroundReminders() {
-		Cursor cur = mDbHelper.fetchMissedCallaroundNumbers();
+		final Cursor cur = mDbHelper.fetchMissedCallaroundNumbers();
 		if (cur.moveToFirst()) {
 			do {
-				String number = cur.getString(cur
+				final String number = cur.getString(cur
 						.getColumnIndex(DbAdapter.KEY_NUMBER));
 				SmsHandler.sendSms(mContext, number,
 						mContext.getString(R.string.sms_callaround_reminder));

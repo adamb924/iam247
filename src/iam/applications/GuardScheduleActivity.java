@@ -242,7 +242,11 @@ public class GuardScheduleActivity extends Activity {
 					fromFields, toFields);
 			setAdapter(adapter);
 
-			setCurrent(mDbHelper.getGuard(mHouseId, mDay));
+			if (mTypical) {
+				setCurrent(mDbHelper.getTypicalGuard(mHouseId, mDay));
+			} else {
+				setCurrent(mDbHelper.getGuard(mHouseId, mDay));
+			}
 
 			setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override

@@ -234,7 +234,7 @@ public class GuardList extends ListActivity {
 		final AlertDialog dlg = alert.create();
 		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()
@@ -278,7 +278,7 @@ public class GuardList extends ListActivity {
 		final AlertDialog dlg = alert.create();
 		editinput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
 			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
+			public void onFocusChange(final View view, final boolean hasFocus) {
 				if (hasFocus) {
 
 					dlg.getWindow()

@@ -487,11 +487,8 @@ public class DbAdapter {
 	 */
 	static public String getGuardScheduleColumnName(final int forDay,
 			final boolean typicalColumn) {
-		if (typicalColumn) {
-			return "typical_" + DbAdapter.DAYS[forDay] + "_guard";
-		} else {
-			return DbAdapter.DAYS[forDay] + "_guard";
-		}
+		return typicalColumn ? "typical_" + DbAdapter.DAYS[forDay] + "_guard"
+				: DbAdapter.DAYS[forDay] + "_guard";
 	}
 
 	/**
@@ -636,16 +633,18 @@ public class DbAdapter {
 		memberValues.put(KEY_CHECKINID, rowId);
 		mDb.insert(DATABASE_TABLE_TRIP_MEMBERS, null, memberValues);
 
+		int retVal;
 		if (rowId > -1) {
 			AlarmAdapter.setCheckinAlert(mContext, time);
 			if (count > 0) {
-				return NOTIFY_EXISTING_CHECKIN_RESOLVED;
+				retVal = NOTIFY_EXISTING_CHECKIN_RESOLVED;
 			} else {
-				return NOTIFY_SUCCESS;
+				retVal = NOTIFY_SUCCESS;
 			}
 		} else {
-			return NOTIFY_FAILURE;
+			retVal = NOTIFY_FAILURE;
 		}
+		return retVal;
 	}
 
 	/**
@@ -663,7 +662,8 @@ public class DbAdapter {
 			throws SQLException {
 		final ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_NAME, name);
-		long newId = mDb.insert(DATABASE_TABLE_CONTACTS, null, initialValues);
+		final long newId = mDb.insert(DATABASE_TABLE_CONTACTS, null,
+				initialValues);
 
 		final int lastId = lastInsertId();
 		if (lastId != -1) {
@@ -893,12 +893,9 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	private int changes() throws SQLException {
+		int retVal;
 		final Cursor cur = mDb.rawQuery("select changes();", null);
-		if (cur.moveToFirst()) {
-			return cur.getInt(0);
-		} else {
-			return 0;
-		}
+		return cur.moveToFirst() ? cur.getInt(0) : 0;
 	}
 
 	/**
@@ -971,19 +968,6 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_ALARMS, null, null);
 		mDb.delete(DATABASE_TABLE_TRIPS, null, null);
 		mDb.delete(DATABASE_TABLE_TRIP_MEMBERS, null, null);
-	}
-
-	/**
-	 * Delete blocked number (= unblock the number).
-	 * 
-	 * @param _id
-	 *            the contact_id
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public void deleteBlockedNumber(final long _id) throws SQLException {
-		mDb.delete(DATABASE_TABLE_BLOCKEDNUMBERS, KEY_ROWID + "=?",
-				new String[] { String.valueOf(_id) });
 	}
 
 	/**
@@ -1414,26 +1398,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns whether the callaround is delayed or not.
-	 * 
-	 * @param rowId
-	 *            the row id
-	 * @return True if the callaround is delayed, otherwise false.
-	 * @throws SQLException
-	 *             the sQL exception
-	 */
-	public boolean getCallaroundDelayed(final long rowId) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CALLAROUNDS,
-				new String[] { KEY_DELAYED }, KEY_HOUSEID + "= ?",
-				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (cur.moveToFirst()) {
-			return cur.getInt(0) == 1 ? true : false;
-		} else {
-			return false;
-		}
-	}
-
-	/**
 	 * Returns true if a current call around is outstanding, otherwise false.
 	 * 
 	 * @param house_id
@@ -1448,59 +1412,13 @@ public class DbAdapter {
 				"select count(_id) as count from callarounds where house_id='"
 						+ house_id + "' and outstanding='1';", null);
 
+		boolean retVal;
 		if (cur.moveToFirst()) {
-			return cur.getLong(0) > 0 ? true : false;
+			retVal = cur.getLong(0) > 0 ? true : false;
 		} else {
-			return false;
+			retVal = false;
 		}
-	}
-
-	/**
-	 * Returns true if the specified call around is outstanding, otherwise
-	 * false.
-	 * 
-	 * @param rowId
-	 *            the _id of the call around
-	 * @return True if the call around is outstanding, otherwise false.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean getCallaroundOutstandingFromId(final long rowId)
-			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CALLAROUNDS,
-				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
-				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (cur.moveToFirst()) {
-			return cur.getLong(0) > 0 ? true : false;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true if a current call around is resolved, otherwise false.
-	 * 
-	 * @param house_id
-	 *            the house_id of the call around
-	 * @return True if the call around is outstanding, otherwise false.
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean getCallaroundResolved(final long house_id)
-			throws SQLException {
-		final String now = Time.iso8601DateTime();
-
-		final Cursor cur = mDb.rawQuery(
-				"select count(_id) as count from callarounds where house_id='"
-						+ house_id + "' and outstanding='1' and datetime('"
-						+ now + "') >= datetime(duefrom) and datetime('" + now
-						+ "') <= datetime(dueby);", null);
-
-		if (cur.moveToFirst()) {
-			return cur.getLong(0) > 0 ? false : true;
-		} else {
-			return false;
-		}
+		return retVal;
 	}
 
 	/**
@@ -1517,11 +1435,13 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_CALLAROUNDS,
 				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
 				new String[] { String.valueOf(rowId) }, null, null, null);
+		boolean retVal;
 		if (cur.moveToFirst()) {
-			return cur.getLong(0) > 0 ? false : true;
+			retVal = cur.getLong(0) > 0 ? false : true;
 		} else {
-			return false;
+			retVal = false;
 		}
+		return retVal;
 	}
 
 	/**
@@ -1539,21 +1459,23 @@ public class DbAdapter {
 				.rawQuery(
 						"select count(nullif(outstanding,0)) as outstanding,count(nullif(outstanding,1)) as resolved from callarounds where date(dueby)='"
 								+ Time.iso8601Date(date) + "';", null);
+		String retVal;
 		if (cur.moveToFirst()) {
 			final long outstanding = cur.getLong(0);
 			final long resolved = cur.getLong(1);
 			if (outstanding + resolved == 0) {
-				return mContext.getString(R.string.callaround_summary_none);
+				retVal = mContext.getString(R.string.callaround_summary_none);
 			} else if (outstanding == 0) {
-				return mContext.getString(R.string.callaround_summary_allin);
+				retVal = mContext.getString(R.string.callaround_summary_allin);
 			} else {
-				return String.format(
+				retVal = String.format(
 						mContext.getString(R.string.callaround_summary),
 						String.valueOf(resolved), String.valueOf(outstanding));
 			}
 		} else {
-			return null;
+			retVal = "";
 		}
+		return retVal;
 	}
 
 	/**
@@ -1579,11 +1501,13 @@ public class DbAdapter {
 						+ now + "') >= datetime(duefrom) and datetime('" + now
 						+ "') <= datetime('" + delayedDueTime + "');", null);
 
+		boolean retVal;
 		if (cur.moveToFirst()) {
-			return cur.getLong(0) > 0 ? true : false;
+			retVal = cur.getLong(0) > 0 ? true : false;
 		} else {
-			return false;
+			retVal = false;
 		}
+		return retVal;
 	}
 
 	/**
@@ -1600,12 +1524,13 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
 				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }, null, null, null);
-		if (!cur.moveToFirst()) {
-			return false;
+		boolean retVal;
+		if (cur.moveToFirst()) {
+			retVal = cur.getLong(0) == 1 ? true : false;
+		} else {
+			retVal = false;
 		}
-		final long ret = cur.getLong(0);
-		cur.close();
-		return ret == 1 ? true : false;
+		return retVal;
 	}
 
 	/**
@@ -1621,20 +1546,22 @@ public class DbAdapter {
 				.rawQuery(
 						"select count(contact_id) from (select distinct contact_id from trips where tripresolved='0');",
 						null);
+		String retVal;
 		if (cur.moveToFirst()) {
 			final long outstanding = cur.getLong(0);
 			if (outstanding == 0) {
-				return mContext.getString(R.string.checkin_summary_none);
+				retVal = mContext.getString(R.string.checkin_summary_none);
 			} else if (outstanding == 1) {
-				return mContext.getString(R.string.checkin_summary_singular);
+				retVal = mContext.getString(R.string.checkin_summary_singular);
 			} else {
-				return String.format(
+				retVal = String.format(
 						mContext.getString(R.string.checkin_summary),
 						String.valueOf(outstanding));
 			}
 		} else {
-			return null;
+			retVal = "";
 		}
+		return retVal;
 	}
 
 	/**
@@ -1650,12 +1577,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
 				new String[] { KEY_TIMEDUE }, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }, null, null, null);
-		if (!cur.moveToFirst()) {
-			return null;
-		}
-		final String ret = cur.getString(0);
-		cur.close();
-		return ret;
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -1671,11 +1593,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select email from contactemails where contact_id=? limit 1;",
 				new String[] { String.valueOf(contactId) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -1711,11 +1629,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select contact_id from contactphones where number=? limit 1;",
 				new String[] { phoneNumber });
-		if (cur.moveToFirst()) {
-			return cur.getLong(0);
-		} else {
-			return -1;
-		}
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -1732,12 +1646,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
 				new String[] { KEY_CONTACTID }, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }, null, null, null);
-		if (!cur.moveToFirst()) {
-			return -1;
-		}
-		final long ret = cur.getLong(0);
-		cur.close();
-		return ret;
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -1753,11 +1662,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select name from contacts where _id=?;",
 				new String[] { String.valueOf(contactId) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -1773,11 +1678,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select number from contactphones where contact_id=? limit 1;",
 				new String[] { String.valueOf(contactId) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -1840,14 +1741,7 @@ public class DbAdapter {
 				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
 						+ "' and " + KEY_TRIPRESOLVED + "='0'", null, null,
 				null, null);
-		long rowId;
-		if (cur.moveToFirst()) {
-			rowId = cur.getLong(0);
-		} else {
-			rowId = -1;
-		}
-		cur.close();
-		return rowId;
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -1864,11 +1758,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select _id from checkins where contact_id='" + contact_id
 						+ "' and outstanding='1';", null);
-		if (cur.moveToFirst()) {
-			return cur.getLong(0);
-		} else {
-			return -1;
-		}
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -1882,6 +1772,7 @@ public class DbAdapter {
 		final Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS, new String[] {
 				KEY_ROWID, KEY_LABEL }, KEY_ALLOWED + "='0'", null, null, null,
 				KEY_LABEL);
+		String retVal;
 		if (cursor.moveToFirst()) {
 			final StringBuffer buffer = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
@@ -1893,10 +1784,11 @@ public class DbAdapter {
 				cursor.moveToNext();
 			}
 			cursor.close();
-			return buffer.toString();
+			retVal = buffer.toString();
 		} else {
-			return null;
+			retVal = "";
 		}
+		return retVal;
 	}
 
 	/**
@@ -1921,11 +1813,7 @@ public class DbAdapter {
 				+ "='-1' then " + typicalDay + " else " + otherDay
 				+ " end from houses where _id=?;",
 				new String[] { String.valueOf(house_id) });
-		if (cur.moveToFirst()) {
-			return cur.getLong(0);
-		} else {
-			return -1;
-		}
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -1941,11 +1829,7 @@ public class DbAdapter {
 				.rawQuery(
 						"select time from guardcheckins where guard_id=? order by time desc limit 1;",
 						new String[] { String.valueOf(guard_id) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -1956,23 +1840,16 @@ public class DbAdapter {
 	 *            the house_id
 	 * @return the guard for house
 	 */
-	public long getGuardForHouse(final long house_id) {
-		Date checkinStartTime = Time.previousDateFromPreferenceString(mContext,
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
+	public long getCurrentGuardForHouse(final long house_id) {
+		final Date checkinStartTime = Time
+				.previousDateFromPreferenceString(mContext,
+						HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
 
-		// by using checkinStartTime, we get the time when the guard check-in
-		// period began (which will actually generally be "yesterday")
-		final String todaysDayOfWeek = Time.dayOfWeek(checkinStartTime)
-				.toLowerCase(Locale.US);
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(checkinStartTime);
+		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
-		final Cursor cur = mDb.rawQuery("select " + todaysDayOfWeek
-				+ "_guard from houses where _id=?;",
-				new String[] { String.valueOf(house_id) });
-		if (cur.moveToFirst()) {
-			return cur.getLong(0);
-		} else {
-			return -1;
-		}
+		return getGuard(house_id, dayOfWeek);
 	}
 
 	/**
@@ -1988,11 +1865,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select _id from guards where number=?;",
 				new String[] { number });
-		if (cur.moveToFirst()) {
-			return cur.getLong(0);
-		} else {
-			return -1;
-		}
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -2007,11 +1880,7 @@ public class DbAdapter {
 	public String getGuardName(final long guard_id) throws SQLException {
 		final Cursor cur = mDb.rawQuery("select name from guards where _id=?;",
 				new String[] { String.valueOf(guard_id) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2028,11 +1897,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select number from guards where _id=?;",
 				new String[] { String.valueOf(guard_id) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2065,11 +1930,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select _id from houses where lower(name)=lower(?);",
 				new String[] { house });
-		if (cur.moveToFirst()) {
-			return cur.getLong(0);
-		} else {
-			return -1;
-		}
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -2085,12 +1946,8 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_HOUSEMEMBERS,
 				new String[] { KEY_HOUSEID }, KEY_CONTACTID + "= ?",
 				new String[] { String.valueOf(contact_id) }, null, null, null);
-		int ret = -1;
-		if (cur.moveToFirst()) {
-			ret = cur.getInt(cur.getColumnIndex(KEY_HOUSEID));
-		}
-		cur.close();
-		return ret;
+		return cur.moveToFirst() ? cur.getInt(cur.getColumnIndex(KEY_HOUSEID))
+				: -1;
 	}
 
 	/**
@@ -2108,12 +1965,8 @@ public class DbAdapter {
 				new String[] { KEY_HOUSEID }, KEY_ROWID + "= ?",
 				new String[] { String.valueOf(callaround_id) }, null, null,
 				null);
-		int ret = -1;
-		if (cur.moveToFirst()) {
-			ret = cur.getInt(cur.getColumnIndex(KEY_HOUSEID));
-		}
-		cur.close();
-		return ret;
+		return cur.moveToFirst() ? cur.getInt(cur.getColumnIndex(KEY_HOUSEID))
+				: -1;
 	}
 
 	/**
@@ -2129,11 +1982,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_HOUSES,
 				new String[] { KEY_NAME }, KEY_ROWID + "= ?",
 				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2144,6 +1993,7 @@ public class DbAdapter {
 	 */
 	public String getHouses() throws SQLException {
 		final Cursor cursor = fetchAllHouses();
+		String retVal;
 		if (cursor.moveToFirst()) {
 			final StringBuffer buffer = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
@@ -2155,10 +2005,11 @@ public class DbAdapter {
 				cursor.moveToNext();
 			}
 			cursor.close();
-			return buffer.toString();
+			retVal = buffer.toString();
 		} else {
-			return null;
+			retVal = "";
 		}
+		return retVal;
 	}
 
 	/**
@@ -2196,11 +2047,13 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select allowed from locations where lower(keyword)=lower(?);",
 				new String[] { keyword });
+		boolean retVal;
 		if (cur.moveToFirst()) {
-			return cur.getLong(0) == 1 ? true : false;
+			retVal = cur.getLong(0) == 1 ? true : false;
 		} else {
-			return false;
+			retVal = false;
 		}
+		return retVal;
 	}
 
 	/**
@@ -2213,6 +2066,7 @@ public class DbAdapter {
 	public String getLocationKeywords() throws SQLException {
 		final Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS, new String[] {
 				KEY_LABEL, KEY_KEYWORD }, null, null, null, null, KEY_KEYWORD);
+		String retVal;
 		if (cursor.moveToFirst()) {
 			final StringBuffer buffer = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
@@ -2221,17 +2075,18 @@ public class DbAdapter {
 				buffer.append(" (");
 				buffer.append(cursor.getString(cursor
 						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL)));
-				buffer.append(")");
+				buffer.append(')');
 				if (!cursor.isLast()) {
 					buffer.append(", ");
 				}
 				cursor.moveToNext();
 			}
 			cursor.close();
-			return buffer.toString();
+			retVal = buffer.toString();
 		} else {
-			return null;
+			retVal = "";
 		}
+		return retVal;
 	}
 
 	/**
@@ -2247,11 +2102,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_LOCATIONS,
 				new String[] { KEY_KEYWORD }, KEY_ROWID + "= ?",
 				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2267,11 +2118,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.query(DATABASE_TABLE_LOCATIONS,
 				new String[] { KEY_LABEL }, KEY_ROWID + "= ?",
 				new String[] { String.valueOf(rowId) }, null, null, null);
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2287,11 +2134,7 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select number from contactphones where _id=? limit 1;",
 				new String[] { String.valueOf(contactphoneId) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2309,11 +2152,7 @@ public class DbAdapter {
 				.rawQuery(
 						"select number from contactphones,checkins where checkins.contact_id=contactphones.contact_id and checkins._id=? limit 1;",
 						new String[] { String.valueOf(checkin_id) });
-		if (cur.moveToFirst()) {
-			return cur.getString(0);
-		} else {
-			return null;
-		}
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2330,12 +2169,14 @@ public class DbAdapter {
 				.rawQuery(
 						"select count(_id) as count from blockednumbers where number=?;",
 						new String[] { number });
+		boolean retVal;
 		if (cur.moveToFirst()) {
-			return cur.getLong(cur.getColumnIndex(KEY_COUNT)) > 0 ? true
+			retVal = cur.getLong(cur.getColumnIndex(KEY_COUNT)) > 0 ? true
 					: false;
 		} else {
-			return false;
+			retVal = false;
 		}
+		return retVal;
 	}
 
 	/**
@@ -2351,11 +2192,8 @@ public class DbAdapter {
 				"select count(_id) as count from callarounds where date(dueby)='"
 						+ Time.iso8601Date()
 						+ "' and outstanding='1' and delayed='0';", null);
-		if (cur.moveToFirst()) {
-			return cur.getLong(cur.getColumnIndex(KEY_COUNT));
-		} else {
-			return 0;
-		}
+		return cur.moveToFirst() ? cur.getLong(cur.getColumnIndex(KEY_COUNT))
+				: 0;
 	}
 
 	/**
@@ -2371,11 +2209,8 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where date(dueby)='"
 						+ Time.iso8601Date() + "' and outstanding='1';", null);
-		if (cur.moveToFirst()) {
-			return cur.getLong(cur.getColumnIndex(KEY_COUNT));
-		} else {
-			return 0;
-		}
+		return cur.moveToFirst() ? cur.getLong(cur.getColumnIndex(KEY_COUNT))
+				: 0;
 	}
 
 	/**
@@ -2391,11 +2226,8 @@ public class DbAdapter {
 						// "select count(_id) as count from checkins where outstanding='1' and strftime('%s',timedue) <= strftime('%s','now');",
 						"select count(_id) as count from checkins where outstanding='1' and datetime(timedue) <= datetime('now','localtime');",
 						null);
-		if (cur.moveToFirst()) {
-			return cur.getLong(cur.getColumnIndex(KEY_COUNT));
-		} else {
-			return 0;
-		}
+		return cur.moveToFirst() ? cur.getLong(cur.getColumnIndex(KEY_COUNT))
+				: 0;
 	}
 
 	/**
@@ -2497,12 +2329,34 @@ public class DbAdapter {
 						"select tripresolved from trips where _id in (select trip_id from tripmembers where checkin_id="
 								+ checkin_id + ");", null);
 
-		if (!cur.moveToFirst()) {
-			return false;
+		boolean retVal;
+		if (cur.moveToFirst()) {
+			retVal = cur.getLong(0) == 1 ? true : false;
+		} else {
+			retVal = false;
 		}
-		final long ret = cur.getLong(0);
-		cur.close();
-		return ret == 1 ? true : false;
+		return retVal;
+	}
+
+	/**
+	 * Gets the typical guard for the given house and day.
+	 * 
+	 * @param house_id
+	 *            the house id
+	 * @param day
+	 *            the 0-indexed day
+	 * @return the id typical guard for the day
+	 * @throws SQLException
+	 *             the sQL exception
+	 */
+	public long getTypicalGuard(final long house_id, final int day)
+			throws SQLException {
+		final String typicalDay = DbAdapter.getGuardScheduleColumnName(day,
+				true);
+		final Cursor cur = mDb.rawQuery("select " + typicalDay
+				+ " from houses where _id=?;",
+				new String[] { String.valueOf(house_id) });
+		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
 	/**
@@ -2514,11 +2368,7 @@ public class DbAdapter {
 	 */
 	public int lastInsertId() throws SQLException {
 		final Cursor cur = mDb.rawQuery("select last_insert_rowid();", null);
-		if (cur.moveToFirst()) {
-			return cur.getInt(0);
-		} else {
-			return -1;
-		}
+		return cur.moveToFirst() ? cur.getInt(0) : -1;
 	}
 
 	/**
@@ -2579,7 +2429,7 @@ public class DbAdapter {
 	public int setCallaroundActive(final long house_id, final boolean active)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		final int retVal;
+		int retVal;
 		args.put(KEY_ACTIVE, active ? 1 : 0);
 		if (mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "=" + house_id,
 				null) > 0) {
@@ -2619,12 +2469,8 @@ public class DbAdapter {
 		if (delayed) {
 			args.put(KEY_OUTSTANDING, 1);
 		}
-		if (mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_HOUSEID + "="
-				+ house_id, null) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
+		return mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_HOUSEID + "="
+				+ house_id, null) > 0 ? NOTIFY_SUCCESS : NOTIFY_FAILURE;
 	}
 
 	/**
@@ -2633,48 +2479,58 @@ public class DbAdapter {
 	 * 
 	 * @param house_id
 	 *            the house_id of the call around to update
-	 * @param resolved
+	 * @param resolveCallaround
 	 *            whether the call around is to be resolved or not
 	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
 	 *         NOTIFY_ALREADY, NOTIFY_INACTIVE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
-	public int setCallaroundResolved(final long house_id, final boolean resolved)
-			throws SQLException {
+	public int setCallaroundResolved(final long house_id,
+			final boolean resolveCallaround) throws SQLException {
 		final boolean outstanding = getCallaroundOutstanding(house_id);
 		final boolean active = getCallaroundActive(house_id);
+
+		int retVal;
+
 		// if we're not expecting a call around from the house, say so
-		if (!active) {
-			return NOTIFY_INACTIVE;
-		}
-		// if it's not a timely callaround
-		if (!getCallaroundTimely(house_id)) {
-			return NOTIFY_UNTIMELY;
-		}
-		// if this is already in effect
-		if (outstanding == !resolved) {
-			return NOTIFY_ALREADY;
-		}
+		if (active) {
+			// if it's not a timely call around
+			if (getCallaroundTimely(house_id)) {
+				// if this is already in effect
+				if (resolveCallaround && !outstanding) {
+					final String sOutstanding = resolveCallaround ? "0" : "1";
+					final String now = Time.iso8601DateTime();
+					final String delayedDueTime = Time
+							.iso8601DateTime(Time
+									.nextDateFromPreferenceString(
+											mContext,
+											HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
+											"23:59"));
 
-		final String sOutstanding = resolved ? "0" : "1";
-		final String now = Time.iso8601DateTime();
-		final String delayedDueTime = Time.iso8601DateTime(Time
-				.nextDateFromPreferenceString(mContext,
-						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-						"23:59"));
+					mDb.execSQL("update callarounds set outstanding='"
+							+ sOutstanding + "',timereceived='" + now
+							+ "' where datetime('" + now
+							+ "') >= datetime(duefrom) and datetime('" + now
+							+ "') <= datetime('" + delayedDueTime
+							+ "') and house_id='" + house_id + "';");
 
-		mDb.execSQL("update callarounds set outstanding='" + sOutstanding
-				+ "',timereceived='" + now + "' where datetime('" + now
-				+ "') >= datetime(duefrom) and datetime('" + now
-				+ "') <= datetime('" + delayedDueTime + "') and house_id='"
-				+ house_id + "';");
-
-		if (changes() > 0) {
-			return NOTIFY_SUCCESS;
+					if (changes() > 0) {
+						retVal = NOTIFY_SUCCESS;
+					} else {
+						retVal = NOTIFY_FAILURE;
+					}
+				} else {
+					retVal = NOTIFY_ALREADY;
+				}
+			} else {
+				retVal = NOTIFY_UNTIMELY;
+			}
 		} else {
-			return NOTIFY_FAILURE;
+			retVal = NOTIFY_INACTIVE;
 		}
+
+		return retVal;
 	}
 
 	/**
@@ -2694,12 +2550,10 @@ public class DbAdapter {
 		final ContentValues args = new ContentValues();
 		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
 		args.put(KEY_TIMERECEIVED, resolved ? Time.iso8601DateTime() : "");
-		if (mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_ROWID + "=?",
-				new String[] { String.valueOf(callaround_id) }) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
+
+		return mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_ROWID + "=?",
+				new String[] { String.valueOf(callaround_id) }) > 0 ? NOTIFY_SUCCESS
+				: NOTIFY_FAILURE;
 	}
 
 	/**
@@ -2718,12 +2572,9 @@ public class DbAdapter {
 			throws SQLException {
 		final ContentValues args = new ContentValues();
 		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
-		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "=?",
-				new String[] { String.valueOf(contact_id) }) > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
-		}
+		return mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "=?",
+				new String[] { String.valueOf(contact_id) }) > 0 ? NOTIFY_SUCCESS
+				: NOTIFY_FAILURE;
 	}
 
 	/**
@@ -2739,14 +2590,16 @@ public class DbAdapter {
 	 */
 	public int setCheckinResolvedFromId(final long checkin_id,
 			final boolean resolved) throws SQLException {
+		int retVal;
 		final ContentValues args = new ContentValues();
 		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
 		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }) > 0) {
-			return NOTIFY_SUCCESS;
+			retVal = NOTIFY_SUCCESS;
 		} else {
-			return NOTIFY_FAILURE;
+			retVal = NOTIFY_FAILURE;
 		}
+		return retVal;
 	}
 
 	/**
@@ -2811,28 +2664,29 @@ public class DbAdapter {
 		long result = cur.getLong(0);
 		cur.close();
 
+		int retVal;
 		if (((result & permissionId) > 0) && pref) {
-			return NOTIFY_ALREADY;
-		}
-		if (((result & permissionId) == 0) && !pref) {
-			return NOTIFY_ALREADY;
-		}
-
-		if (pref) {
-			result = result | permissionId;
+			retVal = NOTIFY_ALREADY;
 		} else {
-			result = result & (~permissionId);
-		}
+			if (((result & permissionId) == 0) && !pref) {
+				retVal = NOTIFY_ALREADY;
+			} else {
 
-		final ContentValues args = new ContentValues();
-		args.put(KEY_PERMISSIONS, result);
-		final int nrow = mDb.update(DATABASE_TABLE_CONTACTS, args, KEY_ROWID
-				+ "= ?", new String[] { String.valueOf(contact_id) });
-		if (nrow > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
+				if (pref) {
+					result = result | permissionId;
+				} else {
+					result = result & (~permissionId);
+				}
+
+				final ContentValues args = new ContentValues();
+				args.put(KEY_PERMISSIONS, result);
+				final int nrow = mDb.update(DATABASE_TABLE_CONTACTS, args,
+						KEY_ROWID + "= ?",
+						new String[] { String.valueOf(contact_id) });
+				retVal = nrow > 0 ? NOTIFY_SUCCESS : NOTIFY_FAILURE;
+			}
 		}
+		return retVal;
 	}
 
 	/**
@@ -2875,28 +2729,30 @@ public class DbAdapter {
 		long result = cur.getLong(0);
 		cur.close();
 
+		int retVal;
 		if (((result & preferenceId) > 0) && pref) {
-			return NOTIFY_ALREADY;
-		}
-		if (((result & preferenceId) == 0) && !pref) {
-			return NOTIFY_ALREADY;
-		}
-
-		if (pref) {
-			result = result | preferenceId;
+			retVal = NOTIFY_ALREADY;
 		} else {
-			result = result & (~preferenceId);
-		}
+			if (((result & preferenceId) == 0) && !pref) {
+				retVal = NOTIFY_ALREADY;
+			} else {
 
-		final ContentValues args = new ContentValues();
-		args.put(KEY_PREFERENCES, result);
-		final int nrow = mDb.update(DATABASE_TABLE_CONTACTS, args, KEY_ROWID
-				+ "= ?", new String[] { String.valueOf(contact_id) });
-		if (nrow > 0) {
-			return NOTIFY_SUCCESS;
-		} else {
-			return NOTIFY_FAILURE;
+				if (pref) {
+					result = result | preferenceId;
+				} else {
+					result = result & (~preferenceId);
+				}
+
+				final ContentValues args = new ContentValues();
+				args.put(KEY_PREFERENCES, result);
+				final int nrow = mDb.update(DATABASE_TABLE_CONTACTS, args,
+						KEY_ROWID + "= ?",
+						new String[] { String.valueOf(contact_id) });
+
+				retVal = nrow > 0 ? NOTIFY_SUCCESS : NOTIFY_FAILURE;
+			}
 		}
+		return retVal;
 	}
 
 	/**
@@ -2947,24 +2803,27 @@ public class DbAdapter {
 		final int window = Integer.parseInt(settings.getString(
 				HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"));
 
+		int retVal;
+
 		final String checkinTime = getGuardCheckinTime(guard_id);
-		if (checkinTime == null) {
-			return NOTIFY_FAILURE;
-		}
-
-		final ContentValues args = new ContentValues();
-		args.put(KEY_RESPONSE, 1);
-
-		if (mDb.update(
-				DATABASE_TABLE_GUARD_CHECKINS,
-				args,
-				"guard_id=? and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
-						+ window + " minutes')",
-				new String[] { String.valueOf(guard_id) }) > 0) {
-			return NOTIFY_SUCCESS;
+		if (checkinTime.isEmpty()) {
+			retVal = NOTIFY_FAILURE;
 		} else {
-			return NOTIFY_FAILURE;
+			final ContentValues args = new ContentValues();
+			args.put(KEY_RESPONSE, 1);
+
+			if (mDb.update(
+					DATABASE_TABLE_GUARD_CHECKINS,
+					args,
+					"guard_id=? and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
+							+ window + " minutes')",
+					new String[] { String.valueOf(guard_id) }) > 0) {
+				retVal = NOTIFY_SUCCESS;
+			} else {
+				retVal = NOTIFY_FAILURE;
+			}
 		}
+		return retVal;
 	}
 
 	/**
@@ -3021,18 +2880,17 @@ public class DbAdapter {
 		mDb.delete(DATABASE_TABLE_HOUSEMEMBERS, KEY_CONTACTID + "="
 				+ contact_id, null);
 
-		if (house_id != -1) {
+		int retVal;
+		if (house_id == -1) {
+			retVal = NOTIFY_NOHOUSE;
+		} else {
 			final ContentValues initialValues = new ContentValues();
 			initialValues.put(KEY_CONTACTID, contact_id);
 			initialValues.put(KEY_HOUSEID, house_id);
-			if (mDb.insert(DATABASE_TABLE_HOUSEMEMBERS, null, initialValues) > 1) {
-				return NOTIFY_HASHOUSE;
-			} else {
-				return NOTIFY_FAILURE;
-			}
-		} else {
-			return NOTIFY_NOHOUSE;
+			retVal = mDb.insert(DATABASE_TABLE_HOUSEMEMBERS, null,
+					initialValues) > 1 ? NOTIFY_HASHOUSE : NOTIFY_FAILURE;
 		}
+		return retVal;
 	}
 
 	/**
@@ -3067,28 +2925,6 @@ public class DbAdapter {
 	public boolean setLocationAllowed(final long rowId, final boolean allowed)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_ALLOWED, allowed ? 1 : 0);
-		return mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "="
-				+ rowId, null) > 0;
-	}
-
-	/**
-	 * Sets all values associated with a location.
-	 * 
-	 * @param rowId
-	 *            the row id (_id)
-	 * @param label
-	 *            the new label of the location
-	 * @param allowed
-	 *            whether the location is permitted for travel
-	 * @return true, if successful
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public boolean setLocationDetails(final long rowId, final String label,
-			final boolean allowed) throws SQLException {
-		final ContentValues args = new ContentValues();
-		args.put(KEY_LABEL, label);
 		args.put(KEY_ALLOWED, allowed ? 1 : 0);
 		return mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "="
 				+ rowId, null) > 0;
@@ -3208,7 +3044,7 @@ public class DbAdapter {
 			resolveExistingCheckins(getContactIdForCheckin(checkin_id));
 		}
 
-		long newValue = resolved ? 1 : 0;
+		final long newValue = resolved ? 1 : 0;
 		mDb.execSQL("update trips set tripresolved='"
 				+ newValue
 				+ "' where _id in (select trip_id from tripmembers where checkin_id="
@@ -3230,14 +3066,16 @@ public class DbAdapter {
 			throws SQLException {
 		resolveExistingCheckins(getContactIdForCheckin(contact_id));
 
+		int retVal;
 		final ContentValues args = new ContentValues();
 		args.put(KEY_TRIPRESOLVED, 1);
 		if (mDb.update(DATABASE_TABLE_TRIPS, args, KEY_CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) }) > 0) {
-			return NOTIFY_SUCCESS;
+			retVal = NOTIFY_SUCCESS;
 		} else {
-			return NOTIFY_FAILURE;
+			retVal = NOTIFY_FAILURE;
 		}
+		return retVal;
 	}
 
 	/**
@@ -3261,20 +3099,4 @@ public class DbAdapter {
 				new String[] { String.valueOf(house_id) });
 	}
 
-	/**
-	 * Toggles the specified contact's specified preference.
-	 * 
-	 * @param contact_id
-	 *            the contact_id
-	 * @param permissionId
-	 *            the id of the preference
-	 * @return the value of setContactPermission()
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public int toggleContactPermission(final long contact_id,
-			final long permissionId) throws SQLException {
-		return setContactPermission(contact_id, permissionId,
-				!getContactPermission(contact_id, permissionId));
-	}
 }
