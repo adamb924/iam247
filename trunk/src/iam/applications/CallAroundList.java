@@ -149,18 +149,20 @@ public class CallAroundList extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean retVal = true;
 		switch (item.getItemId()) {
 		case R.id.add_callarounds:
 			mDbHelper.addCallarounds();
 			fillData();
-			return true;
+			break;
 		case R.id.add_travel_callaround:
 			final Intent intent = new Intent(this, AddTravelCallaround.class);
 			startActivity(intent);
-			return true;
+			break;
 		default:
-			return super.onOptionsItemSelected(item);
+			retVal = super.onOptionsItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**

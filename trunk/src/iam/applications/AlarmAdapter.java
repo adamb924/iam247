@@ -89,7 +89,7 @@ final public class AlarmAdapter {
 	 * @param context
 	 *            the context
 	 */
-	public static void addGuardCheckins(Context context) {
+	public static void addGuardCheckins(final Context context) {
 
 		// clear out old ones
 		removeAlarmsByType(context, AlarmAdapter.ALERT_GUARD_CHECKIN);
@@ -193,7 +193,7 @@ final public class AlarmAdapter {
 	 * @param context
 	 *            the context
 	 */
-	public static void resetAlarms(Context context) {
+	public static void resetAlarms(final Context context) {
 		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 
@@ -202,14 +202,14 @@ final public class AlarmAdapter {
 
 		// ALERT_CHECKIN_DUE
 		// ALERT_CHECKIN_REMINDER
-		Cursor cur = dbHelper.fetchUnresolvedCheckins();
+		final Cursor cur = dbHelper.fetchUnresolvedCheckins();
 		if (cur.moveToFirst()) {
 			do {
-				Date timeDue = Time.iso8601DateTime(cur.getString(cur
+				final Date timeDue = Time.iso8601DateTime(cur.getString(cur
 						.getColumnIndex(DbAdapter.KEY_TIMEDUE)));
-				long checkinId = cur.getLong(cur
+				final long checkinId = cur.getLong(cur
 						.getColumnIndex(DbAdapter.KEY_ROWID));
-				long contactId = cur.getLong(cur
+				final long contactId = cur.getLong(cur
 						.getColumnIndex(DbAdapter.KEY_CONTACTID));
 				AlarmAdapter.setCheckinAlert(context, timeDue);
 
@@ -252,7 +252,7 @@ final public class AlarmAdapter {
 	 *            the application context
 	 */
 	static public void setAddCallaroundAlarm(final Context context) {
-		Date timeToAddAt = Time.nextDateFromPreferenceString(context,
+		final Date timeToAddAt = Time.nextDateFromPreferenceString(context,
 				HomeActivity.PREFERENCES_CALLAROUND_ADD, "06:00");
 		setDailyAlarm(context, AlarmAdapter.ALERT_ADD_CALLAROUNDS, timeToAddAt);
 	}
@@ -264,7 +264,7 @@ final public class AlarmAdapter {
 	 * @param context
 	 */
 	static public void setAddGuardCheckinAlarms(final Context context) {
-		Date timeToAddAt = Time.nextDateFromPreferenceString(context,
+		final Date timeToAddAt = Time.nextDateFromPreferenceString(context,
 				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "21:00");
 		setDailyAlarm(context, AlarmAdapter.ALERT_ADD_GUARD_CHECKINS,
 				timeToAddAt);
@@ -281,7 +281,7 @@ final public class AlarmAdapter {
 	static public void setCheckinAlert(final Context context, final Date date) {
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
-		long time = cal.getTimeInMillis();
+		final long time = cal.getTimeInMillis();
 
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmAdapter.ALERT_CHECKIN_DUE);
@@ -416,7 +416,7 @@ final public class AlarmAdapter {
 	 * @param time
 	 * @param intent
 	 */
-	private static void setOneOffAlarm(final Context context, long time,
+	private static void setOneOffAlarm(final Context context, final long time,
 			final Intent intent) {
 		final int _id = (int) System.currentTimeMillis();
 		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);

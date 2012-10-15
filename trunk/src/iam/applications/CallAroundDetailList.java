@@ -268,32 +268,36 @@ public class CallAroundDetailList extends ListActivity implements
 		final long house_id = mDbHelper.getHouseIdFromCallaround(callaround_id);
 		boolean newValue = false;
 
+		boolean retVal = true;
+
 		switch (item.getItemId()) {
 		case R.id.call_number:
 			callNumber(house_id);
-			return true;
+			break;
 		case R.id.call_guard:
 			callGuard(house_id);
-			return true;
+			break;
 		case R.id.delete_callaround:
 			mDbHelper.deleteCallaround(callaround_id);
 			fillData();
-			return true;
+			break;
 		case R.id.callaround_resolved:
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundResolvedFromId(callaround_id, newValue);
 			fillData();
-			return true;
+			break;
 		case R.id.callaround_enabled:
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setCallaroundActive(house_id, newValue);
 			fillData();
-			return true;
+			break;
 		default:
-			return super.onContextItemSelected(item);
+			retVal = super.onContextItemSelected(item);
+			break;
 		}
+		return retVal;
 	}
 
 	/*
@@ -302,9 +306,9 @@ public class CallAroundDetailList extends ListActivity implements
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(final Menu menu) {
 		final MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.callaround_detail_menu, menu);
+		inflater.inflate(R.menu.callaround_detail_options, menu);
 		return true;
 	}
 
@@ -314,15 +318,17 @@ public class CallAroundDetailList extends ListActivity implements
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
+		boolean retVal = true;
+
 		if (item.getItemId() == R.id.previous_days) {
 			final Intent intent = new Intent(CallAroundDetailList.this,
 					CallAroundList.class);
 			startActivity(intent);
-			return true;
 		} else {
-			return super.onOptionsItemSelected(item);
+			retVal = super.onOptionsItemSelected(item);
 		}
+		return retVal;
 	}
 
 	/**
