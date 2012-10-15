@@ -1883,8 +1883,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the number of the guard, or null if there is no number for the
-	 * supplied guardId.
+	 * Returns the number of the guard, or an empty string if there is no number
+	 * for the supplied guardId.
 	 * 
 	 * @param guard_id
 	 *            the guard id
