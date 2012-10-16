@@ -2490,6 +2490,9 @@ public class DbAdapter {
 		final boolean outstanding = getCallaroundOutstanding(house_id);
 		final boolean active = getCallaroundActive(house_id);
 
+		Log.i("Debug", "Outstanding: " + outstanding);
+		Log.i("Debug", "active: " + active);
+
 		int retVal;
 
 		// if we're not expecting a call around from the house, say so
@@ -2497,7 +2500,7 @@ public class DbAdapter {
 			// if it's not a timely call around
 			if (getCallaroundTimely(house_id)) {
 				// if this is already in effect
-				if (resolveCallaround && !outstanding) {
+				if (!resolveCallaround || outstanding) {
 					final String sOutstanding = resolveCallaround ? "0" : "1";
 					final String now = Time.iso8601DateTime();
 					final String delayedDueTime = Time
