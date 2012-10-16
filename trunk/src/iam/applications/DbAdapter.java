@@ -2777,16 +2777,21 @@ public class DbAdapter {
 	public void setGuardForDay(final long house_id, final long guard_id,
 			final int day) throws SQLException {
 		final String which = DbAdapter.getGuardScheduleColumnName(day, false);
-		final String typical = DbAdapter.getGuardScheduleColumnName(day, true);
+
+		final long typicalGuard = getTypicalGuard(house_id, day);
 
 		final ContentValues args = new ContentValues();
-		args.put(which, guard_id);
-		mDb.update(
-				DATABASE_TABLE_HOUSES,
-				args,
-				KEY_ROWID + "=? and " + typical + "!=?",
-				new String[] { String.valueOf(house_id),
-						String.valueOf(guard_id) });
+		if (typicalGuard == guard_id) {
+			// in this case we just want to put -1 into the schedule for that
+			// day, so that it later looks up the typical value
+			args.put(which, -1);
+		} else {
+			// in this case we want to put the number into the specific day
+			// column
+			args.put(which, guard_id);
+		}
+		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "=?",
+				new String[] { String.valueOf(house_id) });
 	}
 
 	/**
