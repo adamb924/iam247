@@ -1478,8 +1478,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns true if a current call around is outstanding and is eligible to
-	 * be resolved at the current moment, otherwise false.
+	 * Returns true if a current call around would be eligible to be resolved at
+	 * the current moment (whether it is active or not), otherwise false.
 	 * 
 	 * @param house_id
 	 *            the house_id of the call around
@@ -1493,20 +1493,13 @@ public class DbAdapter {
 				.nextDateFromPreferenceString(mContext,
 						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
 						"23:59"));
-
 		final Cursor cur = mDb.rawQuery(
-				"select count(_id) as count from callarounds where house_id='"
-						+ house_id + "' and outstanding='1' and datetime('"
-						+ now + "') >= datetime(duefrom) and datetime('" + now
-						+ "') <= datetime('" + delayedDueTime + "');", null);
-
-		boolean retVal;
-		if (cur.moveToFirst()) {
-			retVal = cur.getLong(0) > 0 ? true : false;
-		} else {
-			retVal = false;
-		}
-		return retVal;
+				"select _id from callarounds where house_id='" + house_id
+						+ "' and datetime('" + now
+						+ "') >= datetime(duefrom) and datetime('" + now
+						+ "') <= datetime('" + delayedDueTime
+						+ "') and date(dueby)=date('" + now + "');", null);
+		return cur.moveToFirst();
 	}
 
 	/**
@@ -2489,16 +2482,14 @@ public class DbAdapter {
 			final boolean resolveCallaround) throws SQLException {
 		final boolean outstanding = getCallaroundOutstanding(house_id);
 		final boolean active = getCallaroundActive(house_id);
-
-		Log.i("Debug", "Outstanding: " + outstanding);
-		Log.i("Debug", "active: " + active);
+		final boolean timely = getCallaroundTimely(house_id);
 
 		int retVal;
 
 		// if we're not expecting a call around from the house, say so
 		if (active) {
 			// if it's not a timely call around
-			if (getCallaroundTimely(house_id)) {
+			if (timely) {
 				// if this is already in effect
 				if (!resolveCallaround || outstanding) {
 					final String sOutstanding = resolveCallaround ? "0" : "1";
