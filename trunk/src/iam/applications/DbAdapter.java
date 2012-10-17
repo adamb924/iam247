@@ -2378,14 +2378,16 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Resets the guards' schedules for the day to whatever is set in the
+	 * Resets the guards' schedules for yesterday to whatever is set in the
 	 * typical fields.
 	 */
 	public void resetGuardSchedule() {
-		final String todaysDayOfWeek = Time.dayOfWeek(new Date()).toLowerCase(
-				Locale.US);
-		mDb.execSQL("update houses set " + todaysDayOfWeek + "_guard=typical_"
-				+ todaysDayOfWeek + "_guard;");
+		final String theDay = Time.dayOfWeek(
+				Time.previousDateFromPreferenceString(mContext,
+						HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00"))
+				.toLowerCase(Locale.US);
+		mDb.execSQL("update houses set " + theDay + "_guard=typical_" + theDay
+				+ "_guard;");
 	}
 
 	/**
@@ -2757,11 +2759,6 @@ public class DbAdapter {
 	 *            the id of the guard to assign
 	 * @param day
 	 *            the 0-indexed day of the week
-	 * @param typical
-	 *            if the function is to set the typical guard schedule (instead
-	 *            of this week's schedule)
-	 * @param which
-	 *            one of SUNDAY_GUARD, SUNDAY_GUARD_DEFAULT, etc. from DbAdapter
 	 * @throws SQLException
 	 *             the SQL exception
 	 */
