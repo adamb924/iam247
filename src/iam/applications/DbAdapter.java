@@ -2508,6 +2508,7 @@ public class DbAdapter {
 							+ "' where datetime('" + now
 							+ "') >= datetime(duefrom) and datetime('" + now
 							+ "') <= datetime('" + delayedDueTime
+							+ "') and date(dueby)=date('" + now
 							+ "') and house_id='" + house_id + "';");
 
 					if (changes() > 0) {
