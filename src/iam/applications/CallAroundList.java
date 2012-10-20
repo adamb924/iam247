@@ -123,10 +123,10 @@ public class CallAroundList extends ListActivity {
 
 		mReportCur.moveToPosition(position);
 		final String day = mReportCur.getString(mReportCur
-				.getColumnIndex(DbAdapter.KEY_DUEBY));
+				.getColumnIndex(DbAdapter.Columns.DUEBY));
 
 		final Intent intent = new Intent(this, CallAroundDetailList.class);
-		intent.putExtra(DbAdapter.KEY_DUEBY, day);
+		intent.putExtra(DbAdapter.Columns.DUEBY, day);
 		startActivity(intent);
 	}
 
@@ -220,11 +220,11 @@ public class CallAroundList extends ListActivity {
 		public void bindView(final View view, final Context context,
 				final Cursor cur) {
 			final String day = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_DUEBY));
+					.getColumnIndex(DbAdapter.Columns.DUEBY));
 			final long resolved = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_RESOLVED));
+					.getColumnIndex(DbAdapter.Columns.RESOLVED));
 			final long outstanding = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_OUTSTANDING));
+					.getColumnIndex(DbAdapter.Columns.OUTSTANDING));
 
 			String caSummary;
 			if (outstanding + resolved == 0) {

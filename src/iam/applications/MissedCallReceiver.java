@@ -115,7 +115,7 @@ public class MissedCallReceiver extends PhoneStateListener {
 			final long guard_id) {
 
 		final int ret = dbHelper.setGuardCheckinResolved(mContext, guard_id);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			SmsHandler
 					.sendSms(mContext, mNumber, mContext
 							.getString(R.string.sms_guard_checkin_confirmation));

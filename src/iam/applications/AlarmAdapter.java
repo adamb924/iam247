@@ -206,15 +206,15 @@ final public class AlarmAdapter {
 		if (cur.moveToFirst()) {
 			do {
 				final Date timeDue = Time.iso8601DateTime(cur.getString(cur
-						.getColumnIndex(DbAdapter.KEY_TIMEDUE)));
+						.getColumnIndex(DbAdapter.Columns.TIMEDUE)));
 				final long checkinId = cur.getLong(cur
-						.getColumnIndex(DbAdapter.KEY_ROWID));
+						.getColumnIndex(DbAdapter.Columns.ROWID));
 				final long contactId = cur.getLong(cur
-						.getColumnIndex(DbAdapter.KEY_CONTACTID));
+						.getColumnIndex(DbAdapter.Columns.CONTACTID));
 				AlarmAdapter.setCheckinAlert(context, timeDue);
 
 				if (dbHelper.getContactPreference(contactId,
-						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
+						DbAdapter.UserPreferences.CHECKIN_REMINDER)) {
 					AlarmAdapter.setCheckinReminderAlert(context, checkinId);
 				}
 			} while (cur.moveToNext());
@@ -342,7 +342,7 @@ final public class AlarmAdapter {
 		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(type);
-		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
+		intent.putExtra(DbAdapter.Columns.REQUESTID, _id);
 
 		removeAlarmsByType(context, type);
 
@@ -371,7 +371,7 @@ final public class AlarmAdapter {
 			final long house_id, final Date checkinTime) {
 		final Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.setAction(AlarmAdapter.ALERT_GUARD_CHECKIN);
-		intent.putExtra(DbAdapter.KEY_HOUSEID, house_id);
+		intent.putExtra(DbAdapter.Columns.HOUSEID, house_id);
 
 		setOneOffAlarm(context, checkinTime.getTime(), intent);
 	}
@@ -409,8 +409,8 @@ final public class AlarmAdapter {
 	/**
 	 * Creates a one-off (cancelable) alarm with AlarmManager, at the given time
 	 * and for the given type, and with the given Intent. The extra
-	 * DbAdapter.KEY_REQUESTID is added to the Intent to indicate the requestId
-	 * of the alarm.
+	 * DbAdapter.Columns.REQUESTID is added to the Intent to indicate the
+	 * requestId of the alarm.
 	 * 
 	 * @param context
 	 * @param time
@@ -419,7 +419,7 @@ final public class AlarmAdapter {
 	private static void setOneOffAlarm(final Context context, final long time,
 			final Intent intent) {
 		final int _id = (int) System.currentTimeMillis();
-		intent.putExtra(DbAdapter.KEY_REQUESTID, _id);
+		intent.putExtra(DbAdapter.Columns.REQUESTID, _id);
 
 		final PendingIntent sender = PendingIntent.getBroadcast(context, _id,
 				intent, 0);

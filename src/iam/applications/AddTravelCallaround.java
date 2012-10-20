@@ -50,7 +50,7 @@ public class AddTravelCallaround extends Activity {
 		// populate the spinner with the names of the houses/groups
 		mWhichHouse = (Spinner) findViewById(R.id.which_house);
 		final Cursor cur = mDbHelper.fetchAllHouses();
-		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
 		final int[] toFields = new int[] { android.R.id.text1 };
 		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_spinner_item, cur, fromFields, toFields);

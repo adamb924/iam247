@@ -101,8 +101,8 @@ public class TeamMemberList extends Activity {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		final String[] fromFields = new String[] { DbAdapter.KEY_NAME,
-				DbAdapter.KEY_LABEL };
+		final String[] fromFields = new String[] { DbAdapter.Columns.NAME,
+				DbAdapter.Columns.LABEL };
 		final int[] toFields = new int[] { R.id.name, R.id.house };
 
 		final Cursor checkedoutCur = mDbHelper.fetchCheckedOutPeople();
@@ -167,12 +167,12 @@ public class TeamMemberList extends Activity {
 				.findItem(R.id.allow_request_reports);
 		reportsEnabled.setCheckable(true);
 		reportsEnabled.setChecked(mDbHelper.getContactPermission(contact_id,
-				DbAdapter.USER_PERMISSION_REPORT));
+				DbAdapter.UserPermissions.REPORT));
 
 		final MenuItem remindersEnabled = menu.findItem(R.id.checkin_reminders);
 		remindersEnabled.setCheckable(true);
 		remindersEnabled.setChecked(mDbHelper.getContactPreference(contact_id,
-				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER));
+				DbAdapter.UserPreferences.CHECKIN_REMINDER));
 
 	}
 
@@ -233,7 +233,7 @@ public class TeamMemberList extends Activity {
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPermission(mContactId,
-					DbAdapter.USER_PERMISSION_REPORT, newValue);
+					DbAdapter.UserPermissions.REPORT, newValue);
 			retVal = true;
 			break;
 		case R.id.callaround_enabled:
@@ -252,7 +252,7 @@ public class TeamMemberList extends Activity {
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
 			mDbHelper.setContactPreference(mContactId,
-					DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, newValue);
+					DbAdapter.UserPreferences.CHECKIN_REMINDER, newValue);
 			retVal = true;
 			break;
 		default:
@@ -445,7 +445,7 @@ public class TeamMemberList extends Activity {
 
 		final Spinner spinnerinput = new Spinner(TeamMemberList.this);
 		final Cursor cur = mDbHelper.fetchAllHouses();
-		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
 		final int[] toFields = new int[] { android.R.id.text1 };
 		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_spinner_item, cur, fromFields, toFields);

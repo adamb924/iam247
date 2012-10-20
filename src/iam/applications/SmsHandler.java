@@ -280,9 +280,9 @@ public class SmsHandler {
 				final int ret = mDbHelper.addCheckin(mContactId, place,
 						keyword, time, withWhom);
 
-				if (ret == DbAdapter.NOTIFY_FAILURE) {
+				if (ret == DbAdapter.Notifications.FAILURE) {
 					throw new OurErrorException();
-				} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
+				} else if (ret == DbAdapter.Notifications.EXISTING_CHECKIN_RESOLVED) {
 					final String message = String.format(mContext
 							.getString(R.string.sms_confirm_checkin_request),
 							place, Time.timeTodayTomorrow(mContext, time))
@@ -297,9 +297,11 @@ public class SmsHandler {
 					sendSms(message);
 				}
 
-				if (ret != DbAdapter.NOTIFY_FAILURE
-						&& mDbHelper.getContactPreference(mContactId,
-								DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
+				if (ret != DbAdapter.Notifications.FAILURE
+						&& mDbHelper
+								.getContactPreference(
+										mContactId,
+										DbAdapter.UserPreferences.CHECKIN_REMINDER)) {
 					AlarmAdapter.setCheckinReminderAlert(mContext,
 							mDbHelper.lastInsertId());
 				}
@@ -318,11 +320,11 @@ public class SmsHandler {
 	 */
 	private void arrived() throws OurErrorException {
 		final int ret = mDbHelper.setCheckinResolved(mContactId, true);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_acknowledge_arrived_checkin);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+		} else if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+		} else if (ret == DbAdapter.Notifications.ALREADY) {
 			sendSms(R.string.sms_alreadyin);
 		}
 	}
@@ -334,11 +336,11 @@ public class SmsHandler {
 	 */
 	private void back() throws OurErrorException {
 		final int ret = mDbHelper.setTripResolvedFromContact(mContactId);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_acknowledge_trip_resolved_checkin);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+		} else if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+		} else if (ret == DbAdapter.Notifications.ALREADY) {
 			sendSms(R.string.sms_alreadyin);
 		}
 	}
@@ -355,7 +357,7 @@ public class SmsHandler {
 		}
 
 		final int ret = mDbHelper.setCallaroundDelayed(mHouseId, true);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			final String time = Time.iso8601Time(Time
 					.timeFromSimpleTime(mSettings.getString(
 							HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
@@ -364,7 +366,7 @@ public class SmsHandler {
 					.getString(R.string.sms_callaround_delay_confirmation),
 					time);
 			sendSms(message);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+		} else if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
 		}
 	}
@@ -381,11 +383,11 @@ public class SmsHandler {
 				sendSms(R.string.sms_callaround_nohouse);
 			} else {
 				final int ret = mDbHelper.setCallaroundActive(mHouseId, false);
-				if (ret == DbAdapter.NOTIFY_SUCCESS) {
+				if (ret == DbAdapter.Notifications.SUCCESS) {
 					sendSms(R.string.sms_callaround_disabled);
-				} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+				} else if (ret == DbAdapter.Notifications.FAILURE) {
 					throw new OurErrorException();
-				} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+				} else if (ret == DbAdapter.Notifications.ALREADY) {
 					sendSms(R.string.sms_callaround_disabled_already);
 				}
 			}
@@ -404,11 +406,11 @@ public class SmsHandler {
 				sendSms(R.string.sms_callaround_nohouse);
 			} else {
 				final int ret = mDbHelper.setCallaroundActive(mHouseId, true);
-				if (ret == DbAdapter.NOTIFY_SUCCESS) {
+				if (ret == DbAdapter.Notifications.SUCCESS) {
 					sendSms(R.string.sms_callaround_enabled);
-				} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+				} else if (ret == DbAdapter.Notifications.FAILURE) {
 					throw new OurErrorException();
-				} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+				} else if (ret == DbAdapter.Notifications.ALREADY) {
 					sendSms(R.string.sms_callaround_enabled_already);
 				}
 			}
@@ -466,7 +468,7 @@ public class SmsHandler {
 			return;
 		}
 
-		if (mDbHelper.setHouse(mContactId, houseId) == DbAdapter.NOTIFY_HASHOUSE) {
+		if (mDbHelper.setHouse(mContactId, houseId) == DbAdapter.Notifications.HASHOUSE) {
 			final String message = String.format(
 					mContext.getString(R.string.sms_staying_confirmation),
 					house);
@@ -477,7 +479,7 @@ public class SmsHandler {
 	}
 
 	private void leaveHouse() throws OurErrorException {
-		if (mDbHelper.setHouse(mContactId, -1) == DbAdapter.NOTIFY_FAILURE) {
+		if (mDbHelper.setHouse(mContactId, -1) == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
 		} else {
 			sendSms(R.string.sms_leaving_confirmation);
@@ -585,7 +587,7 @@ public class SmsHandler {
 	 */
 	private void requestReport() {
 		if (mDbHelper.getContactPermission(mContactId,
-				DbAdapter.USER_PERMISSION_REPORT)) {
+				DbAdapter.UserPermissions.REPORT)) {
 			sendSms(mDbHelper.getReport());
 		}
 	}
@@ -602,15 +604,15 @@ public class SmsHandler {
 		}
 
 		final int ret = mDbHelper.setCallaroundResolved(mHouseId, true);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_callaround_acknowledgement);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+		} else if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+		} else if (ret == DbAdapter.Notifications.ALREADY) {
 			sendSms(R.string.sms_callaround_unnecessary);
-		} else if (ret == DbAdapter.NOTIFY_INACTIVE) {
+		} else if (ret == DbAdapter.Notifications.INACTIVE) {
 			sendSms(R.string.sms_callaround_is_disabled);
-		} else if (ret == DbAdapter.NOTIFY_UNTIMELY) {
+		} else if (ret == DbAdapter.Notifications.UNTIMELY) {
 			sendSms(R.string.sms_callaround_not_timely);
 		}
 	}
@@ -636,9 +638,9 @@ public class SmsHandler {
 
 		final int ret = mDbHelper.addCheckin(mContactId, place, "--", time, "");
 
-		if (ret == DbAdapter.NOTIFY_FAILURE) {
+		if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
-		} else if (ret == DbAdapter.NOTIFY_EXISTING_CHECKIN_RESOLVED) {
+		} else if (ret == DbAdapter.Notifications.EXISTING_CHECKIN_RESOLVED) {
 			final String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
 					place, Time.timeTodayTomorrow(mContext, time))
@@ -653,9 +655,11 @@ public class SmsHandler {
 			sendSms(message);
 		}
 
-		if (ret != DbAdapter.NOTIFY_FAILURE
-				&& mDbHelper.getContactPreference(mContactId,
-						DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER)) {
+		if (ret != DbAdapter.Notifications.FAILURE
+				&& mDbHelper
+						.getContactPreference(
+								mContactId,
+								DbAdapter.UserPreferences.CHECKIN_REMINDER)) {
 			AlarmAdapter.setCheckinReminderAlert(mContext,
 					mDbHelper.lastInsertId());
 		}
@@ -724,12 +728,13 @@ public class SmsHandler {
 	 */
 	private void turnOffReminders() throws OurErrorException {
 		final int ret = mDbHelper.setContactPreference(mContactId,
-				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, false);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+				DbAdapter.UserPreferences.CHECKIN_REMINDER,
+				false);
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_off_confirm);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+		} else if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+		} else if (ret == DbAdapter.Notifications.ALREADY) {
 			sendSms(R.string.sms_already);
 		}
 	}
@@ -741,8 +746,9 @@ public class SmsHandler {
 	 */
 	private void turnOnReminders() throws OurErrorException {
 		final int ret = mDbHelper.setContactPreference(mContactId,
-				DbAdapter.USER_PREFERENCE_CHECKIN_REMINDER, true);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+				DbAdapter.UserPreferences.CHECKIN_REMINDER,
+				true);
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_on_confirm);
 
 			// add a check-in reminder for the person, if they have an active
@@ -752,9 +758,9 @@ public class SmsHandler {
 			if (current_checkin != -1) {
 				AlarmAdapter.setCheckinReminderAlert(mContext, current_checkin);
 			}
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+		} else if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
-		} else if (ret == DbAdapter.NOTIFY_ALREADY) {
+		} else if (ret == DbAdapter.Notifications.ALREADY) {
 			sendSms(R.string.sms_already);
 		}
 	}
@@ -771,9 +777,9 @@ public class SmsHandler {
 		}
 
 		final int ret = mDbHelper.setCallaroundResolved(mHouseId, false);
-		if (ret == DbAdapter.NOTIFY_SUCCESS) {
+		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_callaround_undo_acknowledgement);
-		} else if (ret == DbAdapter.NOTIFY_FAILURE) {
+		} else if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
 		}
 	}

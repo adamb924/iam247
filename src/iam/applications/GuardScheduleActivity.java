@@ -60,7 +60,7 @@ public class GuardScheduleActivity extends Activity {
 		final boolean typical = extras == null ? false : extras
 				.getBoolean(SET_TYPICAL);
 		final long houseId = extras == null ? -1 : extras
-				.getLong(DbAdapter.KEY_HOUSEID);
+				.getLong(DbAdapter.Columns.HOUSEID);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
@@ -188,7 +188,7 @@ public class GuardScheduleActivity extends Activity {
 							mSpinners[i].setSelection(item);
 						}
 					}
-				}, DbAdapter.KEY_NAME);
+				}, DbAdapter.Columns.NAME);
 		alert.show();
 	}
 
@@ -237,7 +237,7 @@ public class GuardScheduleActivity extends Activity {
 
 			mCur = mDbHelper.fetchAllGuards();
 
-			final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+			final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
 			final int[] toFields = new int[] { android.R.id.text1 };
 
 			final SimpleCursorAdapter adapter = new SimpleCursorAdapter(

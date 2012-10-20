@@ -218,14 +218,14 @@ public class UnsentMessageList extends ListActivity {
 		public void bindView(final View view, final Context context,
 				final Cursor cur) {
 			final String phoneNumber = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_NUMBER));
+					.getColumnIndex(DbAdapter.Columns.NUMBER));
 			final long contactId = mDbHelper.getContactId(phoneNumber);
 			final String recipient = contactId == -1 ? phoneNumber : mDbHelper
 					.getContactName(contactId);
 			final long sent = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_SENT));
+					.getColumnIndex(DbAdapter.Columns.SENT));
 			final long delivered = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_DELIVERED));
+					.getColumnIndex(DbAdapter.Columns.DELIVERED));
 
 			String type;
 			if (sent == 1 && !(delivered == 1)) {
@@ -235,9 +235,9 @@ public class UnsentMessageList extends ListActivity {
 			}
 
 			final String time = Time.prettyDateTime(cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_TIME)));
+					.getColumnIndex(DbAdapter.Columns.TIME)));
 			final String message = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_MESSAGE));
+					.getColumnIndex(DbAdapter.Columns.MESSAGE));
 
 			((TextView) view.findViewById(R.id.messageRecipient))
 					.setText(recipient);

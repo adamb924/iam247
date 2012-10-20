@@ -80,8 +80,8 @@ public class CallAroundDetailList extends ListActivity implements
 			return;
 		}
 
-		mDay = extras.getString(DbAdapter.KEY_DUEBY);
-		if (extras.containsKey(DbAdapter.KEY_DELAYED)) {
+		mDay = extras.getString(DbAdapter.Columns.DUEBY);
+		if (extras.containsKey(DbAdapter.Columns.DELAYED)) {
 			mIncludeDelayed = true;
 		}
 
@@ -352,7 +352,7 @@ public class CallAroundDetailList extends ListActivity implements
 				CallAroundDetailList.this);
 
 		final Spinner spinnerinput = new Spinner(CallAroundDetailList.this);
-		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
 		final int[] toFields = new int[] { android.R.id.text1 };
 		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_spinner_item, cur, fromFields, toFields);
@@ -437,26 +437,26 @@ public class CallAroundDetailList extends ListActivity implements
 		public void bindView(final View view, final Context context,
 				final Cursor cur) {
 			String houseName;
-			if (cur.getInt(cur.getColumnIndex(DbAdapter.KEY_DELAYED)) > 0) {
+			if (cur.getInt(cur.getColumnIndex(DbAdapter.Columns.DELAYED)) > 0) {
 				houseName = cur.getString(cur
-						.getColumnIndex(DbAdapter.KEY_NAME))
+						.getColumnIndex(DbAdapter.Columns.NAME))
 						+ context.getString(R.string.delayed_suffix);
 			} else {
 				houseName = cur.getString(cur
-						.getColumnIndex(DbAdapter.KEY_NAME));
+						.getColumnIndex(DbAdapter.Columns.NAME));
 			}
 
 			final String timeReceived = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_TIMERECEIVED));
+					.getColumnIndex(DbAdapter.Columns.TIMERECEIVED));
 
 			final long outstanding = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_OUTSTANDING));
+					.getColumnIndex(DbAdapter.Columns.OUTSTANDING));
 
 			final String dueFrom = Time.prettyTime(cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_DUEFROM)));
+					.getColumnIndex(DbAdapter.Columns.DUEFROM)));
 
 			final String dueBy = Time.prettyTime(cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_DUEBY)));
+					.getColumnIndex(DbAdapter.Columns.DUEBY)));
 
 			String dateLabel;
 			if (timeReceived == null || outstanding == 1) {

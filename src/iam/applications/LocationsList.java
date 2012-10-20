@@ -92,8 +92,8 @@ public class LocationsList extends ListActivity {
 		final Cursor locationsCur = mDbHelper.fetchAllLocations();
 		startManagingCursor(locationsCur);
 		/*
-		 * String[] from = new String[] { DbAdapter.KEY_LABEL }; int[] to = new
-		 * int[] { R.id.item };
+		 * String[] from = new String[] { DbAdapter.Columns.LABEL }; int[] to =
+		 * new int[] { R.id.item };
 		 * 
 		 * SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
 		 * R.layout.checked_textview_item, locationsCur, from, to);
@@ -109,7 +109,7 @@ public class LocationsList extends ListActivity {
 					.setItemChecked(
 							i,
 							locationsCur.getLong(locationsCur
-									.getColumnIndex(DbAdapter.KEY_ALLOWED)) == 0 ? false
+									.getColumnIndex(DbAdapter.Columns.ALLOWED)) == 0 ? false
 									: true);
 			locationsCur.moveToNext();
 		}
@@ -409,9 +409,9 @@ public class LocationsList extends ListActivity {
 		public void bindView(final View view, final Context context,
 				final Cursor cur) {
 			final String label = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_LABEL));
+					.getColumnIndex(DbAdapter.Columns.LABEL));
 			final String keyword = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_KEYWORD));
+					.getColumnIndex(DbAdapter.Columns.KEYWORD));
 
 			((TextView) view.findViewById(R.id.item)).setText(String.format(
 					context.getString(R.string.house_label_keyword), label,
