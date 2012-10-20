@@ -1336,7 +1336,8 @@ public class DbAdapter {
 
 	/**
 	 * Return a cursor with a list of phone numbers associated with houses that
-	 * have not done call around for today. Columns: KEY_NUMBER
+	 * have not done call around for today and are not delayed. Columns:
+	 * KEY_NUMBER
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1344,7 +1345,7 @@ public class DbAdapter {
 	public Cursor fetchMissedCallaroundNumbers() throws SQLException {
 		return mDb
 				.rawQuery(
-						"select number from callarounds left join housemembers,contactphones on housemembers.house_id=callarounds.house_id and housemembers.contact_id=contactphones.contact_id where outstanding='1' and date(dueby)='"
+						"select number from callarounds left join housemembers,contactphones on housemembers.house_id=callarounds.house_id and housemembers.contact_id=contactphones.contact_id where outstanding='1' and delayed='0' and date(dueby)='"
 								+ Time.iso8601Date() + "';", null);
 	}
 
@@ -1488,17 +1489,18 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public boolean getCallaroundTimely(final long house_id) throws SQLException {
-		final String now = Time.iso8601DateTime();
 		final String delayedDueTime = Time.iso8601DateTime(Time
 				.nextDateFromPreferenceString(mContext,
 						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
 						"23:59"));
-		final Cursor cur = mDb.rawQuery(
-				"select _id from callarounds where house_id='" + house_id
-						+ "' and datetime('" + now
-						+ "') >= datetime(duefrom) and datetime('" + now
-						+ "') <= datetime('" + delayedDueTime
-						+ "') and date(dueby)=date('" + now + "');", null);
+		final Cursor cur = mDb
+				.rawQuery(
+						"select _id from callarounds where house_id='"
+								+ house_id
+								+ "' and datetime('now','localtime') >= datetime(duefrom) and datetime('now','localtime') <= datetime('"
+								+ delayedDueTime
+								+ "') and date(dueby)=date('now','localtime');",
+						null);
 		return cur.moveToFirst();
 	}
 
@@ -2215,7 +2217,6 @@ public class DbAdapter {
 	public long getNumberOfDueCheckins() throws SQLException {
 		final Cursor cur = mDb
 				.rawQuery(
-						// "select count(_id) as count from checkins where outstanding='1' and strftime('%s',timedue) <= strftime('%s','now');",
 						"select count(_id) as count from checkins where outstanding='1' and datetime(timedue) <= datetime('now','localtime');",
 						null);
 		return cur.moveToFirst() ? cur.getLong(cur.getColumnIndex(KEY_COUNT))
@@ -2277,7 +2278,7 @@ public class DbAdapter {
 
 		cur = mDb
 				.rawQuery(
-						"select name from callarounds left join houses on callarounds.house_id=houses._id where outstanding='1' and date(dueby)=date('now');",
+						"select name from callarounds left join houses on callarounds.house_id=houses._id where outstanding='1' and date(dueby)=date('now','localtime');",
 						null);
 		if (cur.moveToFirst()) {
 			for (int i = 0; i < cur.getCount(); i++) {
@@ -2436,17 +2437,22 @@ public class DbAdapter {
 		if (active) {
 			addCallarounds();
 		} else {
-			final String now = Time.iso8601DateTime();
-			mDb.delete(DATABASE_TABLE_CALLAROUNDS, "datetime('" + now
-					+ "') >= datetime(duefrom) and datetime('" + now
-					+ "') <= datetime(dueby) and " + KEY_HOUSEID + "='"
-					+ house_id + "' and outstanding='1'", null);
+			mDb.delete(
+					DATABASE_TABLE_CALLAROUNDS,
+					"datetime('now','localtime') >= datetime(duefrom) and datetime('now','localtime') <= datetime(dueby) and "
+							+ KEY_HOUSEID
+							+ "='"
+							+ house_id
+							+ "' and outstanding='1'", null);
 		}
 		return retVal;
 	}
 
 	/**
-	 * Sets whether the callaround is delayed or not.
+	 * Sets whether the callaround is delayed or not. If the call around is to
+	 * be delayed, it is also made outstanding. This is so that if someone
+	 * requests a delayed call around, a call around will be expected, even if
+	 * it has already been resolved.
 	 * 
 	 * @param house_id
 	 *            the house id
@@ -2464,7 +2470,8 @@ public class DbAdapter {
 			args.put(KEY_OUTSTANDING, 1);
 		}
 		return mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_HOUSEID + "="
-				+ house_id, null) > 0 ? NOTIFY_SUCCESS : NOTIFY_FAILURE;
+				+ house_id + " and date(dueby)=date('now','localtime')", null) > 0 ? NOTIFY_SUCCESS
+				: NOTIFY_FAILURE;
 	}
 
 	/**
@@ -2495,21 +2502,19 @@ public class DbAdapter {
 				// if this is already in effect
 				if (!resolveCallaround || outstanding) {
 					final String sOutstanding = resolveCallaround ? "0" : "1";
-					final String now = Time.iso8601DateTime();
 					final String delayedDueTime = Time
 							.iso8601DateTime(Time
-									.nextDateFromPreferenceString(
+									.todayAtPreferenceTime(
 											mContext,
 											HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
 											"23:59"));
 
 					mDb.execSQL("update callarounds set outstanding='"
-							+ sOutstanding + "',timereceived='" + now
-							+ "' where datetime('" + now
-							+ "') >= datetime(duefrom) and datetime('" + now
-							+ "') <= datetime('" + delayedDueTime
-							+ "') and date(dueby)=date('" + now
-							+ "') and house_id='" + house_id + "';");
+							+ sOutstanding
+							+ "',timereceived=datetime('now','localtime') where datetime('now','localtime') >= datetime(duefrom) and datetime('now','localtime') <= datetime('"
+							+ delayedDueTime
+							+ "') and date(dueby)=date('now','localtime') and house_id='"
+							+ house_id + "';");
 
 					if (changes() > 0) {
 						retVal = NOTIFY_SUCCESS;
