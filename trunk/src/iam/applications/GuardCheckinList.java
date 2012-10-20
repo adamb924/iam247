@@ -37,7 +37,8 @@ public class GuardCheckinList extends ListActivity {
 		setContentView(R.layout.guard_checkin_list);
 
 		final Bundle extras = getIntent().getExtras();
-		mGuardId = extras == null ? -1 : extras.getLong(DbAdapter.KEY_ROWID);
+		mGuardId = extras == null ? -1 : extras
+				.getLong(DbAdapter.Columns.ROWID);
 
 		if (mGuardId == -1) {
 			return;
@@ -102,8 +103,8 @@ public class GuardCheckinList extends ListActivity {
 		public View newView(final Context context, final Cursor cur,
 				final ViewGroup parent) {
 			final LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			return inflater.inflate(android.R.layout.simple_list_item_1, parent,
-					false);
+			return inflater.inflate(android.R.layout.simple_list_item_1,
+					parent, false);
 		}
 
 		/*
@@ -116,9 +117,9 @@ public class GuardCheckinList extends ListActivity {
 		public void bindView(final View view, final Context context,
 				final Cursor cur) {
 			final String day = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_TIME));
+					.getColumnIndex(DbAdapter.Columns.TIME));
 			final boolean response = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_RESPONSE)) == 1 ? true
+					.getColumnIndex(DbAdapter.Columns.RESPONSE)) == 1 ? true
 					: false;
 
 			final TextView textview = (TextView) view

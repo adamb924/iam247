@@ -83,7 +83,7 @@ public class HouseList extends ListActivity {
 		final Cursor housesCur = mDbHelper.fetchAllHouses();
 		startManagingCursor(housesCur);
 
-		final String[] fromFields = new String[] { DbAdapter.KEY_NAME };
+		final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
 		final int[] toFields = new int[] { R.id.item };
 
 		final SimpleCursorAdapter notes = new SimpleCursorAdapter(this,
@@ -92,11 +92,12 @@ public class HouseList extends ListActivity {
 
 		housesCur.moveToFirst();
 		for (int i = 0; i < housesCur.getCount(); i++) {
-			getListView().setItemChecked(
-					i,
-					housesCur.getLong(housesCur
-							.getColumnIndex(DbAdapter.KEY_ACTIVE)) == 0 ? false
-							: true);
+			getListView()
+					.setItemChecked(
+							i,
+							housesCur.getLong(housesCur
+									.getColumnIndex(DbAdapter.Columns.ACTIVE)) == 0 ? false
+									: true);
 			housesCur.moveToNext();
 		}
 	}
@@ -198,7 +199,7 @@ public class HouseList extends ListActivity {
 		final Intent intent = new Intent(this, GuardScheduleActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.putExtra(GuardScheduleActivity.SET_TYPICAL, true);
-		intent.putExtra(DbAdapter.KEY_HOUSEID, guardId);
+		intent.putExtra(DbAdapter.Columns.HOUSEID, guardId);
 		startActivity(intent);
 	}
 
@@ -209,7 +210,7 @@ public class HouseList extends ListActivity {
 		final Intent intent = new Intent(this, GuardScheduleActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.putExtra(GuardScheduleActivity.SET_TYPICAL, false);
-		intent.putExtra(DbAdapter.KEY_HOUSEID, guardId);
+		intent.putExtra(DbAdapter.Columns.HOUSEID, guardId);
 		startActivity(intent);
 	}
 

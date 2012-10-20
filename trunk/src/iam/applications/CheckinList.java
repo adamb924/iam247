@@ -313,15 +313,15 @@ public class CheckinList extends ListActivity implements OnInitListener {
 				final Cursor cur) {
 
 			final Date returning = Time.iso8601DateTime(cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_TIMEDUE)));
+					.getColumnIndex(DbAdapter.Columns.TIMEDUE)));
 
 			final boolean outstanding = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_OUTSTANDING)) == 1 ? true
+					.getColumnIndex(DbAdapter.Columns.OUTSTANDING)) == 1 ? true
 					: false;
 			final boolean due = returning.before(new Date());
 
 			final boolean tripresolved = cur.getLong(cur
-					.getColumnIndex(DbAdapter.KEY_TRIPRESOLVED)) == 1 ? true
+					.getColumnIndex(DbAdapter.Columns.TRIPRESOLVED)) == 1 ? true
 					: false;
 
 			// Log.i("Debug", "CheckinAdapter");
@@ -330,7 +330,7 @@ public class CheckinList extends ListActivity implements OnInitListener {
 			// Log.i("Debug", "due: " + due);
 
 			final String sWith = cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_WITH));
+					.getColumnIndex(DbAdapter.Columns.WITH));
 
 			// get the UI items
 			final TextView name = (TextView) view
@@ -343,17 +343,20 @@ public class CheckinList extends ListActivity implements OnInitListener {
 					.findViewById(R.id.checkin_time);
 
 			// set the text values, or hide if appropriate
-			name.setText(cur.getString(cur.getColumnIndex(DbAdapter.KEY_NAME)));
+			name.setText(cur.getString(cur
+					.getColumnIndex(DbAdapter.Columns.NAME)));
 			if (!tripresolved && outstanding) {
 				location.setText(String.format(context
 						.getString(R.string.enroute), cur.getString(cur
-						.getColumnIndex(DbAdapter.KEY_LOCATION)), cur
-						.getString(cur.getColumnIndex(DbAdapter.KEY_KEYWORD))));
+						.getColumnIndex(DbAdapter.Columns.LOCATION)), cur
+						.getString(cur
+								.getColumnIndex(DbAdapter.Columns.KEYWORD))));
 			} else {
 				location.setText(String.format(context
 						.getString(R.string.arrivedat), cur.getString(cur
-						.getColumnIndex(DbAdapter.KEY_LOCATION)), cur
-						.getString(cur.getColumnIndex(DbAdapter.KEY_KEYWORD))));
+						.getColumnIndex(DbAdapter.Columns.LOCATION)), cur
+						.getString(cur
+								.getColumnIndex(DbAdapter.Columns.KEYWORD))));
 			}
 
 			time.setText(String.format(context.getString(R.string.returning),

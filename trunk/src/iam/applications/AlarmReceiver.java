@@ -40,7 +40,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 		mDbHelper = new DbAdapter(mContext);
 		mDbHelper.open();
 
-		final int request_id = intent.getIntExtra(DbAdapter.KEY_REQUESTID, -1);
+		final int request_id = intent.getIntExtra(DbAdapter.Columns.REQUESTID,
+				-1);
 		if (request_id != -1 && mDbHelper.deleteAlarm(request_id) > 0) {
 			// checking to see if the alarm is in the database is not the
 			// most elegant solution, but neither is the Android alarm
@@ -66,8 +67,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 			} else if (action.equals(AlarmAdapter.ALERT_ADD_GUARD_CHECKINS)) {
 				AlarmAdapter.addGuardCheckins(mContext);
 			} else if (action.equals(AlarmAdapter.ALERT_GUARD_CHECKIN)) {
-				requestGuardCheckin(intent.getLongExtra(DbAdapter.KEY_HOUSEID,
-						-1));
+				requestGuardCheckin(intent.getLongExtra(
+						DbAdapter.Columns.HOUSEID, -1));
 			} else if (action.equals(AlarmAdapter.ALERT_RESET_GUARD_SCHEDULE)) {
 				mDbHelper.resetGuardSchedule();
 			}
@@ -88,7 +89,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 			final Intent intent = new Intent(mContext,
 					CallAroundDetailList.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			intent.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
+			intent.putExtra(DbAdapter.Columns.DUEBY, Time.iso8601Date());
 			intent.putExtra(AlarmAdapter.ALERT_CALLAROUND_DUE,
 					AlarmAdapter.ALERT_CALLAROUND_DUE);
 			mContext.startActivity(intent);
@@ -125,8 +126,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 			final Intent intent = new Intent(mContext,
 					CallAroundDetailList.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			intent.putExtra(DbAdapter.KEY_DUEBY, Time.iso8601Date());
-			intent.putExtra(DbAdapter.KEY_DELAYED, DbAdapter.KEY_DELAYED);
+			intent.putExtra(DbAdapter.Columns.DUEBY, Time.iso8601Date());
+			intent.putExtra(DbAdapter.Columns.DELAYED,
+					DbAdapter.Columns.DELAYED);
 			intent.putExtra(AlarmAdapter.ALERT_CALLAROUND_DUE,
 					AlarmAdapter.ALERT_CALLAROUND_DUE);
 			mContext.startActivity(intent);
@@ -157,14 +159,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 			final long guard_id = mDbHelper.getCurrentGuardForHouse(house_id);
 
 			if (guard_id == -1) {
-				mDbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String
+				mDbHelper.addLogEvent(DbAdapter.LogTypes.SMS_ERROR, String
 						.format(mContext.getString(R.string.log_null_guard),
 								String.valueOf(house_id),
 								mDbHelper.getHouseName(house_id)));
 			} else {
 				final String number = mDbHelper.getGuardNumber(guard_id);
 				if (number.isEmpty()) {
-					mDbHelper.addLogEvent(DbAdapter.LOG_TYPE_SMS_ERROR, String
+					mDbHelper.addLogEvent(DbAdapter.LogTypes.SMS_ERROR, String
 							.format(mContext
 									.getString(R.string.log_null_number),
 									String.valueOf(guard_id), mDbHelper
@@ -187,7 +189,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if (cur.moveToFirst()) {
 			do {
 				final String number = cur.getString(cur
-						.getColumnIndex(DbAdapter.KEY_NUMBER));
+						.getColumnIndex(DbAdapter.Columns.NUMBER));
 				SmsHandler.sendSms(mContext, number,
 						mContext.getString(R.string.sms_callaround_reminder));
 			} while (cur.moveToNext());

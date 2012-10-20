@@ -72,7 +72,7 @@ public class GuardList extends ListActivity {
 		super.onListItemClick(listView, view, position, itemId);
 
 		final Intent intent = new Intent(this, GuardCheckinList.class);
-		intent.putExtra(DbAdapter.KEY_ROWID, itemId);
+		intent.putExtra(DbAdapter.Columns.ROWID, itemId);
 		startActivity(intent);
 	}
 
@@ -83,8 +83,8 @@ public class GuardList extends ListActivity {
 		final Cursor cur = mDbHelper.fetchAllGuards();
 		startManagingCursor(cur);
 
-		final String[] fromFields = new String[] { DbAdapter.KEY_NAME,
-				DbAdapter.KEY_NUMBER };
+		final String[] fromFields = new String[] { DbAdapter.Columns.NAME,
+				DbAdapter.Columns.NUMBER };
 		final int[] toFields = new int[] { R.id.text1, R.id.text2 };
 
 		final SimpleCursorAdapter notes = new SimpleCursorAdapter(this,

@@ -23,6 +23,71 @@ import android.util.Log;
  * 
  */
 public class DbAdapter {
+
+	/**
+	 * Class containing column names of database tables
+	 */
+	@SuppressWarnings("javadoc")
+	public static class Columns {
+		public static final String ACTIVE = "active";
+		public static final String ALLOWED = "allowed";
+		public static final String CHECKINID = "checkin_id";
+		public static final String CHECKINREQUEST = "checkinrequest";
+		public static final String CONTACTID = "contact_id";
+		public static final String COUNT = "count";
+		public static final String DELAYED = "delayed";
+		public static final String DELIVERED = "delivered";
+		public static final String DUEBY = "dueby";
+		public static final String DUEFROM = "duefrom";
+		public static final String EMAIL = "email";
+		public static final String GUARDID = "guard_id";
+		public static final String HOUSEID = "house_id";
+		public static final String KEYWORD = "keyword";
+		public static final String LABEL = "label";
+		public static final String LAT = "lat";
+		public static final String LOCATION = "location";
+		public static final String LON = "lon";
+		public static final String MESSAGE = "message";
+		public static final String NAME = "name";
+		public static final String NUMBER = "number";
+		public static final String OUTSTANDING = "outstanding";
+		public static final String PERMISSIONS = "permissions";
+		public static final String PREFERENCES = "preferences";
+		public static final String REQUESTID = "request_id";
+		public static final String RESOLVED = "resolved";
+		public static final String RESPONSE = "response";
+		public static final String ROWID = "_id";
+		public static final String SENT = "sent";
+		public static final String SUMMARY = "summary";
+		public static final String TIME = "time";
+		public static final String TIMEDUE = "timedue";
+		public static final String TIMERECEIVED = "timereceived";
+		public static final String TRIPID = "trip_id";
+		public static final String TRIPRESOLVED = "tripresolved";
+		public static final String TYPE = "type";
+		public static final String WITH = "with";
+	}
+
+	private static final class CreateStatements {
+		private static final String ALARMS = "create table alarms ( _id integer primary key autoincrement , request_id int not null , type text )";
+		private static final String BLOCKEDNUMBERS = "create table blockednumbers ( _id integer primary key autoincrement , number text not null )";
+		private static final String CALLAROUNDS = "create table if not exists callarounds (_id integer primary key autoincrement, house_id integer not null, duefrom string not null, dueby string not null, timereceived string, outstanding integer default 1, delayed integer default 0, unique(house_id,dueby) on conflict ignore );";
+		private static final String CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, keyword string not null, timedue string not null, timereceived string, outstanding integer default 1, checkinrequest integer default 1);";
+		private static final String CONTACTEMAILS = "create table contactemails ( _id integer primary key autoincrement , contact_id integer not null, email text not null, integer precedence default 1 )";
+		private static final String CONTACTPHONES = "create table contactphones ( _id integer primary key autoincrement , contact_id integer not null, number text not null, integer precedence default 1 )";
+		private static final String CONTACTS = "create table contacts ( _id integer primary key autoincrement , name text not null , preferences int default 0 , permissions int default 0 )";
+		private static final String GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text , response int default 0, unique(time) on conflict ignore )";
+		private static final String GUARDS = "create table guards ( _id integer primary key autoincrement , name text not null , number text )";
+		private static final String HOUSEMEMBERS = "create table housemembers ( _id integer primary key autoincrement , house_id integer not null, contact_id integer not null, unique(contact_id) on conflict ignore )";
+		private static final String HOUSES = "create table houses ( _id integer primary key autoincrement , name text not null, active int default 1, sunday_guard int default -1, monday_guard int default -1, tuesday_guard int default -1, wednesday_guard int default -1, thursday_guard int default -1, friday_guard int default -1, saturday_guard int default -1 , typical_sunday_guard int default -1, typical_monday_guard int default -1, typical_tuesday_guard int default -1, typical_wednesday_guard int default -1, typical_thursday_guard int default -1, typical_friday_guard int default -1, typical_saturday_guard int default -1 )";
+		private static final String LOCATION_LOG = "create table locationlog ( _id integer primary key autoincrement , contact_id integer not null, lat real not null, lon real not null, time text )";
+		private static final String LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
+		private static final String LOG = "create table log ( _id integer primary key autoincrement , type text default 'Normal' , message text not null, time text )";
+		private static final String PENDING = "create table pending ( _id integer primary key autoincrement , number text not null, message text not null, time text not null , sent int default 0, delivered int default 0 )";
+		private static final String TRIP_MEMBERS = "create table if not exists tripmembers ( trip_id integer, checkin_id ) ";
+		private static final String TRIPS = "create table if not exists trips ( _id integer primary key autoincrement, contact_id integer not null, with string, tripresolved integer default 0 ) ";
+	}
+
 	/**
 	 * This is the interface class for the SQL database. Typical usage would be
 	 * for it to be opened on an Activity's onCreate method and closed in the
@@ -49,23 +114,23 @@ public class DbAdapter {
 		 */
 		@Override
 		public void onCreate(final SQLiteDatabase database) {
-			database.execSQL(DATABASE_CREATE_LOCATIONS);
-			database.execSQL(DATABASE_CREATE_CHECKINS);
-			database.execSQL(DATABASE_CREATE_CALLAROUNDS);
-			database.execSQL(DATABASE_CREATE_CONTACTS);
-			database.execSQL(DATABASE_CREATE_CONTACTPHONES);
-			database.execSQL(DATABASE_CREATE_CONTACTEMAILS);
-			database.execSQL(DATABASE_CREATE_HOUSES);
-			database.execSQL(DATABASE_CREATE_HOUSEMEMBERS);
-			database.execSQL(DATABASE_CREATE_BLOCKEDNUMBERS);
-			database.execSQL(DATABASE_CREATE_LOG);
-			database.execSQL(DATABASE_CREATE_LOCATION_LOG);
-			database.execSQL(DATABASE_CREATE_PENDING);
-			database.execSQL(DATABASE_CREATE_GUARDS);
-			database.execSQL(DATABASE_CREATE_GUARD_CHECKINS);
-			database.execSQL(DATABASE_CREATE_ALARMS);
-			database.execSQL(DATABASE_CREATE_TRIPS);
-			database.execSQL(DATABASE_CREATE_TRIP_MEMBERS);
+			database.execSQL(CreateStatements.LOCATIONS);
+			database.execSQL(CreateStatements.CHECKINS);
+			database.execSQL(CreateStatements.CALLAROUNDS);
+			database.execSQL(CreateStatements.CONTACTS);
+			database.execSQL(CreateStatements.CONTACTPHONES);
+			database.execSQL(CreateStatements.CONTACTEMAILS);
+			database.execSQL(CreateStatements.HOUSES);
+			database.execSQL(CreateStatements.HOUSEMEMBERS);
+			database.execSQL(CreateStatements.BLOCKEDNUMBERS);
+			database.execSQL(CreateStatements.LOG);
+			database.execSQL(CreateStatements.LOCATION_LOG);
+			database.execSQL(CreateStatements.PENDING);
+			database.execSQL(CreateStatements.GUARDS);
+			database.execSQL(CreateStatements.GUARD_CHECKINS);
+			database.execSQL(CreateStatements.ALARMS);
+			database.execSQL(CreateStatements.TRIPS);
+			database.execSQL(CreateStatements.TRIP_MEMBERS);
 		}
 
 		/*
@@ -80,393 +145,144 @@ public class DbAdapter {
 				final int oldVersion, final int newVersion) {
 			Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
 					+ newVersion + ", which will destroy all old data");
-			database.execSQL(DROP_TABLE_LOCATIONS);
-			database.execSQL(DROP_TABLE_CHECKINS);
-			database.execSQL(DROP_TABLE_CALLAROUNDS);
-			database.execSQL(DROP_TABLE_CONTACTS);
-			database.execSQL(DROP_TABLE_CONTACTPHONES);
-			database.execSQL(DROP_TABLE_CONTACTEMAILS);
-			database.execSQL(DROP_TABLE_HOUSES);
-			database.execSQL(DROP_TABLE_HOUSEMEMBERS);
-			database.execSQL(DROP_TABLE_BLOCKEDNUMBERS);
-			database.execSQL(DROP_TABLE_LOG);
-			database.execSQL(DROP_TABLE_LOCATION_LOG);
-			database.execSQL(DROP_TABLE_PENDING);
-			database.execSQL(DROP_TABLE_GUARDS);
-			database.execSQL(DROP_TABLE_GUARD_CHECKIN);
-			database.execSQL(DROP_TABLE_ALARMS);
-			database.execSQL(DROP_TABLE_TRIPS);
-			database.execSQL(DROP_TABLE_TRIP_MEMBERS);
+			database.execSQL(DropStatements.LOCATIONS);
+			database.execSQL(DropStatements.CHECKINS);
+			database.execSQL(DropStatements.CALLAROUNDS);
+			database.execSQL(DropStatements.CONTACTS);
+			database.execSQL(DropStatements.CONTACTPHONES);
+			database.execSQL(DropStatements.CONTACTEMAILS);
+			database.execSQL(DropStatements.HOUSES);
+			database.execSQL(DropStatements.HOUSEMEMBERS);
+			database.execSQL(DropStatements.BLOCKEDNUMBERS);
+			database.execSQL(DropStatements.LOG);
+			database.execSQL(DropStatements.LOCATION_LOG);
+			database.execSQL(DropStatements.PENDING);
+			database.execSQL(DropStatements.GUARDS);
+			database.execSQL(DropStatements.GUARD_CHECKIN);
+			database.execSQL(DropStatements.ALARMS);
+			database.execSQL(DropStatements.TRIPS);
+			database.execSQL(DropStatements.TRIP_MEMBERS);
 
 			onCreate(database);
 		}
 	}
 
-	/** The user preference checkin reminder. */
-	public static final int USER_PREFERENCE_CHECKIN_REMINDER = 1;
-
-	/** The user permission report. */
-	public static final int USER_PERMISSION_REPORT = 1;
-
-	/** Return value to indicate failure. */
-	public static final int NOTIFY_FAILURE = 0;
+	private static final class DropStatements {
+		private static final String ALARMS = "DROP TABLE IF EXISTS alarms;";
+		private static final String BLOCKEDNUMBERS = "DROP TABLE IF EXISTS blockednumbers;";
+		private static final String CALLAROUNDS = "DROP TABLE IF EXISTS callarounds;";
+		private static final String CHECKINS = "DROP TABLE IF EXISTS checkins;";
+		private static final String CONTACTEMAILS = "DROP TABLE IF EXISTS contactemails;";
+		private static final String CONTACTPHONES = "DROP TABLE IF EXISTS contactphones;";
+		private static final String CONTACTS = "DROP TABLE IF EXISTS contacts;";
+		private static final String GUARD_CHECKIN = "DROP TABLE IF EXISTS guardcheckins;";
+		private static final String GUARDS = "DROP TABLE IF EXISTS guards;";
+		private static final String HOUSEMEMBERS = "DROP TABLE IF EXISTS housemembers;";
+		private static final String HOUSES = "DROP TABLE IF EXISTS houses;";
+		private static final String LOCATION_LOG = "DROP TABLE IF EXISTS locationlog;";
+		private static final String LOCATIONS = "DROP TABLE IF EXISTS locations;";
+		private static final String LOG = "DROP TABLE IF EXISTS log;";
+		private static final String PENDING = "DROP TABLE IF EXISTS pending;";
+		private static final String TRIP_MEMBERS = "DROP TABLE IF EXISTS tripmembers;";
+		private static final String TRIPS = "DROP TABLE IF EXISTS trips;";
+	}
 
 	/**
-	 * Return value to indicate that an existing check-in was resolved when the
-	 * new one was added.
+	 * Class containing log event types
+	 * 
 	 */
-	public static final int NOTIFY_EXISTING_CHECKIN_RESOLVED = 1;
+	public static final class LogTypes {
 
-	/** Return value to indicate success. */
-	public static final int NOTIFY_SUCCESS = 2;
+		/** Log message types. */
+		public static final String SMS_ERROR = "SMS Error";
+
+		/** Log message types. */
+		public static final String SMS_NOTIFICATION = "SMS Event";
+
+	}
 
 	/**
-	 * Return value to indicate that the requested action had already been
-	 * completed.
+	 * Class with static members indicating various notification values for
+	 * return statements
+	 * 
 	 */
-	public static final int NOTIFY_ALREADY = 3;
+	public static final class Notifications {
 
-	/** Return value to indicate that call around is currently inactive. */
-	public static final int NOTIFY_INACTIVE = 4;
+		/**
+		 * Return value to indicate that the requested action had already been
+		 * completed.
+		 */
+		public static final int ALREADY = 3;
 
-	/** The notify untimely. */
-	public static final int NOTIFY_UNTIMELY = 5;
+		/**
+		 * Return value to indicate that an existing check-in was resolved when
+		 * the new one was added.
+		 */
+		public static final int EXISTING_CHECKIN_RESOLVED = 1;
 
-	/** Return value to indicate the user is associated with a house. */
-	public static final int NOTIFY_HASHOUSE = 5;
+		/** Return value to indicate failure. */
+		public static final int FAILURE = 0;
 
-	/** Return value to indicate the user is not associated with a house. */
-	public static final int NOTIFY_NOHOUSE = 5;
+		/** Return value to indicate the user is associated with a house. */
+		public static final int HASHOUSE = 5;
 
-	/** The version of the current database. */
-	private static final int DATABASE_VERSION = 22;
+		/** Return value to indicate that call around is currently inactive. */
+		public static final int INACTIVE = 4;
 
-	/** Create Table Commands. */
-	private static final String DATABASE_CREATE_LOCATIONS = "create table if not exists locations (_id integer primary key autoincrement, label text not null, keyword text, allowed integer default 0);";
+		/** Return value to indicate the user is not associated with a house. */
+		public static final int NOHOUSE = 5;
 
-	/** The Constant DATABASE_CREATE_CHECKINS. */
-	private static final String DATABASE_CREATE_CHECKINS = "create table if not exists checkins (_id integer primary key autoincrement, contact_id integer not null, location string not null, keyword string not null, timedue string not null, timereceived string, outstanding integer default 1, checkinrequest integer default 1);";
+		/** Return value to indicate success. */
+		public static final int SUCCESS = 2;
 
-	/** The Constant DATABASE_CREATE_TRIPS. */
-	private static final String DATABASE_CREATE_TRIPS = "create table if not exists trips ( _id integer primary key autoincrement, contact_id integer not null, with string, tripresolved integer default 0 ) ";
+		/** The notify untimely. */
+		public static final int UNTIMELY = 5;
 
-	/** The Constant DATABASE_CREATE_TRIP_MEMBERS. */
-	private static final String DATABASE_CREATE_TRIP_MEMBERS = "create table if not exists tripmembers ( trip_id integer, checkin_id ) ";
+	}
 
-	/** The Constant DATABASE_CREATE_CALLAROUNDS. */
-	private static final String DATABASE_CREATE_CALLAROUNDS = "create table if not exists callarounds (_id integer primary key autoincrement, house_id integer not null, duefrom string not null, dueby string not null, timereceived string, outstanding integer default 1, delayed integer default 0, unique(house_id,dueby) on conflict ignore );";
+	private static class Tables {
+		private static final String ALARMS = "alarms";
+		private static final String BLOCKEDNUMBERS = "blockednumbers";
+		private static final String CALLAROUNDS = "callarounds";
+		private static final String CHECKINS = "checkins";
+		private static final String CONTACTEMAILS = "contactemails";
+		private static final String CONTACTPHONES = "contactphones";
+		private static final String CONTACTS = "contacts";
+		private static final String GUARD_CHECKINS = "guardcheckins";
+		private static final String GUARDS = "guards";
+		private static final String HOUSEMEMBERS = "housemembers";
+		private static final String HOUSES = "houses";
+		private static final String LOCATION_LOG = "locationlog";
+		private static final String LOCATIONS = "locations";
+		private static final String LOG = "log";
+		private static final String PENDING = "pending";
+		private static final String TRIP_MEMBERS = "tripmembers";
+		private static final String TRIPS = "trips";
+	}
 
-	/** The Constant DATABASE_CREATE_CONTACTS. */
-	private static final String DATABASE_CREATE_CONTACTS = "create table contacts ( _id integer primary key autoincrement , name text not null , preferences int default 0 , permissions int default 0 )";
+	/**
+	 * Class with static members indicating various user permissions
+	 * 
+	 */
+	public static final class UserPermissions {
+		/** The user permission report. */
+		public static final int REPORT = 1;
+	}
 
-	/** The Constant DATABASE_CREATE_CONTACTPHONES. */
-	private static final String DATABASE_CREATE_CONTACTPHONES = "create table contactphones ( _id integer primary key autoincrement , contact_id integer not null, number text not null, integer precedence default 1 )";
-
-	/** The Constant DATABASE_CREATE_CONTACTEMAILS. */
-	private static final String DATABASE_CREATE_CONTACTEMAILS = "create table contactemails ( _id integer primary key autoincrement , contact_id integer not null, email text not null, integer precedence default 1 )";
-
-	/** The Constant DATABASE_CREATE_HOUSES. */
-	private static final String DATABASE_CREATE_HOUSES = "create table houses ( _id integer primary key autoincrement , name text not null, active int default 1, sunday_guard int default -1, monday_guard int default -1, tuesday_guard int default -1, wednesday_guard int default -1, thursday_guard int default -1, friday_guard int default -1, saturday_guard int default -1 , typical_sunday_guard int default -1, typical_monday_guard int default -1, typical_tuesday_guard int default -1, typical_wednesday_guard int default -1, typical_thursday_guard int default -1, typical_friday_guard int default -1, typical_saturday_guard int default -1 )";
-
-	/** The Constant DATABASE_CREATE_HOUSEMEMBERS. */
-	private static final String DATABASE_CREATE_HOUSEMEMBERS = "create table housemembers ( _id integer primary key autoincrement , house_id integer not null, contact_id integer not null, unique(contact_id) on conflict ignore )";
-
-	/** The Constant DATABASE_CREATE_BLOCKEDNUMBERS. */
-	private static final String DATABASE_CREATE_BLOCKEDNUMBERS = "create table blockednumbers ( _id integer primary key autoincrement , number text not null )";
-
-	/** The Constant DATABASE_CREATE_LOG. */
-	private static final String DATABASE_CREATE_LOG = "create table log ( _id integer primary key autoincrement , type text default 'Normal' , message text not null, time text )";
-
-	/** The Constant DATABASE_CREATE_LOCATION_LOG. */
-	private static final String DATABASE_CREATE_LOCATION_LOG = "create table locationlog ( _id integer primary key autoincrement , contact_id integer not null, lat real not null, lon real not null, time text )";
-
-	/** The Constant DATABASE_CREATE_PENDING. */
-	private static final String DATABASE_CREATE_PENDING = "create table pending ( _id integer primary key autoincrement , number text not null, message text not null, time text not null , sent int default 0, delivered int default 0 )";
-
-	/** The Constant DATABASE_CREATE_GUARDS. */
-	private static final String DATABASE_CREATE_GUARDS = "create table guards ( _id integer primary key autoincrement , name text not null , number text )";
-
-	/** The Constant DATABASE_CREATE_GUARD_CHECKINS. */
-	private static final String DATABASE_CREATE_GUARD_CHECKINS = "create table guardcheckins ( _id integer primary key autoincrement , guard_id int not null , time text , response int default 0, unique(time) on conflict ignore )";
-
-	/** The Constant DATABASE_CREATE_ALARMS. */
-	private static final String DATABASE_CREATE_ALARMS = "create table alarms ( _id integer primary key autoincrement , request_id int not null , type text )";
-
-	/** Drop Table Commands. */
-	private static final String DROP_TABLE_LOCATIONS = "DROP TABLE IF EXISTS locations;";
-
-	/** The Constant DROP_TABLE_CHECKINS. */
-	private static final String DROP_TABLE_CHECKINS = "DROP TABLE IF EXISTS checkins;";
-
-	/** The Constant DROP_TABLE_CALLAROUNDS. */
-	private static final String DROP_TABLE_CALLAROUNDS = "DROP TABLE IF EXISTS callarounds;";
-
-	/** The Constant DROP_TABLE_CONTACTS. */
-	private static final String DROP_TABLE_CONTACTS = "DROP TABLE IF EXISTS contacts;";
-
-	/** The Constant DROP_TABLE_CONTACTPHONES. */
-	private static final String DROP_TABLE_CONTACTPHONES = "DROP TABLE IF EXISTS contactphones;";
-
-	/** The Constant DROP_TABLE_CONTACTEMAILS. */
-	private static final String DROP_TABLE_CONTACTEMAILS = "DROP TABLE IF EXISTS contactemails;";
-
-	/** The Constant DROP_TABLE_HOUSES. */
-	private static final String DROP_TABLE_HOUSES = "DROP TABLE IF EXISTS houses;";
-
-	/** The Constant DROP_TABLE_HOUSEMEMBERS. */
-	private static final String DROP_TABLE_HOUSEMEMBERS = "DROP TABLE IF EXISTS housemembers;";
-
-	/** The Constant DROP_TABLE_BLOCKEDNUMBERS. */
-	private static final String DROP_TABLE_BLOCKEDNUMBERS = "DROP TABLE IF EXISTS blockednumbers;";
-
-	/** The Constant DROP_TABLE_LOG. */
-	private static final String DROP_TABLE_LOG = "DROP TABLE IF EXISTS log;";
-
-	/** The Constant DROP_TABLE_LOCATION_LOG. */
-	private static final String DROP_TABLE_LOCATION_LOG = "DROP TABLE IF EXISTS locationlog;";
-
-	/** The Constant DROP_TABLE_PENDING. */
-	private static final String DROP_TABLE_PENDING = "DROP TABLE IF EXISTS pending;";
-
-	/** The Constant DROP_TABLE_GUARDS. */
-	private static final String DROP_TABLE_GUARDS = "DROP TABLE IF EXISTS guards;";
-
-	/** The Constant DROP_TABLE_GUARD_CHECKIN. */
-	private static final String DROP_TABLE_GUARD_CHECKIN = "DROP TABLE IF EXISTS guardcheckins;";
-
-	/** The Constant DROP_TABLE_ALARMS. */
-	private static final String DROP_TABLE_ALARMS = "DROP TABLE IF EXISTS alarms;";
-
-	/** The Constant DROP_TABLE_TRIPS. */
-	private static final String DROP_TABLE_TRIPS = "DROP TABLE IF EXISTS trips;";
-
-	/** The Constant DROP_TABLE_TRIP_MEMBERS. */
-	private static final String DROP_TABLE_TRIP_MEMBERS = "DROP TABLE IF EXISTS tripmembers;";
+	/**
+	 * Class with static members indicating various user preferences
+	 * 
+	 */
+	public static final class UserPreferences {
+		/** The user preference checkin reminder. */
+		public static final int CHECKIN_REMINDER = 1;
+	}
 
 	/** The Constant DATABASE_NAME. */
 	private static final String DATABASE_NAME = "thedatabase";
 
-	/** Database table names. */
-	private static final String DATABASE_TABLE_LOCATIONS = "locations";
-
-	/** The Constant DATABASE_TABLE_CHECKINS. */
-	private static final String DATABASE_TABLE_CHECKINS = "checkins";
-
-	/** The Constant DATABASE_TABLE_CALLAROUNDS. */
-	private static final String DATABASE_TABLE_CALLAROUNDS = "callarounds";
-
-	/** The Constant DATABASE_TABLE_CONTACTS. */
-	private static final String DATABASE_TABLE_CONTACTS = "contacts";
-
-	/** The Constant DATABASE_TABLE_CONTACTPHONES. */
-	private static final String DATABASE_TABLE_CONTACTPHONES = "contactphones";
-
-	/** The Constant DATABASE_TABLE_CONTACTEMAILS. */
-	private static final String DATABASE_TABLE_CONTACTEMAILS = "contactemails";
-
-	/** The Constant DATABASE_TABLE_HOUSES. */
-	private static final String DATABASE_TABLE_HOUSES = "houses";
-
-	/** The Constant DATABASE_TABLE_HOUSEMEMBERS. */
-	private static final String DATABASE_TABLE_HOUSEMEMBERS = "housemembers";
-
-	/** The Constant DATABASE_TABLE_BLOCKEDNUMBERS. */
-	private static final String DATABASE_TABLE_BLOCKEDNUMBERS = "blockednumbers";
-
-	/** The Constant DATABASE_TABLE_LOG. */
-	private static final String DATABASE_TABLE_LOG = "log";
-
-	/** The Constant DATABASE_TABLE_LOCATION_LOG. */
-	private static final String DATABASE_TABLE_LOCATION_LOG = "locationlog";
-
-	/** The Constant DATABASE_TABLE_PENDING. */
-	private static final String DATABASE_TABLE_PENDING = "pending";
-
-	/** The Constant DATABASE_TABLE_GUARDS. */
-	private static final String DATABASE_TABLE_GUARDS = "guards";
-
-	/** The Constant DATABASE_TABLE_GUARDS_CHECKINS. */
-	private static final String DATABASE_TABLE_GUARD_CHECKINS = "guardcheckins";
-
-	/** The Constant DATABASE_TABLE_ALARMS. */
-	private static final String DATABASE_TABLE_ALARMS = "alarms";
-
-	/** The Constant DATABASE_TABLE_TRIPS. */
-	private static final String DATABASE_TABLE_TRIPS = "trips";
-
-	/** The Constant DATABASE_TABLE_TRIP_MEMBERS. */
-	private static final String DATABASE_TABLE_TRIP_MEMBERS = "tripmembers";
-
-	/** SQL column names constants. */
-	public static final String KEY_ROWID = "_id";
-
-	/** The Constant KEY_LABEL. */
-	public static final String KEY_LABEL = "label";
-
-	/** The Constant KEY_ALLOWED. */
-	public static final String KEY_ALLOWED = "allowed";
-
-	/** The Constant KEY_CONTACTID. */
-	public static final String KEY_CONTACTID = "contact_id";
-
-	/** The Constant KEY_LOCATION. */
-	public static final String KEY_LOCATION = "location";
-
-	/** The Constant KEY_TIMEDUE. */
-	public static final String KEY_TIMEDUE = "timedue";
-
-	/** The Constant KEY_TIMERECEIVED. */
-	public static final String KEY_TIMERECEIVED = "timereceived";
-
-	/** The Constant KEY_OUTSTANDING. */
-	public static final String KEY_OUTSTANDING = "outstanding";
-
-	/** The Constant KEY_RESOLVED. */
-	public static final String KEY_RESOLVED = "resolved";
-
-	/** The Constant KEY_HOUSEID. */
-	public static final String KEY_HOUSEID = "house_id";
-
-	/** The Constant KEY_DUEBY. */
-	public static final String KEY_DUEBY = "dueby";
-
-	/** The Constant KEY_DUEFROM. */
-	public static final String KEY_DUEFROM = "duefrom";
-
-	/** The Constant KEY_CHECKINREQUEST. */
-	public static final String KEY_CHECKINREQUEST = "checkinrequest";
-
-	/** The Constant KEY_ACTIVE. */
-	public static final String KEY_ACTIVE = "active";
-
-	/** The Constant KEY_SUMMARY. */
-	public static final String KEY_SUMMARY = "summary";
-
-	/** The Constant KEY_NAME. */
-	public static final String KEY_NAME = "name";
-
-	/** The Constant KEY_NUMBER. */
-	public static final String KEY_NUMBER = "number";
-
-	/** The Constant KEY_EMAIL. */
-	public static final String KEY_EMAIL = "email";
-
-	/** The Constant KEY_COUNT. */
-	public static final String KEY_COUNT = "count";
-
-	/** The Constant KEY_PREFERENCES. */
-	public static final String KEY_PREFERENCES = "preferences";
-
-	/** The Constant KEY_PERMISSIONS. */
-	public static final String KEY_PERMISSIONS = "permissions";
-
-	/** The Constant KEY_TYPE. */
-	public static final String KEY_TYPE = "type";
-
-	/** The Constant KEY_TIME. */
-	public static final String KEY_TIME = "time";
-
-	/** The Constant KEY_MESSAGE. */
-	public static final String KEY_MESSAGE = "message";
-
-	/** The Constant KEY_LAT. */
-	public static final String KEY_LAT = "lat";
-
-	/** The Constant KEY_LON. */
-	public static final String KEY_LON = "lon";
-
-	/** The Constant KEY_KEYWORD. */
-	public static final String KEY_KEYWORD = "keyword";
-
-	/** The Constant KEY_DELAYED. */
-	public static final String KEY_DELAYED = "delayed";
-
-	/** The Constant KEY_GUARDID. */
-	public static final String KEY_GUARDID = "guard_id";
-
-	/** The Constant KEY_RESPONSE. */
-	public static final String KEY_RESPONSE = "response";
-
-	/** The Constant KEY_WITH. */
-	public static final String KEY_WITH = "with";
-
-	/** The Constant KEY_TRIPRESOLVED. */
-	public static final String KEY_TRIPRESOLVED = "tripresolved";
-
-	/** The Constant KEY_DELIVERED. */
-	public static final String KEY_DELIVERED = "delivered";
-
-	/** The Constant KEY_SENT. */
-	public static final String KEY_SENT = "sent";
-
-	/** The Constant KEY_REQUESTID. */
-	public static final String KEY_REQUESTID = "request_id";
-
-	/** The Constant KEY_CHECKINID. */
-	public static final String KEY_CHECKINID = "checkin_id";
-
-	/** The Constant KEY_TRIPID. */
-	public static final String KEY_TRIPID = "trip_id";
-
-	/** Log message types. */
-	public static final String LOG_TYPE_SMS_NOTIFICATION = "SMS Event";
-
-	/** Log message types. */
-	public static final String LOG_TYPE_SMS_ERROR = "SMS Error";
-
-	/** The Constant TAG. */
-	private static final String TAG = "DbAdapter";
-
-	/** The database helper. */
-	private transient DatabaseHelper mDbHelper;
-
-	/** The database. */
-	private transient SQLiteDatabase mDb;
-
-	/** The application context. */
-	private transient final Context mContext;
-
-	/** The Constant SUNDAY_GUARD. */
-	public static final String SUNDAY_GUARD = "sunday_guard";
-
-	/** The Constant SUNDAY_GUARD_DEFAULT. */
-	public static final String SUNDAY_GUARD_DEFAULT = "typical_sunday_guard";
-
-	/** The Constant MONDAY_GUARD. */
-	public static final String MONDAY_GUARD = "monday_guard";
-
-	/** The Constant MONDAY_GUARD_DEFAULT. */
-	public static final String MONDAY_GUARD_DEFAULT = "typical_monday_guard";
-
-	/** The Constant TUESDAY_GUARD. */
-	public static final String TUESDAY_GUARD = "tuesday_guard";
-
-	/** The Constant TUESDAY_GUARD_DEFAULT. */
-	public static final String TUESDAY_GUARD_DEFAULT = "typical_tuesday_guard";
-
-	/** The Constant WEDNESDAY_GUARD. */
-	public static final String WEDNESDAY_GUARD = "wednesday_guard";
-
-	/** The Constant WEDNESDAY_GUARD_DEFAULT. */
-	public static final String WEDNESDAY_GUARD_DEFAULT = "typical_wednesday_guard";
-
-	/** The Constant THURSDAY_GUARD. */
-	public static final String THURSDAY_GUARD = "thursday_guard";
-
-	/** The Constant THURSDAY_GUARD_DEFAULT. */
-	public static final String THURSDAY_GUARD_DEFAULT = "typical_thursday_guard";
-
-	/** The Constant FRIDAY_GUARD. */
-	public static final String FRIDAY_GUARD = "friday_guard";
-
-	/** The Constant FRIDAY_GUARD_DEFAULT. */
-	public static final String FRIDAY_GUARD_DEFAULT = "typical_friday_guard";
-
-	/** The Constant SATURDAY_GUARD. */
-	public static final String SATURDAY_GUARD = "saturday_guard";
-
-	/** The Constant SATURDAY_GUARD_DEFAULT. */
-	public static final String SATURDAY_GUARD_DEFAULT = "typical_saturday_guard";
+	/** The version of the current database. */
+	private static final int DATABASE_VERSION = 22;
 
 	/**
 	 * The days of the week in lowercase, to be used to build database column
@@ -474,6 +290,9 @@ public class DbAdapter {
 	 */
 	private final static String[] DAYS = { "sunday", "monday", "tuesday",
 			"wednesday", "thursday", "friday", "saturday" };
+
+	/** The Constant TAG. */
+	private static final String TAG = "DbAdapter";
 
 	/**
 	 * Gets the column name for the guard schedule, for the given day.
@@ -490,6 +309,15 @@ public class DbAdapter {
 		return typicalColumn ? "typical_" + DbAdapter.DAYS[forDay] + "_guard"
 				: DbAdapter.DAYS[forDay] + "_guard";
 	}
+
+	/** The application context. */
+	private transient final Context mContext;
+
+	/** The database. */
+	private transient SQLiteDatabase mDb;
+
+	/** The database helper. */
+	private transient DatabaseHelper mDbHelper;
 
 	/**
 	 * Instantiates a new db adapter.
@@ -515,9 +343,9 @@ public class DbAdapter {
 	public long addAlarm(final int request_id, final String type)
 			throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_REQUESTID, request_id);
-		initialValues.put(KEY_TYPE, type);
-		return mDb.insert(DATABASE_TABLE_ALARMS, null, initialValues);
+		initialValues.put(Columns.REQUESTID, request_id);
+		initialValues.put(Columns.TYPE, type);
+		return mDb.insert(Tables.ALARMS, null, initialValues);
 	}
 
 	/**
@@ -563,34 +391,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * If a call around scheduled for today has already been resolved, update
-	 * the due times.
-	 * 
-	 * @param dueby
-	 *            the date the call around is due by
-	 * @param duefrom
-	 *            the date the call around is due from
-	 */
-	private void updateTimesOfResolvedCallarounds(final Date dueby,
-			final Date duefrom) {
-		final ContentValues args = new ContentValues();
-		args.put(KEY_DUEBY, Time.iso8601DateTime(dueby));
-		args.put(KEY_DUEFROM, Time.iso8601DateTime(duefrom));
-		mDb.update(DATABASE_TABLE_CALLAROUNDS, args,
-				"date(dueby) = date('now','localtime') and " + KEY_OUTSTANDING
-						+ "='0'", null);
-	}
-
-	/**
-	 * Delete unresolved call arounds that match today's date.
-	 */
-	private void deleteTodaysUnresolvedCallarounds() {
-		mDb.delete(DATABASE_TABLE_CALLAROUNDS,
-				"date(dueby) = date('now','localtime') and outstanding='1'",
-				null);
-	}
-
-	/**
 	 * Adds a check-in to the database. If the contact has no unresolved trip, a
 	 * new one is created.
 	 * 
@@ -604,8 +404,9 @@ public class DbAdapter {
 	 *            the time by which the person will return
 	 * @param with
 	 *            the with
-	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
-	 *         NOTIFY_EXISTING_CHECKIN_RESOLVED
+	 * @return Possible return values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE,
+	 *         Notifications.NOTIFY_EXISTING_CHECKIN_RESOLVED
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
@@ -620,29 +421,28 @@ public class DbAdapter {
 		}
 
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_CONTACTID, contact_id);
-		initialValues.put(KEY_LOCATION, place);
-		initialValues.put(KEY_KEYWORD, keyword);
-		initialValues.put(KEY_TIMEDUE, Time.iso8601DateTime(time));
-		initialValues.put(KEY_TIMERECEIVED, Time.iso8601DateTime());
-		final long rowId = mDb.insert(DATABASE_TABLE_CHECKINS, null,
-				initialValues);
+		initialValues.put(Columns.CONTACTID, contact_id);
+		initialValues.put(Columns.LOCATION, place);
+		initialValues.put(Columns.KEYWORD, keyword);
+		initialValues.put(Columns.TIMEDUE, Time.iso8601DateTime(time));
+		initialValues.put(Columns.TIMERECEIVED, Time.iso8601DateTime());
+		final long rowId = mDb.insert(Tables.CHECKINS, null, initialValues);
 
 		final ContentValues memberValues = new ContentValues();
-		memberValues.put(KEY_TRIPID, tripId);
-		memberValues.put(KEY_CHECKINID, rowId);
-		mDb.insert(DATABASE_TABLE_TRIP_MEMBERS, null, memberValues);
+		memberValues.put(Columns.TRIPID, tripId);
+		memberValues.put(Columns.CHECKINID, rowId);
+		mDb.insert(Tables.TRIP_MEMBERS, null, memberValues);
 
 		int retVal;
 		if (rowId > -1) {
 			AlarmAdapter.setCheckinAlert(mContext, time);
 			if (count > 0) {
-				retVal = NOTIFY_EXISTING_CHECKIN_RESOLVED;
+				retVal = Notifications.EXISTING_CHECKIN_RESOLVED;
 			} else {
-				retVal = NOTIFY_SUCCESS;
+				retVal = Notifications.SUCCESS;
 			}
 		} else {
-			retVal = NOTIFY_FAILURE;
+			retVal = Notifications.FAILURE;
 		}
 		return retVal;
 	}
@@ -661,16 +461,15 @@ public class DbAdapter {
 	public long addContact(final String name, final String number)
 			throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_NAME, name);
-		final long newId = mDb.insert(DATABASE_TABLE_CONTACTS, null,
-				initialValues);
+		initialValues.put(Columns.NAME, name);
+		final long newId = mDb.insert(Tables.CONTACTS, null, initialValues);
 
 		final int lastId = lastInsertId();
 		if (lastId != -1) {
 			final ContentValues initialValues2 = new ContentValues();
-			initialValues2.put(KEY_CONTACTID, lastId);
-			initialValues2.put(KEY_NUMBER, number);
-			mDb.insert(DATABASE_TABLE_CONTACTPHONES, null, initialValues2);
+			initialValues2.put(Columns.CONTACTID, lastId);
+			initialValues2.put(Columns.NUMBER, number);
+			mDb.insert(Tables.CONTACTPHONES, null, initialValues2);
 		}
 		return newId;
 	}
@@ -685,8 +484,8 @@ public class DbAdapter {
 	 */
 	public void addGuard(final String name) throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_NAME, name);
-		mDb.insert(DATABASE_TABLE_GUARDS, null, initialValues);
+		initialValues.put(Columns.NAME, name);
+		mDb.insert(Tables.GUARDS, null, initialValues);
 	}
 
 	/**
@@ -702,9 +501,9 @@ public class DbAdapter {
 	public void addGuardCheckin(final long guard_id, final String time)
 			throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_GUARDID, guard_id);
-		initialValues.put(KEY_TIME, time);
-		mDb.insert(DATABASE_TABLE_GUARD_CHECKINS, null, initialValues);
+		initialValues.put(Columns.GUARDID, guard_id);
+		initialValues.put(Columns.TIME, time);
+		mDb.insert(Tables.GUARD_CHECKINS, null, initialValues);
 	}
 
 	/**
@@ -717,8 +516,8 @@ public class DbAdapter {
 	 */
 	public void addHouse(final String name) throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_NAME, name);
-		mDb.insert(DATABASE_TABLE_HOUSES, null, initialValues);
+		initialValues.put(Columns.NAME, name);
+		mDb.insert(Tables.HOUSES, null, initialValues);
 	}
 
 	/**
@@ -737,10 +536,10 @@ public class DbAdapter {
 	public long addLocation(final String label, final boolean allowed,
 			final String keyword) throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_LABEL, label);
-		initialValues.put(KEY_ALLOWED, allowed ? 1 : 0);
-		initialValues.put(KEY_KEYWORD, keyword);
-		return mDb.insert(DATABASE_TABLE_LOCATIONS, null, initialValues);
+		initialValues.put(Columns.LABEL, label);
+		initialValues.put(Columns.ALLOWED, allowed ? 1 : 0);
+		initialValues.put(Columns.KEYWORD, keyword);
+		return mDb.insert(Tables.LOCATIONS, null, initialValues);
 	}
 
 	/**
@@ -761,11 +560,11 @@ public class DbAdapter {
 	public long addLocationLog(final long contact_id, final double lat,
 			final double lon, final String time) throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_CONTACTID, contact_id);
-		initialValues.put(KEY_LAT, lat);
-		initialValues.put(KEY_LON, lon);
-		initialValues.put(KEY_TIME, time);
-		return mDb.insert(DATABASE_TABLE_LOCATION_LOG, null, initialValues);
+		initialValues.put(Columns.CONTACTID, contact_id);
+		initialValues.put(Columns.LAT, lat);
+		initialValues.put(Columns.LON, lon);
+		initialValues.put(Columns.TIME, time);
+		return mDb.insert(Tables.LOCATION_LOG, null, initialValues);
 	}
 
 	/**
@@ -779,10 +578,10 @@ public class DbAdapter {
 	 */
 	public boolean addLogEvent(final String type, final String message) {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_TYPE, type);
-		initialValues.put(KEY_MESSAGE, message);
-		initialValues.put(KEY_TIME, Time.iso8601DateTime());
-		return mDb.insert(DATABASE_TABLE_LOG, null, initialValues) > -1;
+		initialValues.put(Columns.TYPE, type);
+		initialValues.put(Columns.MESSAGE, message);
+		initialValues.put(Columns.TIME, Time.iso8601DateTime());
+		return mDb.insert(Tables.LOG, null, initialValues) > -1;
 	}
 
 	/**
@@ -798,10 +597,10 @@ public class DbAdapter {
 	public void addMessagePending(final String number, final String message)
 			throws SQLException {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_NUMBER, number);
-		initialValues.put(KEY_MESSAGE, message);
-		initialValues.put(KEY_TIME, Time.iso8601DateTime());
-		mDb.insert(DATABASE_TABLE_PENDING, null, initialValues);
+		initialValues.put(Columns.NUMBER, number);
+		initialValues.put(Columns.MESSAGE, message);
+		initialValues.put(Columns.TIME, Time.iso8601DateTime());
+		mDb.insert(Tables.PENDING, null, initialValues);
 	}
 
 	/**
@@ -878,11 +677,11 @@ public class DbAdapter {
 	 */
 	public long addTrip(final long contact_id, final String with) {
 		final ContentValues initialValues = new ContentValues();
-		initialValues.put(KEY_CONTACTID, contact_id);
+		initialValues.put(Columns.CONTACTID, contact_id);
 		if (!with.isEmpty()) {
-			initialValues.put(KEY_WITH, with);
+			initialValues.put(Columns.WITH, with);
 		}
-		return mDb.insert(DATABASE_TABLE_TRIPS, null, initialValues);
+		return mDb.insert(Tables.TRIPS, null, initialValues);
 	}
 
 	/**
@@ -916,7 +715,7 @@ public class DbAdapter {
 	 * @throws SQLException
 	 */
 	public long deleteAlarm(final int request_id) throws SQLException {
-		return mDb.delete(DATABASE_TABLE_ALARMS, KEY_REQUESTID + "=?",
+		return mDb.delete(Tables.ALARMS, Columns.REQUESTID + "=?",
 				new String[] { String.valueOf(request_id) });
 	}
 
@@ -929,8 +728,33 @@ public class DbAdapter {
 	 * @throws SQLException
 	 */
 	public long deleteAlarmsByType(final String type) throws SQLException {
-		return mDb.delete(DATABASE_TABLE_ALARMS, KEY_TYPE + "=?",
+		return mDb.delete(Tables.ALARMS, Columns.TYPE + "=?",
 				new String[] { type });
+	}
+
+	/**
+	 * Delete all information from database.
+	 * 
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public void deleteAll() throws SQLException {
+		mDb.delete(Tables.CHECKINS, null, null);
+		mDb.delete(Tables.CALLAROUNDS, null, null);
+		mDb.delete(Tables.CONTACTS, null, null);
+		mDb.delete(Tables.CONTACTPHONES, null, null);
+		mDb.delete(Tables.CONTACTEMAILS, null, null);
+		mDb.delete(Tables.HOUSES, null, null);
+		mDb.delete(Tables.HOUSEMEMBERS, null, null);
+		mDb.delete(Tables.BLOCKEDNUMBERS, null, null);
+		mDb.delete(Tables.LOG, null, null);
+		mDb.delete(Tables.LOCATION_LOG, null, null);
+		mDb.delete(Tables.PENDING, null, null);
+		mDb.delete(Tables.GUARDS, null, null);
+		mDb.delete(Tables.GUARD_CHECKINS, null, null);
+		mDb.delete(Tables.ALARMS, null, null);
+		mDb.delete(Tables.TRIPS, null, null);
+		mDb.delete(Tables.TRIP_MEMBERS, null, null);
 	}
 
 	/**
@@ -941,32 +765,7 @@ public class DbAdapter {
 	 *             the SQL exception
 	 */
 	public long deleteAllAlarms() throws SQLException {
-		return mDb.delete(DATABASE_TABLE_ALARMS, null, null);
-	}
-
-	/**
-	 * Delete all information from database.
-	 * 
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public void deleteAll() throws SQLException {
-		mDb.delete(DATABASE_TABLE_CHECKINS, null, null);
-		mDb.delete(DATABASE_TABLE_CALLAROUNDS, null, null);
-		mDb.delete(DATABASE_TABLE_CONTACTS, null, null);
-		mDb.delete(DATABASE_TABLE_CONTACTPHONES, null, null);
-		mDb.delete(DATABASE_TABLE_CONTACTEMAILS, null, null);
-		mDb.delete(DATABASE_TABLE_HOUSES, null, null);
-		mDb.delete(DATABASE_TABLE_HOUSEMEMBERS, null, null);
-		mDb.delete(DATABASE_TABLE_BLOCKEDNUMBERS, null, null);
-		mDb.delete(DATABASE_TABLE_LOG, null, null);
-		mDb.delete(DATABASE_TABLE_LOCATION_LOG, null, null);
-		mDb.delete(DATABASE_TABLE_PENDING, null, null);
-		mDb.delete(DATABASE_TABLE_GUARDS, null, null);
-		mDb.delete(DATABASE_TABLE_GUARD_CHECKINS, null, null);
-		mDb.delete(DATABASE_TABLE_ALARMS, null, null);
-		mDb.delete(DATABASE_TABLE_TRIPS, null, null);
-		mDb.delete(DATABASE_TABLE_TRIP_MEMBERS, null, null);
+		return mDb.delete(Tables.ALARMS, null, null);
 	}
 
 	/**
@@ -979,7 +778,7 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public long deleteCallaround(final long rowId) throws SQLException {
-		return mDb.delete(DATABASE_TABLE_CALLAROUNDS, KEY_ROWID + "=?",
+		return mDb.delete(Tables.CALLAROUNDS, Columns.ROWID + "=?",
 				new String[] { String.valueOf(rowId) });
 	}
 
@@ -993,19 +792,19 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public void deleteContact(final long contact_id) throws SQLException {
-		mDb.delete(DATABASE_TABLE_CONTACTS, KEY_ROWID + "=?",
+		mDb.delete(Tables.CONTACTS, Columns.ROWID + "=?",
 				new String[] { String.valueOf(contact_id) });
-		mDb.delete(DATABASE_TABLE_CHECKINS, KEY_CONTACTID + "=?",
+		mDb.delete(Tables.CHECKINS, Columns.CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
-		mDb.delete(DATABASE_TABLE_HOUSEMEMBERS, KEY_CONTACTID + "=?",
+		mDb.delete(Tables.HOUSEMEMBERS, Columns.CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
-		mDb.delete(DATABASE_TABLE_CONTACTPHONES, KEY_CONTACTID + "=?",
+		mDb.delete(Tables.CONTACTPHONES, Columns.CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
-		mDb.delete(DATABASE_TABLE_CONTACTEMAILS, KEY_CONTACTID + "=?",
+		mDb.delete(Tables.CONTACTEMAILS, Columns.CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
 		mDb.execSQL("delete from tripmembers where trip_id in (select _id from trips where contact_id='"
 				+ contact_id + "');");
-		mDb.delete(DATABASE_TABLE_TRIPS, KEY_CONTACTID + "=?",
+		mDb.delete(Tables.TRIPS, Columns.CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) });
 	}
 
@@ -1036,7 +835,7 @@ public class DbAdapter {
 			final String typicalColumn = DbAdapter.getGuardScheduleColumnName(
 					i, true);
 			args.put(typicalColumn, -1);
-			mDb.update(DATABASE_CREATE_HOUSES, args, typicalColumn + "=?",
+			mDb.update(CreateStatements.HOUSES, args, typicalColumn + "=?",
 					new String[] { String.valueOf(rowId) });
 
 			args.clear();
@@ -1044,12 +843,12 @@ public class DbAdapter {
 			final String otherColumn = DbAdapter.getGuardScheduleColumnName(i,
 					false);
 			args.put(otherColumn, -1);
-			mDb.update(DATABASE_CREATE_HOUSES, args, otherColumn + "=?",
+			mDb.update(CreateStatements.HOUSES, args, otherColumn + "=?",
 					new String[] { String.valueOf(rowId) });
 
 		}
 
-		return mDb.delete(DATABASE_TABLE_GUARDS, KEY_ROWID + "=" + rowId, null);
+		return mDb.delete(Tables.GUARDS, Columns.ROWID + "=" + rowId, null);
 	}
 
 	/**
@@ -1063,11 +862,11 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public long deleteHouse(final long rowId) throws SQLException {
-		mDb.delete(DATABASE_TABLE_CALLAROUNDS, KEY_HOUSEID + "=?",
+		mDb.delete(Tables.CALLAROUNDS, Columns.HOUSEID + "=?",
 				new String[] { String.valueOf(rowId) });
-		mDb.delete(DATABASE_TABLE_HOUSEMEMBERS, KEY_HOUSEID + "=?",
+		mDb.delete(Tables.HOUSEMEMBERS, Columns.HOUSEID + "=?",
 				new String[] { String.valueOf(rowId) });
-		return mDb.delete(DATABASE_TABLE_HOUSES, KEY_ROWID + "=?",
+		return mDb.delete(Tables.HOUSES, Columns.ROWID + "=?",
 				new String[] { String.valueOf(rowId) });
 	}
 
@@ -1081,8 +880,7 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public long deleteLocation(final long rowId) throws SQLException {
-		return mDb.delete(DATABASE_TABLE_LOCATIONS, KEY_ROWID + "=" + rowId,
-				null);
+		return mDb.delete(Tables.LOCATIONS, Columns.ROWID + "=" + rowId, null);
 	}
 
 	/**
@@ -1093,18 +891,27 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Delete unresolved call arounds that match today's date.
+	 */
+	private void deleteTodaysUnresolvedCallarounds() {
+		mDb.delete(Tables.CALLAROUNDS,
+				"date(dueby) = date('now','localtime') and outstanding='1'",
+				null);
+	}
+
+	/**
 	 * Delete all unsent and undelivered messages from the database.
 	 * 
 	 * @throws SQLException
 	 *             the sQL exception
 	 */
 	public void deleteUnsentUndelivered() throws SQLException {
-		mDb.delete(DATABASE_TABLE_PENDING, null, null);
+		mDb.delete(Tables.PENDING, null, null);
 	}
 
 	/**
 	 * Fetch contacts' numbers who are associated with houses receiving an
-	 * active call around. Columns: KEY_NUMBER
+	 * active call around. Columns: Columns.NUMBER
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1119,7 +926,7 @@ public class DbAdapter {
 
 	/**
 	 * Return a cursor with a list of alarms of the specified type. Columns:
-	 * KEY_REQUESTID
+	 * Columns.REQUESTID
 	 * 
 	 * @param type
 	 *            The type of alarm to return (defined in AlarmManager)
@@ -1132,9 +939,9 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
-	 * KEY_LOCATION, KEY_KEYWORD, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING,
-	 * KEY_WITH, KEY_TRIPRESOLVED
+	 * Return a cursor with a list of all check-ins. Columns: Columns.ROWID,
+	 * Columns.LOCATION, Columns.KEYWORD, Columns.TIMEDUE, Columns.NAME,
+	 * Columns.OUTSTANDING, Columns.WITH, Columns.TRIPRESOLVED
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1148,7 +955,7 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Fetch all contacts' numbers. Columns: KEY_NUMBER
+	 * Fetch all contacts' numbers. Columns: Columns.NUMBER
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1159,46 +966,50 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Return a cursor with all of the guards. Columns: KEY_ROWID, KEY_NAME,
-	 * KEY_NUMBER
+	 * Return a cursor with all of the guards. Columns: Columns.ROWID,
+	 * Columns.NAME, Columns.NUMBER
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public Cursor fetchAllGuards() throws SQLException {
-		return mDb.query(DATABASE_TABLE_GUARDS, new String[] { KEY_ROWID,
-				KEY_NAME, KEY_NUMBER }, null, null, null, null, KEY_NAME);
+		return mDb.query(Tables.GUARDS, new String[] { Columns.ROWID,
+				Columns.NAME, Columns.NUMBER }, null, null, null, null,
+				Columns.NAME);
 	}
 
 	/**
-	 * Return a cursor with all houses. Columns: KEY_ROWID, KEY_NAME, KEY_ACTIVE
+	 * Return a cursor with all houses. Columns: Columns.ROWID, Columns.NAME,
+	 * Columns.ACTIVE
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public Cursor fetchAllHouses() throws SQLException {
-		return mDb.query(DATABASE_TABLE_HOUSES, new String[] { KEY_ROWID,
-				KEY_NAME, KEY_ACTIVE }, null, null, null, null, KEY_NAME);
+		return mDb.query(Tables.HOUSES, new String[] { Columns.ROWID,
+				Columns.NAME, Columns.ACTIVE }, null, null, null, null,
+				Columns.NAME);
 	}
 
 	/**
-	 * Return a cursor with all locations. Columns: KEY_ROWID, KEY_LABEL,
-	 * KEY_ALLOWED, KEY_KEYWORD
+	 * Return a cursor with all locations. Columns: Columns.ROWID,
+	 * Columns.LABEL, Columns.ALLOWED, Columns.KEYWORD
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public Cursor fetchAllLocations() throws SQLException {
-		return mDb.query(DATABASE_TABLE_LOCATIONS, new String[] { KEY_ROWID,
-				KEY_LABEL, KEY_ALLOWED, KEY_KEYWORD }, null, null, null, null,
-				KEY_LABEL);
+		return mDb.query(Tables.LOCATIONS, new String[] { Columns.ROWID,
+				Columns.LABEL, Columns.ALLOWED, Columns.KEYWORD }, null, null,
+				null, null, Columns.LABEL);
 	}
 
 	/**
-	 * Returns a cursor with the blocked numbers Columns: KEY_ROWID, KEY_NUMBER.
+	 * Returns a cursor with the blocked numbers Columns: Columns.ROWID,
+	 * Columns.NUMBER.
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1210,7 +1021,8 @@ public class DbAdapter {
 
 	/**
 	 * Returns a cursor with call around reports for all days in the database.
-	 * Columns: KEY_ROWID,KEY_DUEBY,KEY_OUTSTANDING,KEY_RESOLVED
+	 * Columns: Columns.ROWID,Columns.DUEBY,Columns.OUTSTANDING,Columns
+	 * .RESOLVED
 	 * 
 	 * @param showFuture
 	 *            the show future
@@ -1233,10 +1045,11 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns a cursor with the call around report for one day. KEY_NAME is the
-	 * name of the house. KEY_TIMERECEIVED is empty or null if the call around
-	 * has not been resolved. Columns: KEY_ROWID, KEY_NAME, KEY_TIMERECEIVED,
-	 * KEY_OUTSTANDING, KEY_DUEFROM, KEY_DUEBY, KEY_DELAYED
+	 * Returns a cursor with the call around report for one day. Columns.NAME is
+	 * the name of the house. Columns.TIMERECEIVED is empty or null if the call
+	 * around has not been resolved. Columns: Columns.ROWID, Columns.NAME,
+	 * Columns.TIMERECEIVED, Columns.OUTSTANDING, Columns.DUEFROM,
+	 * Columns.DUEBY, Columns.DELAYED
 	 * 
 	 * @param isoday
 	 *            the requested day, in ISO 8601 format (2012-06-18)
@@ -1255,8 +1068,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns a cursor with all checked in people. KEY_LABEL is the house name.
-	 * Columns: KEY_ROWID, KEY_NAME, KEY_LABEL
+	 * Returns a cursor with all checked in people. Columns.LABEL is the house
+	 * name. Columns: Columns.ROWID, Columns.NAME, Columns.LABEL
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1270,8 +1083,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns a cursor with all people not checked out. KEY_LABEL is the house
-	 * name. Columns: KEY_ROWID, KEY_NAME, KEY_LABEL
+	 * Returns a cursor with all people not checked out. Columns.LABEL is the
+	 * house name. Columns: Columns.ROWID, Columns.NAME, Columns.LABEL
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1286,7 +1099,7 @@ public class DbAdapter {
 
 	/**
 	 * Returns a cursor with names and phone numbers for a given house. Columns:
-	 * KEY_ROWID, KEY_NAME, KEY_NUMBER
+	 * Columns.ROWID, Columns.NAME, Columns.NUMBER
 	 * 
 	 * @param house_id
 	 *            the house_id
@@ -1304,7 +1117,7 @@ public class DbAdapter {
 
 	/**
 	 * Get a report of a guard's check-ins that were due before the present
-	 * time. Columns: KEY_ID, KEY_TIME, KEY_RESPONSE
+	 * time. Columns: Columns.ID, Columns.TIME, Columns.RESPONSE
 	 * 
 	 * @param guard_id
 	 *            the guard_id
@@ -1321,8 +1134,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
-	 * KEY_LOCATION, KEY_TIMEDUE, KEY_NAME, KEY_OUTSTANDING
+	 * Return a cursor with a list of all check-ins. Columns: Columns.ROWID,
+	 * Columns.LOCATION, Columns.TIMEDUE, Columns.NAME, Columns.OUTSTANDING
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1337,7 +1150,7 @@ public class DbAdapter {
 	/**
 	 * Return a cursor with a list of phone numbers associated with houses that
 	 * have not done call around for today and are not delayed. Columns:
-	 * KEY_NUMBER
+	 * Columns.NUMBER
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1350,8 +1163,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Return a cursor with a list of all check-ins. Columns: KEY_ROWID,
-	 * KEY_CONTACTID, KEY_TIMEDUE
+	 * Return a cursor with a list of all check-ins. Columns: Columns.ROWID,
+	 * Columns.CONTACTID, Columns.TIMEDUE
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1365,8 +1178,9 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Fetch unsent and undelivered messages. Columns KEY_ID, KEY_NUMBER,
-	 * KEY_MESSAGE, KEY_TIME, KEY_SENT, KEY_DELIVERED
+	 * Fetch unsent and undelivered messages. Columns Columns.ID,
+	 * Columns.NUMBER, Columns.MESSAGE, Columns.TIME, Columns.SENT,
+	 * Columns.DELIVERED
 	 * 
 	 * @return the cursor
 	 */
@@ -1388,9 +1202,9 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public boolean getCallaroundActive(final long house_id) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_HOUSES,
-				new String[] { KEY_ROWID }, KEY_ROWID + "='" + house_id
-						+ "' and " + KEY_ACTIVE + "='1'", null, null, null,
+		final Cursor cur = mDb.query(Tables.HOUSES,
+				new String[] { Columns.ROWID }, Columns.ROWID + "='" + house_id
+						+ "' and " + Columns.ACTIVE + "='1'", null, null, null,
 				null);
 		final boolean ret = cur.moveToFirst();
 		cur.close();
@@ -1432,8 +1246,8 @@ public class DbAdapter {
 	 */
 	public boolean getCallaroundResolvedFromId(final long rowId)
 			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CALLAROUNDS,
-				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CALLAROUNDS,
+				new String[] { Columns.OUTSTANDING }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(rowId) }, null, null, null);
 		boolean retVal;
 		if (cur.moveToFirst()) {
@@ -1515,8 +1329,8 @@ public class DbAdapter {
 	 */
 	public boolean getCheckinOutstanding(final long checkin_id)
 			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_OUTSTANDING }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CHECKINS,
+				new String[] { Columns.OUTSTANDING }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }, null, null, null);
 		boolean retVal;
 		if (cur.moveToFirst()) {
@@ -1568,8 +1382,8 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public String getCheckinTime(final long checkin_id) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_TIMEDUE }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CHECKINS,
+				new String[] { Columns.TIMEDUE }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }, null, null, null);
 		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
@@ -1601,10 +1415,10 @@ public class DbAdapter {
 	 */
 	public boolean getContactHasCheckinOutstanding(final long contact_id)
 			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
-						+ "' and " + KEY_OUTSTANDING + "='1'", null, null,
-				null, null);
+		final Cursor cur = mDb.query(Tables.CHECKINS,
+				new String[] { Columns.ROWID }, Columns.CONTACTID + "='"
+						+ contact_id + "' and " + Columns.OUTSTANDING + "='1'",
+				null, null, null, null);
 		final boolean ret = cur.moveToFirst();
 		cur.close();
 		return ret;
@@ -1637,8 +1451,8 @@ public class DbAdapter {
 	 */
 	public long getContactIdForCheckin(final long checkin_id)
 			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CHECKINS,
-				new String[] { KEY_CONTACTID }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CHECKINS,
+				new String[] { Columns.CONTACTID }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }, null, null, null);
 		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
@@ -1688,8 +1502,8 @@ public class DbAdapter {
 	 */
 	public boolean getContactPermission(final long contact_id,
 			final long permissionId) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CONTACTS,
-				new String[] { KEY_PERMISSIONS }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CONTACTS,
+				new String[] { Columns.PERMISSIONS }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(contact_id) }, null, null, null);
 		cur.moveToFirst();
 		final long result = cur.getLong(0);
@@ -1710,8 +1524,8 @@ public class DbAdapter {
 	 */
 	public boolean getContactPreference(final long contact_id,
 			final long permissionId) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CONTACTS,
-				new String[] { KEY_PREFERENCES }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CONTACTS,
+				new String[] { Columns.PREFERENCES }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(contact_id) }, null, null, null);
 		cur.moveToFirst();
 		final long result = cur.getLong(0);
@@ -1731,10 +1545,11 @@ public class DbAdapter {
 	 */
 	public long getContactUnresolvedTrip(final long contact_id)
 			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_TRIPS,
-				new String[] { KEY_ROWID }, KEY_CONTACTID + "='" + contact_id
-						+ "' and " + KEY_TRIPRESOLVED + "='0'", null, null,
-				null, null);
+		final Cursor cur = mDb
+				.query(Tables.TRIPS, new String[] { Columns.ROWID },
+						Columns.CONTACTID + "='" + contact_id + "' and "
+								+ Columns.TRIPRESOLVED + "='0'", null, null,
+						null, null);
 		return cur.moveToFirst() ? cur.getLong(0) : -1;
 	}
 
@@ -1756,6 +1571,26 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns the id of the guard currently assigned to the specified house for
+	 * today.
+	 * 
+	 * @param house_id
+	 *            the house_id
+	 * @return the guard for house
+	 */
+	public long getCurrentGuardForHouse(final long house_id) {
+		final Date checkinStartTime = Time
+				.previousDateFromPreferenceString(mContext,
+						HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
+
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(checkinStartTime);
+		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+		return getGuard(house_id, dayOfWeek);
+	}
+
+	/**
 	 * Return a list of forbidden locations in a CSV string.
 	 * 
 	 * @return the string
@@ -1763,15 +1598,15 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public String getForbiddenLocations() throws SQLException {
-		final Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS, new String[] {
-				KEY_ROWID, KEY_LABEL }, KEY_ALLOWED + "='0'", null, null, null,
-				KEY_LABEL);
+		final Cursor cursor = mDb.query(Tables.LOCATIONS, new String[] {
+				Columns.ROWID, Columns.LABEL }, Columns.ALLOWED + "='0'", null,
+				null, null, Columns.LABEL);
 		String retVal;
 		if (cursor.moveToFirst()) {
 			final StringBuffer buffer = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
 				buffer.append(cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL)));
+						.getColumnIndexOrThrow(DbAdapter.Columns.LABEL)));
 				if (!cursor.isLast()) {
 					buffer.append(", ");
 				}
@@ -1824,26 +1659,6 @@ public class DbAdapter {
 						"select time from guardcheckins where guard_id=? order by time desc limit 1;",
 						new String[] { String.valueOf(guard_id) });
 		return cur.moveToFirst() ? cur.getString(0) : "";
-	}
-
-	/**
-	 * Returns the id of the guard currently assigned to the specified house for
-	 * today.
-	 * 
-	 * @param house_id
-	 *            the house_id
-	 * @return the guard for house
-	 */
-	public long getCurrentGuardForHouse(final long house_id) {
-		final Date checkinStartTime = Time
-				.previousDateFromPreferenceString(mContext,
-						HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
-
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(checkinStartTime);
-		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-
-		return getGuard(house_id, dayOfWeek);
 	}
 
 	/**
@@ -1914,6 +1729,23 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Returns the _id of the house associated with the contact.
+	 * 
+	 * @param contact_id
+	 *            the contact_id
+	 * @return the house id
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long getHouseId(final long contact_id) throws SQLException {
+		final Cursor cur = mDb.query(Tables.HOUSEMEMBERS,
+				new String[] { Columns.HOUSEID }, Columns.CONTACTID + "= ?",
+				new String[] { String.valueOf(contact_id) }, null, null, null);
+		return cur.moveToFirst() ? cur.getInt(cur
+				.getColumnIndex(Columns.HOUSEID)) : -1;
+	}
+
+	/**
 	 * Returns the id of the house if it exists, otherwise -1.
 	 * 
 	 * @param house
@@ -1928,23 +1760,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the _id of the house associated with the contact.
-	 * 
-	 * @param contact_id
-	 *            the contact_id
-	 * @return the house id
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public long getHouseId(final long contact_id) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_HOUSEMEMBERS,
-				new String[] { KEY_HOUSEID }, KEY_CONTACTID + "= ?",
-				new String[] { String.valueOf(contact_id) }, null, null, null);
-		return cur.moveToFirst() ? cur.getInt(cur.getColumnIndex(KEY_HOUSEID))
-				: -1;
-	}
-
-	/**
 	 * Returns the _id of the house associated with the call around.
 	 * 
 	 * @param callaround_id
@@ -1955,12 +1770,12 @@ public class DbAdapter {
 	 */
 	public long getHouseIdFromCallaround(final long callaround_id)
 			throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CALLAROUNDS,
-				new String[] { KEY_HOUSEID }, KEY_ROWID + "= ?",
+		final Cursor cur = mDb.query(Tables.CALLAROUNDS,
+				new String[] { Columns.HOUSEID }, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(callaround_id) }, null, null,
 				null);
-		return cur.moveToFirst() ? cur.getInt(cur.getColumnIndex(KEY_HOUSEID))
-				: -1;
+		return cur.moveToFirst() ? cur.getInt(cur
+				.getColumnIndex(Columns.HOUSEID)) : -1;
 	}
 
 	/**
@@ -1973,8 +1788,8 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public String getHouseName(final long rowId) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_HOUSES,
-				new String[] { KEY_NAME }, KEY_ROWID + "= ?",
+		final Cursor cur = mDb.query(Tables.HOUSES,
+				new String[] { Columns.NAME }, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(rowId) }, null, null, null);
 		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
@@ -1992,7 +1807,7 @@ public class DbAdapter {
 			final StringBuffer buffer = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
 				buffer.append(cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_NAME)));
+						.getColumnIndexOrThrow(DbAdapter.Columns.NAME)));
 				if (!cursor.isLast()) {
 					buffer.append(", ");
 				}
@@ -2004,6 +1819,22 @@ public class DbAdapter {
 			retVal = "";
 		}
 		return retVal;
+	}
+
+	/**
+	 * Returns the keyword of the location.
+	 * 
+	 * @param rowId
+	 *            the row id
+	 * @return the location name
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public String getLocationKeyword(final long rowId) throws SQLException {
+		final Cursor cur = mDb.query(Tables.LOCATIONS,
+				new String[] { Columns.KEYWORD }, Columns.ROWID + "= ?",
+				new String[] { String.valueOf(rowId) }, null, null, null);
+		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
 
 	/**
@@ -2058,17 +1889,18 @@ public class DbAdapter {
 	 *             the sQL exception
 	 */
 	public String getLocationKeywords() throws SQLException {
-		final Cursor cursor = mDb.query(DATABASE_TABLE_LOCATIONS, new String[] {
-				KEY_LABEL, KEY_KEYWORD }, null, null, null, null, KEY_KEYWORD);
+		final Cursor cursor = mDb.query(Tables.LOCATIONS, new String[] {
+				Columns.LABEL, Columns.KEYWORD }, null, null, null, null,
+				Columns.KEYWORD);
 		String retVal;
 		if (cursor.moveToFirst()) {
 			final StringBuffer buffer = new StringBuffer();
 			for (int i = 0; i < cursor.getCount(); i++) {
 				buffer.append(cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_KEYWORD)));
+						.getColumnIndexOrThrow(DbAdapter.Columns.KEYWORD)));
 				buffer.append(" (");
 				buffer.append(cursor.getString(cursor
-						.getColumnIndexOrThrow(DbAdapter.KEY_LABEL)));
+						.getColumnIndexOrThrow(DbAdapter.Columns.LABEL)));
 				buffer.append(')');
 				if (!cursor.isLast()) {
 					buffer.append(", ");
@@ -2084,22 +1916,6 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the keyword of the location.
-	 * 
-	 * @param rowId
-	 *            the row id
-	 * @return the location name
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public String getLocationKeyword(final long rowId) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_LOCATIONS,
-				new String[] { KEY_KEYWORD }, KEY_ROWID + "= ?",
-				new String[] { String.valueOf(rowId) }, null, null, null);
-		return cur.moveToFirst() ? cur.getString(0) : "";
-	}
-
-	/**
 	 * Returns the name of the location.
 	 * 
 	 * @param rowId
@@ -2109,8 +1925,8 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public String getLocationName(final long rowId) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_LOCATIONS,
-				new String[] { KEY_LABEL }, KEY_ROWID + "= ?",
+		final Cursor cur = mDb.query(Tables.LOCATIONS,
+				new String[] { Columns.LABEL }, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(rowId) }, null, null, null);
 		return cur.moveToFirst() ? cur.getString(0) : "";
 	}
@@ -2165,29 +1981,12 @@ public class DbAdapter {
 						new String[] { number });
 		boolean retVal;
 		if (cur.moveToFirst()) {
-			retVal = cur.getLong(cur.getColumnIndex(KEY_COUNT)) > 0 ? true
+			retVal = cur.getLong(cur.getColumnIndex(Columns.COUNT)) > 0 ? true
 					: false;
 		} else {
 			retVal = false;
 		}
 		return retVal;
-	}
-
-	/**
-	 * Returns the number of call arounds that are due, excluding delayed
-	 * callarounds.
-	 * 
-	 * @return the number of due call arounds
-	 * @throws SQLException
-	 *             a SQL exception
-	 */
-	public long getNumberOfDueCallaroundsNoDelayed() throws SQLException {
-		final Cursor cur = mDb.rawQuery(
-				"select count(_id) as count from callarounds where date(dueby)='"
-						+ Time.iso8601Date()
-						+ "' and outstanding='1' and delayed='0';", null);
-		return cur.moveToFirst() ? cur.getLong(cur.getColumnIndex(KEY_COUNT))
-				: 0;
 	}
 
 	/**
@@ -2203,8 +2002,25 @@ public class DbAdapter {
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where date(dueby)='"
 						+ Time.iso8601Date() + "' and outstanding='1';", null);
-		return cur.moveToFirst() ? cur.getLong(cur.getColumnIndex(KEY_COUNT))
-				: 0;
+		return cur.moveToFirst() ? cur.getLong(cur
+				.getColumnIndex(Columns.COUNT)) : 0;
+	}
+
+	/**
+	 * Returns the number of call arounds that are due, excluding delayed
+	 * callarounds.
+	 * 
+	 * @return the number of due call arounds
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public long getNumberOfDueCallaroundsNoDelayed() throws SQLException {
+		final Cursor cur = mDb.rawQuery(
+				"select count(_id) as count from callarounds where date(dueby)='"
+						+ Time.iso8601Date()
+						+ "' and outstanding='1' and delayed='0';", null);
+		return cur.moveToFirst() ? cur.getLong(cur
+				.getColumnIndex(Columns.COUNT)) : 0;
 	}
 
 	/**
@@ -2219,8 +2035,8 @@ public class DbAdapter {
 				.rawQuery(
 						"select count(_id) as count from checkins where outstanding='1' and datetime(timedue) <= datetime('now','localtime');",
 						null);
-		return cur.moveToFirst() ? cur.getLong(cur.getColumnIndex(KEY_COUNT))
-				: 0;
+		return cur.moveToFirst() ? cur.getLong(cur
+				.getColumnIndex(Columns.COUNT)) : 0;
 	}
 
 	/**
@@ -2403,9 +2219,9 @@ public class DbAdapter {
 		final int count = cur.getInt(0);
 
 		final ContentValues args = new ContentValues();
-		args.put(KEY_OUTSTANDING, 0);
-		mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "="
-				+ contact_id, null);
+		args.put(Columns.OUTSTANDING, 0);
+		mDb.update(Tables.CHECKINS, args, Columns.CONTACTID + "=" + contact_id,
+				null);
 		return count;
 	}
 
@@ -2425,12 +2241,12 @@ public class DbAdapter {
 			throws SQLException {
 		final ContentValues args = new ContentValues();
 		int retVal;
-		args.put(KEY_ACTIVE, active ? 1 : 0);
-		if (mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "=" + house_id,
+		args.put(Columns.ACTIVE, active ? 1 : 0);
+		if (mDb.update(Tables.HOUSES, args, Columns.ROWID + "=" + house_id,
 				null) > 0) {
-			retVal = NOTIFY_SUCCESS;
+			retVal = Notifications.SUCCESS;
 		} else {
-			retVal = NOTIFY_FAILURE;
+			retVal = Notifications.FAILURE;
 		}
 
 		// add today's, or remove it
@@ -2438,9 +2254,9 @@ public class DbAdapter {
 			addCallarounds();
 		} else {
 			mDb.delete(
-					DATABASE_TABLE_CALLAROUNDS,
+					Tables.CALLAROUNDS,
 					"datetime('now','localtime') >= datetime(duefrom) and datetime('now','localtime') <= datetime(dueby) and "
-							+ KEY_HOUSEID
+							+ Columns.HOUSEID
 							+ "='"
 							+ house_id
 							+ "' and outstanding='1'", null);
@@ -2458,20 +2274,21 @@ public class DbAdapter {
 	 *            the house id
 	 * @param delayed
 	 *            whether the callaround should be delayed or... un-delayed
-	 * @return either NOTIFY_SUCCESS or NOTIFY_FAILURE
+	 * @return either Notifications.NOTIFY_SUCCESS or
+	 *         Notifications.NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             the sQL exception
 	 */
 	public int setCallaroundDelayed(final long house_id, final boolean delayed)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_DELAYED, delayed ? 1 : 0);
+		args.put(Columns.DELAYED, delayed ? 1 : 0);
 		if (delayed) {
-			args.put(KEY_OUTSTANDING, 1);
+			args.put(Columns.OUTSTANDING, 1);
 		}
-		return mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_HOUSEID + "="
-				+ house_id + " and date(dueby)=date('now','localtime')", null) > 0 ? NOTIFY_SUCCESS
-				: NOTIFY_FAILURE;
+		return mDb.update(Tables.CALLAROUNDS, args, Columns.HOUSEID + "="
+				+ house_id + " and date(dueby)=date('now','localtime')", null) > 0 ? Notifications.SUCCESS
+				: Notifications.FAILURE;
 	}
 
 	/**
@@ -2482,8 +2299,9 @@ public class DbAdapter {
 	 *            the house_id of the call around to update
 	 * @param resolveCallaround
 	 *            whether the call around is to be resolved or not
-	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
-	 *         NOTIFY_ALREADY, NOTIFY_INACTIVE
+	 * @return Possible return values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE, Notifications.NOTIFY_ALREADY,
+	 *         Notifications.NOTIFY_INACTIVE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
@@ -2517,18 +2335,18 @@ public class DbAdapter {
 							+ house_id + "';");
 
 					if (changes() > 0) {
-						retVal = NOTIFY_SUCCESS;
+						retVal = Notifications.SUCCESS;
 					} else {
-						retVal = NOTIFY_FAILURE;
+						retVal = Notifications.FAILURE;
 					}
 				} else {
-					retVal = NOTIFY_ALREADY;
+					retVal = Notifications.ALREADY;
 				}
 			} else {
-				retVal = NOTIFY_UNTIMELY;
+				retVal = Notifications.UNTIMELY;
 			}
 		} else {
-			retVal = NOTIFY_INACTIVE;
+			retVal = Notifications.INACTIVE;
 		}
 
 		return retVal;
@@ -2541,20 +2359,21 @@ public class DbAdapter {
 	 *            the callaround_id
 	 * @param resolved
 	 *            whether the call around is to be resolved or not
-	 * @return Possible return values: NOTIFY_SUCCESS, NOTIFY_FAILURE,
-	 *         NOTIFY_ALREADY, NOTIFY_INACTIVE
+	 * @return Possible return values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE, Notifications.NOTIFY_ALREADY,
+	 *         Notifications.NOTIFY_INACTIVE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public int setCallaroundResolvedFromId(final long callaround_id,
 			final boolean resolved) throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
-		args.put(KEY_TIMERECEIVED, resolved ? Time.iso8601DateTime() : "");
+		args.put(Columns.OUTSTANDING, resolved ? 0 : 1);
+		args.put(Columns.TIMERECEIVED, resolved ? Time.iso8601DateTime() : "");
 
-		return mDb.update(DATABASE_TABLE_CALLAROUNDS, args, KEY_ROWID + "=?",
-				new String[] { String.valueOf(callaround_id) }) > 0 ? NOTIFY_SUCCESS
-				: NOTIFY_FAILURE;
+		return mDb.update(Tables.CALLAROUNDS, args, Columns.ROWID + "=?",
+				new String[] { String.valueOf(callaround_id) }) > 0 ? Notifications.SUCCESS
+				: Notifications.FAILURE;
 	}
 
 	/**
@@ -2565,17 +2384,18 @@ public class DbAdapter {
 	 *            the contact_id
 	 * @param resolved
 	 *            the resolved
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
+	 * @return Possible values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public int setCheckinResolved(final long contact_id, final boolean resolved)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
-		return mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_CONTACTID + "=?",
-				new String[] { String.valueOf(contact_id) }) > 0 ? NOTIFY_SUCCESS
-				: NOTIFY_FAILURE;
+		args.put(Columns.OUTSTANDING, resolved ? 0 : 1);
+		return mDb.update(Tables.CHECKINS, args, Columns.CONTACTID + "=?",
+				new String[] { String.valueOf(contact_id) }) > 0 ? Notifications.SUCCESS
+				: Notifications.FAILURE;
 	}
 
 	/**
@@ -2585,7 +2405,8 @@ public class DbAdapter {
 	 *            the checkin_id
 	 * @param resolved
 	 *            the resolved
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
+	 * @return Possible values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
@@ -2593,12 +2414,12 @@ public class DbAdapter {
 			final boolean resolved) throws SQLException {
 		int retVal;
 		final ContentValues args = new ContentValues();
-		args.put(KEY_OUTSTANDING, resolved ? 0 : 1);
-		if (mDb.update(DATABASE_TABLE_CHECKINS, args, KEY_ROWID + "=?",
+		args.put(Columns.OUTSTANDING, resolved ? 0 : 1);
+		if (mDb.update(Tables.CHECKINS, args, Columns.ROWID + "=?",
 				new String[] { String.valueOf(checkin_id) }) > 0) {
-			retVal = NOTIFY_SUCCESS;
+			retVal = Notifications.SUCCESS;
 		} else {
-			retVal = NOTIFY_FAILURE;
+			retVal = Notifications.FAILURE;
 		}
 		return retVal;
 	}
@@ -2616,12 +2437,12 @@ public class DbAdapter {
 	public void setContactEmail(final long contact_id, final String newemail)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_EMAIL, newemail);
-		mDb.update(DATABASE_TABLE_CONTACTEMAILS, args, KEY_CONTACTID + "= ?",
+		args.put(Columns.EMAIL, newemail);
+		mDb.update(Tables.CONTACTEMAILS, args, Columns.CONTACTID + "= ?",
 				new String[] { String.valueOf(contact_id) });
 		if (changes() == 0) {
-			args.put(KEY_CONTACTID, contact_id);
-			mDb.insert(DATABASE_TABLE_CONTACTEMAILS, null, args);
+			args.put(Columns.CONTACTID, contact_id);
+			mDb.insert(Tables.CONTACTEMAILS, null, args);
 		}
 	}
 
@@ -2638,8 +2459,8 @@ public class DbAdapter {
 	public void setContactName(final long contact_id, final String newname)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_NAME, newname);
-		mDb.update(DATABASE_TABLE_CONTACTS, args, KEY_ROWID + "= ?",
+		args.put(Columns.NAME, newname);
+		mDb.update(Tables.CONTACTS, args, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(contact_id) });
 	}
 
@@ -2652,14 +2473,15 @@ public class DbAdapter {
 	 *            the id of the permission being changed
 	 * @param pref
 	 *            the new permission value
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE, NOTIFY_ALREADY
+	 * @return Possible values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE, Notifications.NOTIFY_ALREADY
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public int setContactPermission(final long contact_id,
 			final long permissionId, final boolean pref) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CONTACTS,
-				new String[] { KEY_PERMISSIONS }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CONTACTS,
+				new String[] { Columns.PERMISSIONS }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(contact_id) }, null, null, null);
 		cur.moveToFirst();
 		long result = cur.getLong(0);
@@ -2667,10 +2489,10 @@ public class DbAdapter {
 
 		int retVal;
 		if (((result & permissionId) > 0) && pref) {
-			retVal = NOTIFY_ALREADY;
+			retVal = Notifications.ALREADY;
 		} else {
 			if (((result & permissionId) == 0) && !pref) {
-				retVal = NOTIFY_ALREADY;
+				retVal = Notifications.ALREADY;
 			} else {
 
 				if (pref) {
@@ -2680,11 +2502,12 @@ public class DbAdapter {
 				}
 
 				final ContentValues args = new ContentValues();
-				args.put(KEY_PERMISSIONS, result);
-				final int nrow = mDb.update(DATABASE_TABLE_CONTACTS, args,
-						KEY_ROWID + "= ?",
+				args.put(Columns.PERMISSIONS, result);
+				final int nrow = mDb.update(Tables.CONTACTS, args,
+						Columns.ROWID + "= ?",
 						new String[] { String.valueOf(contact_id) });
-				retVal = nrow > 0 ? NOTIFY_SUCCESS : NOTIFY_FAILURE;
+				retVal = nrow > 0 ? Notifications.SUCCESS
+						: Notifications.FAILURE;
 			}
 		}
 		return retVal;
@@ -2703,8 +2526,8 @@ public class DbAdapter {
 	public void setContactPhone(final long contact_id,
 			final String newPhoneNumber) throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_NUMBER, newPhoneNumber);
-		mDb.update(DATABASE_TABLE_CONTACTPHONES, args, KEY_CONTACTID + "= ?",
+		args.put(Columns.NUMBER, newPhoneNumber);
+		mDb.update(Tables.CONTACTPHONES, args, Columns.CONTACTID + "= ?",
 				new String[] { String.valueOf(contact_id) });
 	}
 
@@ -2717,14 +2540,15 @@ public class DbAdapter {
 	 *            the preference id
 	 * @param pref
 	 *            the new permission value
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE, NOTIFY_ALREADY
+	 * @return Possible values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE, Notifications.NOTIFY_ALREADY
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public int setContactPreference(final long contact_id,
 			final long preferenceId, final boolean pref) throws SQLException {
-		final Cursor cur = mDb.query(DATABASE_TABLE_CONTACTS,
-				new String[] { KEY_PREFERENCES }, KEY_ROWID + "=?",
+		final Cursor cur = mDb.query(Tables.CONTACTS,
+				new String[] { Columns.PREFERENCES }, Columns.ROWID + "=?",
 				new String[] { String.valueOf(contact_id) }, null, null, null);
 		cur.moveToFirst();
 		long result = cur.getLong(0);
@@ -2732,10 +2556,10 @@ public class DbAdapter {
 
 		int retVal;
 		if (((result & preferenceId) > 0) && pref) {
-			retVal = NOTIFY_ALREADY;
+			retVal = Notifications.ALREADY;
 		} else {
 			if (((result & preferenceId) == 0) && !pref) {
-				retVal = NOTIFY_ALREADY;
+				retVal = Notifications.ALREADY;
 			} else {
 
 				if (pref) {
@@ -2745,12 +2569,52 @@ public class DbAdapter {
 				}
 
 				final ContentValues args = new ContentValues();
-				args.put(KEY_PREFERENCES, result);
-				final int nrow = mDb.update(DATABASE_TABLE_CONTACTS, args,
-						KEY_ROWID + "= ?",
+				args.put(Columns.PREFERENCES, result);
+				final int nrow = mDb.update(Tables.CONTACTS, args,
+						Columns.ROWID + "= ?",
 						new String[] { String.valueOf(contact_id) });
 
-				retVal = nrow > 0 ? NOTIFY_SUCCESS : NOTIFY_FAILURE;
+				retVal = nrow > 0 ? Notifications.SUCCESS
+						: Notifications.FAILURE;
+			}
+		}
+		return retVal;
+	}
+
+	/**
+	 * Sets the guard checkin resolved.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param guard_id
+	 *            the guard_id
+	 * @return the int
+	 */
+	public int setGuardCheckinResolved(final Context context,
+			final long guard_id) {
+		final SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext);
+		final int window = Integer.parseInt(settings.getString(
+				HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"));
+
+		int retVal;
+
+		final String checkinTime = getGuardCheckinTime(guard_id);
+		if (checkinTime.isEmpty()) {
+			retVal = Notifications.FAILURE;
+		} else {
+			final ContentValues args = new ContentValues();
+			args.put(Columns.RESPONSE, 1);
+
+			if (mDb.update(
+					Tables.GUARD_CHECKINS,
+					args,
+					"guard_id=? and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
+							+ window + " minutes')",
+					new String[] { String.valueOf(guard_id) }) > 0) {
+				retVal = Notifications.SUCCESS;
+			} else {
+				retVal = Notifications.FAILURE;
 			}
 		}
 		return retVal;
@@ -2784,47 +2648,8 @@ public class DbAdapter {
 			// column
 			args.put(which, guard_id);
 		}
-		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "=?",
+		mDb.update(Tables.HOUSES, args, Columns.ROWID + "=?",
 				new String[] { String.valueOf(house_id) });
-	}
-
-	/**
-	 * Sets the guard checkin resolved.
-	 * 
-	 * @param context
-	 *            the context
-	 * @param guard_id
-	 *            the guard_id
-	 * @return the int
-	 */
-	public int setGuardCheckinResolved(final Context context,
-			final long guard_id) {
-		final SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(mContext);
-		final int window = Integer.parseInt(settings.getString(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"));
-
-		int retVal;
-
-		final String checkinTime = getGuardCheckinTime(guard_id);
-		if (checkinTime.isEmpty()) {
-			retVal = NOTIFY_FAILURE;
-		} else {
-			final ContentValues args = new ContentValues();
-			args.put(KEY_RESPONSE, 1);
-
-			if (mDb.update(
-					DATABASE_TABLE_GUARD_CHECKINS,
-					args,
-					"guard_id=? and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
-							+ window + " minutes')",
-					new String[] { String.valueOf(guard_id) }) > 0) {
-				retVal = NOTIFY_SUCCESS;
-			} else {
-				retVal = NOTIFY_FAILURE;
-			}
-		}
-		return retVal;
 	}
 
 	/**
@@ -2840,8 +2665,8 @@ public class DbAdapter {
 	public void setGuardName(final long guard_id, final String newname)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_NAME, newname);
-		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
+		args.put(Columns.NAME, newname);
+		mDb.update(Tables.GUARDS, args, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(guard_id) });
 	}
 
@@ -2858,8 +2683,8 @@ public class DbAdapter {
 	public void setGuardNumber(final long guard_id, final String newnumber)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_NUMBER, newnumber);
-		mDb.update(DATABASE_TABLE_GUARDS, args, KEY_ROWID + "= ?",
+		args.put(Columns.NUMBER, newnumber);
+		mDb.update(Tables.GUARDS, args, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(guard_id) });
 	}
 
@@ -2872,24 +2697,25 @@ public class DbAdapter {
 	 *            the contact_id
 	 * @param house_id
 	 *            the house_id
-	 * @return NOTIFY_HASHOUSE, NOTIFY_NOHOUSE, or NOTIFY_FAILURE
+	 * @return Notifications.NOTIFY_HASHOUSE, Notifications.NOTIFY_NOHOUSE, or
+	 *         Notifications.NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
 	public int setHouse(final long contact_id, final long house_id)
 			throws SQLException {
-		mDb.delete(DATABASE_TABLE_HOUSEMEMBERS, KEY_CONTACTID + "="
-				+ contact_id, null);
+		mDb.delete(Tables.HOUSEMEMBERS, Columns.CONTACTID + "=" + contact_id,
+				null);
 
 		int retVal;
 		if (house_id == -1) {
-			retVal = NOTIFY_NOHOUSE;
+			retVal = Notifications.NOHOUSE;
 		} else {
 			final ContentValues initialValues = new ContentValues();
-			initialValues.put(KEY_CONTACTID, contact_id);
-			initialValues.put(KEY_HOUSEID, house_id);
-			retVal = mDb.insert(DATABASE_TABLE_HOUSEMEMBERS, null,
-					initialValues) > 1 ? NOTIFY_HASHOUSE : NOTIFY_FAILURE;
+			initialValues.put(Columns.CONTACTID, contact_id);
+			initialValues.put(Columns.HOUSEID, house_id);
+			retVal = mDb.insert(Tables.HOUSEMEMBERS, null, initialValues) > 1 ? Notifications.HASHOUSE
+					: Notifications.FAILURE;
 		}
 		return retVal;
 	}
@@ -2907,8 +2733,8 @@ public class DbAdapter {
 	public void setHouseName(final long rowId, final String name)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_NAME, name);
-		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "= ?",
+		args.put(Columns.NAME, name);
+		mDb.update(Tables.HOUSES, args, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(rowId) });
 	}
 
@@ -2926,9 +2752,9 @@ public class DbAdapter {
 	public boolean setLocationAllowed(final long rowId, final boolean allowed)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_ALLOWED, allowed ? 1 : 0);
-		return mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "="
-				+ rowId, null) > 0;
+		args.put(Columns.ALLOWED, allowed ? 1 : 0);
+		return mDb.update(Tables.LOCATIONS, args, Columns.ROWID + "=" + rowId,
+				null) > 0;
 	}
 
 	/**
@@ -2944,8 +2770,8 @@ public class DbAdapter {
 	public void setLocationKeyword(final long rowId, final String keyword)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_KEYWORD, keyword);
-		mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "= ?",
+		args.put(Columns.KEYWORD, keyword);
+		mDb.update(Tables.LOCATIONS, args, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(rowId) });
 	}
 
@@ -2962,8 +2788,8 @@ public class DbAdapter {
 	public void setLocationName(final long rowId, final String name)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_LABEL, name);
-		mDb.update(DATABASE_TABLE_LOCATIONS, args, KEY_ROWID + "= ?",
+		args.put(Columns.LABEL, name);
+		mDb.update(Tables.LOCATIONS, args, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(rowId) });
 	}
 
@@ -2981,10 +2807,10 @@ public class DbAdapter {
 			throws SQLException {
 		if (blocked) {
 			final ContentValues initialValues = new ContentValues();
-			initialValues.put(KEY_NUMBER, number);
-			mDb.insert(DATABASE_TABLE_BLOCKEDNUMBERS, null, initialValues);
+			initialValues.put(Columns.NUMBER, number);
+			mDb.insert(Tables.BLOCKEDNUMBERS, null, initialValues);
 		} else {
-			mDb.delete(DATABASE_TABLE_BLOCKEDNUMBERS, KEY_NUMBER + "=?",
+			mDb.delete(Tables.BLOCKEDNUMBERS, Columns.NUMBER + "=?",
 					new String[] { number });
 		}
 	}
@@ -3003,10 +2829,10 @@ public class DbAdapter {
 	public void setPendingMessageDelivered(final String number,
 			final String message) throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_DELIVERED, 1);
-		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
-				+ KEY_MESSAGE + "=?", new String[] { number, message });
-		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
+		args.put(Columns.DELIVERED, 1);
+		mDb.update(Tables.PENDING, args, Columns.NUMBER + "=? and "
+				+ Columns.MESSAGE + "=?", new String[] { number, message });
+		mDb.delete(Tables.PENDING, "delivered='1' and sent='1'", null);
 	}
 
 	/**
@@ -3023,10 +2849,10 @@ public class DbAdapter {
 	public void setPendingMessageSent(final String number, final String message)
 			throws SQLException {
 		final ContentValues args = new ContentValues();
-		args.put(KEY_SENT, 1);
-		mDb.update(DATABASE_TABLE_PENDING, args, KEY_NUMBER + "=? and "
-				+ KEY_MESSAGE + "=?", new String[] { number, message });
-		mDb.delete(DATABASE_TABLE_PENDING, "delivered='1' and sent='1'", null);
+		args.put(Columns.SENT, 1);
+		mDb.update(Tables.PENDING, args, Columns.NUMBER + "=? and "
+				+ Columns.MESSAGE + "=?", new String[] { number, message });
+		mDb.delete(Tables.PENDING, "delivered='1' and sent='1'", null);
 	}
 
 	/**
@@ -3059,7 +2885,8 @@ public class DbAdapter {
 	 *            the contact_id
 	 * @param resolved
 	 *            the resolved
-	 * @return Possible values: NOTIFY_SUCCESS, NOTIFY_FAILURE
+	 * @return Possible values: Notifications.NOTIFY_SUCCESS,
+	 *         Notifications.NOTIFY_FAILURE
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
@@ -3069,12 +2896,12 @@ public class DbAdapter {
 
 		int retVal;
 		final ContentValues args = new ContentValues();
-		args.put(KEY_TRIPRESOLVED, 1);
-		if (mDb.update(DATABASE_TABLE_TRIPS, args, KEY_CONTACTID + "=?",
+		args.put(Columns.TRIPRESOLVED, 1);
+		if (mDb.update(Tables.TRIPS, args, Columns.CONTACTID + "=?",
 				new String[] { String.valueOf(contact_id) }) > 0) {
-			retVal = NOTIFY_SUCCESS;
+			retVal = Notifications.SUCCESS;
 		} else {
-			retVal = NOTIFY_FAILURE;
+			retVal = Notifications.FAILURE;
 		}
 		return retVal;
 	}
@@ -3096,8 +2923,27 @@ public class DbAdapter {
 
 		final ContentValues args = new ContentValues();
 		args.put(which, guard_id);
-		mDb.update(DATABASE_TABLE_HOUSES, args, KEY_ROWID + "= ?",
+		mDb.update(Tables.HOUSES, args, Columns.ROWID + "= ?",
 				new String[] { String.valueOf(house_id) });
+	}
+
+	/**
+	 * If a call around scheduled for today has already been resolved, update
+	 * the due times.
+	 * 
+	 * @param dueby
+	 *            the date the call around is due by
+	 * @param duefrom
+	 *            the date the call around is due from
+	 */
+	private void updateTimesOfResolvedCallarounds(final Date dueby,
+			final Date duefrom) {
+		final ContentValues args = new ContentValues();
+		args.put(Columns.DUEBY, Time.iso8601DateTime(dueby));
+		args.put(Columns.DUEFROM, Time.iso8601DateTime(duefrom));
+		mDb.update(Tables.CALLAROUNDS, args,
+				"date(dueby) = date('now','localtime') and "
+						+ Columns.OUTSTANDING + "='0'", null);
 	}
 
 }

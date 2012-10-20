@@ -115,12 +115,13 @@ public class LogList extends ListActivity {
 			final TextView type = (TextView) view.findViewById(R.id.log_type);
 
 			final Date datedate = Time.iso8601DateTime(cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_TIME)));
+					.getColumnIndex(DbAdapter.Columns.TIME)));
 
 			date.setText(Time.timeTodayTomorrow(context, datedate));
 			message.setText(cur.getString(cur
-					.getColumnIndex(DbAdapter.KEY_MESSAGE)));
-			type.setText(cur.getString(cur.getColumnIndex(DbAdapter.KEY_TYPE)));
+					.getColumnIndex(DbAdapter.Columns.MESSAGE)));
+			type.setText(cur.getString(cur
+					.getColumnIndex(DbAdapter.Columns.TYPE)));
 		}
 	}
 }
