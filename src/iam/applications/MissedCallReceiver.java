@@ -46,8 +46,8 @@ public class MissedCallReceiver extends PhoneStateListener {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		mDelay = Long.valueOf(settings.getString(
-				HomeActivity.PREFERENCES_MISSED_CALL_DELAY, "5000"));
-		mDisabled = settings.getBoolean(HomeActivity.PREFERENCES_DISABLE_247,
+				Preferences.MISSED_CALL_DELAY, "5000"));
+		mDisabled = settings.getBoolean(Preferences.DISABLE_247,
 				false);
 	}
 

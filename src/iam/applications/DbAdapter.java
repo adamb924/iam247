@@ -362,22 +362,22 @@ public class DbAdapter {
 		// between the duefrom and the dueby, that will make the dueby *after*
 		// the duefrom, which makes it impossible to do call around.
 		final Date dueBy = Time.todayAtPreferenceTime(mContext,
-				HomeActivity.PREFERENCES_CALLAROUND_DUE_BY, "21:00");
+				Preferences.CALLAROUND_DUE_BY, "21:00");
 		final Date dueFrom = Time.todayAtPreferenceTime(mContext,
-				HomeActivity.PREFERENCES_CALLAROUND_DUE_FROM, "17:00");
+				Preferences.CALLAROUND_DUE_FROM, "17:00");
 		final Date alarmTime = Time.todayAtPreferenceTime(mContext,
-				HomeActivity.PREFERENCES_CALLAROUND_ALARM_TIME, "21:10");
+				Preferences.CALLAROUND_ALARM_TIME, "21:10");
 		final Date delayed = Time.todayAtPreferenceTime(mContext,
-				HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME, "23:59");
+				Preferences.CALLAROUND_DELAYED_TIME, "23:59");
 
 		// (re)set daily alarms for when the call around is due, when the alarm
 		// should sound, and when the delayed callaround time is
-		AlarmAdapter.setDailyAlarm(mContext, AlarmAdapter.ALERT_CALLAROUND_DUE,
-				dueBy);
 		AlarmAdapter.setDailyAlarm(mContext,
-				AlarmAdapter.ALERT_CALLAROUND_ALARM, alarmTime);
+				AlarmAdapter.Alerts.CALLAROUND_DUE, dueBy);
 		AlarmAdapter.setDailyAlarm(mContext,
-				AlarmAdapter.ALERT_DELAYED_CALLAROUND_DUE, delayed);
+				AlarmAdapter.Alerts.CALLAROUND_ALARM, alarmTime);
+		AlarmAdapter.setDailyAlarm(mContext,
+				AlarmAdapter.Alerts.DELAYED_CALLAROUND_DUE, delayed);
 
 		updateTimesOfResolvedCallarounds(dueBy, dueFrom);
 
@@ -638,7 +638,7 @@ public class DbAdapter {
 					+ firstTimeEarliest;
 
 			AlarmAdapter.setDailyAlarm(mContext,
-					AlarmAdapter.ALERT_CALLAROUND_DUE,
+					AlarmAdapter.Alerts.CALLAROUND_DUE,
 					Time.iso8601DateTime(first));
 
 			mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
@@ -651,7 +651,7 @@ public class DbAdapter {
 						+ " " + secondTimeEarliest;
 
 				AlarmAdapter.setDailyAlarm(mContext,
-						AlarmAdapter.ALERT_CALLAROUND_DUE,
+						AlarmAdapter.Alerts.CALLAROUND_DUE,
 						Time.iso8601DateTime(second));
 
 				mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) values ('"
@@ -1305,8 +1305,7 @@ public class DbAdapter {
 	public boolean getCallaroundTimely(final long house_id) throws SQLException {
 		final String delayedDueTime = Time.iso8601DateTime(Time
 				.nextDateFromPreferenceString(mContext,
-						HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-						"23:59"));
+						Preferences.CALLAROUND_DELAYED_TIME, "23:59"));
 		final Cursor cur = mDb
 				.rawQuery(
 						"select _id from callarounds where house_id='"
@@ -1579,9 +1578,8 @@ public class DbAdapter {
 	 * @return the guard for house
 	 */
 	public long getCurrentGuardForHouse(final long house_id) {
-		final Date checkinStartTime = Time
-				.previousDateFromPreferenceString(mContext,
-						HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
+		final Date checkinStartTime = Time.previousDateFromPreferenceString(
+				mContext, Preferences.GUARD_CHECKIN_START, "22:00");
 
 		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(checkinStartTime);
@@ -2201,8 +2199,8 @@ public class DbAdapter {
 	public void resetGuardSchedule() {
 		final String theDay = Time.dayOfWeek(
 				Time.previousDateFromPreferenceString(mContext,
-						HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00"))
-				.toLowerCase(Locale.US);
+						Preferences.GUARD_CHECKIN_START, "22:00")).toLowerCase(
+				Locale.US);
 		mDb.execSQL("update houses set " + theDay + "_guard=typical_" + theDay
 				+ "_guard;");
 	}
@@ -2320,12 +2318,10 @@ public class DbAdapter {
 				// if this is already in effect
 				if (!resolveCallaround || outstanding) {
 					final String sOutstanding = resolveCallaround ? "0" : "1";
-					final String delayedDueTime = Time
-							.iso8601DateTime(Time
-									.todayAtPreferenceTime(
-											mContext,
-											HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
-											"23:59"));
+					final String delayedDueTime = Time.iso8601DateTime(Time
+							.todayAtPreferenceTime(mContext,
+									Preferences.CALLAROUND_DELAYED_TIME,
+									"23:59"));
 
 					mDb.execSQL("update callarounds set outstanding='"
 							+ sOutstanding
@@ -2595,7 +2591,7 @@ public class DbAdapter {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
 		final int window = Integer.parseInt(settings.getString(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_WINDOW, "5"));
+				Preferences.GUARD_CHECKIN_WINDOW, "5"));
 
 		int retVal;
 

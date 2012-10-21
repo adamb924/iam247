@@ -52,7 +52,7 @@ public class CallAroundList extends ListActivity {
 	protected void onCreate(final Bundle bundle) {
 		super.onCreate(bundle);
 
-		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.Alerts.REFRESH);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
@@ -79,7 +79,7 @@ public class CallAroundList extends ListActivity {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(getBaseContext());
 		final boolean showFuture = settings.getBoolean(
-				HomeActivity.PREFERENCES_CALLAROUNDS_SHOW_FUTURE, false);
+				Preferences.CALLAROUNDS_SHOW_FUTURE, false);
 
 		mReportCur = mDbHelper.fetchCallaroundReport(!showFuture);
 		startManagingCursor(mReportCur);

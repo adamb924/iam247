@@ -23,65 +23,70 @@ import android.preference.PreferenceManager;
 final public class AlarmAdapter {
 
 	/**
-	 * An Intent action string alerting the application to check for overdue
-	 * check-ins. Also used as an extra in the Intent to start the CheckinList
-	 * activity.
+	 * Container class for holding alert types
 	 */
-	public static final String ALERT_CHECKIN_DUE = "ALERT_CHECKIN_DUE";
+	public static class Alerts {
+		/**
+		 * An Intent action string alerting the application to check for overdue
+		 * check-ins. Also used as an extra in the Intent to start the
+		 * CheckinList activity.
+		 */
+		public static final String CHECKIN_DUE = "ALERT_CHECKIN_DUE";
 
-	/**
-	 * An Intent action string alerting the application to check for overdue
-	 * call arounds, and then text those people a reminder.
-	 */
-	public static final String ALERT_CALLAROUND_DUE = "ALERT_CALLAROUND_DUE";
+		/**
+		 * An Intent action string alerting the application to check for overdue
+		 * call arounds, and then text those people a reminder.
+		 */
+		public static final String CALLAROUND_DUE = "ALERT_CALLAROUND_DUE";
 
-	/**
-	 * An Intent action string alerting the application to check for overdue
-	 * call arounds, and sound the alarm if someone has missed.
-	 */
-	public static final String ALERT_CALLAROUND_ALARM = "ALERT_CALLAROUND_ALARM";
+		/**
+		 * An Intent action string alerting the application to check for overdue
+		 * call arounds, and sound the alarm if someone has missed.
+		 */
+		public static final String CALLAROUND_ALARM = "ALERT_CALLAROUND_ALARM";
 
-	/**
-	 * An Intent action string alerting the application to check for delayed
-	 * call arounds.
-	 */
-	public static final String ALERT_DELAYED_CALLAROUND_DUE = "ALERT_DELAYED_CALLAROUND_DUE";
+		/**
+		 * An Intent action string alerting the application to check for delayed
+		 * call arounds.
+		 */
+		public static final String DELAYED_CALLAROUND_DUE = "ALERT_DELAYED_CALLAROUND_DUE";
 
-	/**
-	 * An Intent action string alerting the application to add call arounds for
-	 * the day
-	 */
-	public static final String ALERT_ADD_CALLAROUNDS = "ALERT_ADD_CALLAROUNDS";
+		/**
+		 * An Intent action string alerting the application to add call arounds
+		 * for the day
+		 */
+		public static final String ADD_CALLAROUNDS = "ALERT_ADD_CALLAROUNDS";
 
-	/**
-	 * An Intent action string alerting the application send a message for
-	 * activities to refresh their screens
-	 */
-	public static final String ALERT_REFRESH = "ALERT_REFRESH";
+		/**
+		 * An Intent action string alerting the application send a message for
+		 * activities to refresh their screens
+		 */
+		public static final String REFRESH = "ALERT_REFRESH";
 
-	/**
-	 * An Intent action string alerting the application to remind the user about
-	 * a check-in
-	 */
-	public static final String ALERT_CHECKIN_REMINDER = "ALERT_CHECKIN_REMINDER";
+		/**
+		 * An Intent action string alerting the application to remind the user
+		 * about a check-in
+		 */
+		public static final String CHECKIN_REMINDER = "ALERT_CHECKIN_REMINDER";
 
-	/**
-	 * An Intent action string alerting the application to add the guards'
-	 * check-ins.
-	 */
-	public static final String ALERT_ADD_GUARD_CHECKINS = "ALERT_ADD_GUARD_CHECKINS";
+		/**
+		 * An Intent action string alerting the application to add the guards'
+		 * check-ins.
+		 */
+		public static final String ADD_GUARD_CHECKINS = "ALERT_ADD_GUARD_CHECKINS";
 
-	/**
-	 * An Intent action string alerting the application to perform a guard
-	 * check.
-	 */
-	public static final String ALERT_GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
+		/**
+		 * An Intent action string alerting the application to perform a guard
+		 * check.
+		 */
+		public static final String GUARD_CHECKIN = "ALERT_GUARD_CHECKIN";
 
-	/**
-	 * An Intent action string alerting the application set today's guard
-	 * schedule to their typical schedule.
-	 */
-	public static final String ALERT_RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
+		/**
+		 * An Intent action string alerting the application set today's guard
+		 * schedule to their typical schedule.
+		 */
+		public static final String RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
+	}
 
 	/**
 	 * Adds guard checkins for today.
@@ -92,20 +97,20 @@ final public class AlarmAdapter {
 	public static void addGuardCheckins(final Context context) {
 
 		// clear out old ones
-		removeAlarmsByType(context, AlarmAdapter.ALERT_GUARD_CHECKIN);
+		removeAlarmsByType(context, AlarmAdapter.Alerts.GUARD_CHECKIN);
 
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 
 		final int fewestCheckins = Integer.parseInt(settings.getString(
-				HomeActivity.PREFERENCES_FEWEST_GUARD_CHECKS, "3"));
+				Preferences.FEWEST_GUARD_CHECKS, "3"));
 		final int randomCheckins = Integer.parseInt(settings.getString(
-				HomeActivity.PREFERENCES_RANDOM_GUARD_CHECKS, "3"));
+				Preferences.RANDOM_GUARD_CHECKS, "3"));
 
 		final String startTimeString = settings.getString(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "22:00");
+				Preferences.GUARD_CHECKIN_START, "22:00");
 		final String endTimeString = settings.getString(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_END, "06:00");
+				Preferences.GUARD_CHECKIN_END, "06:00");
 
 		final Date startTime = Time.todayAtGivenTime(startTimeString);
 		final Date endTime = Time.tomorrowAtGivenTime(endTimeString);
@@ -200,8 +205,8 @@ final public class AlarmAdapter {
 		// clear the database of any existing alarms
 		dbHelper.deleteAllAlarms();
 
-		// ALERT_CHECKIN_DUE
-		// ALERT_CHECKIN_REMINDER
+		// Alerts.ALERT_CHECKIN_DUE
+		// Alerts.ALERT_CHECKIN_REMINDER
 		final Cursor cur = dbHelper.fetchUnresolvedCheckins();
 		if (cur.moveToFirst()) {
 			do {
@@ -221,23 +226,23 @@ final public class AlarmAdapter {
 		}
 
 		// Both these handled by one function call
-		// ALERT_CALLAROUND_DUE
-		// ALERT_DELAYED_CALLAROUND_DUE
-		// ALERT_CALLAROUND_ALARM
+		// Alerts.ALERT_CALLAROUND_DUE
+		// Alerts.ALERT_DELAYED_CALLAROUND_DUE
+		// Alerts.ALERT_CALLAROUND_ALARM
 		dbHelper.addCallarounds();
 
-		// ALERT_ADD_CALLAROUNDS
+		// Alerts.ALERT_ADD_CALLAROUNDS
 		AlarmAdapter.setAddCallaroundAlarm(context);
 
 		// TODO confirm that this has the intended effect
-		// ALERT_RESET_GUARD_SCHEDULE
+		// Alerts.ALERT_RESET_GUARD_SCHEDULE
 		if (!AlarmAdapter.setGuardScheduleResetAlarm(context)) {
 			// setGuardScheduleResetAlarm returns true if the alarm will go off
 			// today, so if it's false, that means we need to add the checkins
 			// manually for this day
 
-			// ALERT_ADD_GUARD_CHECKINS
-			// ALERT_GUARD_CHECKIN
+			// Alerts.ALERT_ADD_GUARD_CHECKINS
+			// Alerts.ALERT_GUARD_CHECKIN
 			AlarmAdapter.addGuardCheckins(context);
 		}
 
@@ -253,8 +258,9 @@ final public class AlarmAdapter {
 	 */
 	static public void setAddCallaroundAlarm(final Context context) {
 		final Date timeToAddAt = Time.nextDateFromPreferenceString(context,
-				HomeActivity.PREFERENCES_CALLAROUND_ADD, "06:00");
-		setDailyAlarm(context, AlarmAdapter.ALERT_ADD_CALLAROUNDS, timeToAddAt);
+				Preferences.CALLAROUND_ADD, "06:00");
+		setDailyAlarm(context, AlarmAdapter.Alerts.ADD_CALLAROUNDS,
+				timeToAddAt);
 	}
 
 	/**
@@ -265,8 +271,8 @@ final public class AlarmAdapter {
 	 */
 	static public void setAddGuardCheckinAlarms(final Context context) {
 		final Date timeToAddAt = Time.nextDateFromPreferenceString(context,
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_START, "21:00");
-		setDailyAlarm(context, AlarmAdapter.ALERT_ADD_GUARD_CHECKINS,
+				Preferences.GUARD_CHECKIN_START, "21:00");
+		setDailyAlarm(context, AlarmAdapter.Alerts.ADD_GUARD_CHECKINS,
 				timeToAddAt);
 	}
 
@@ -284,7 +290,7 @@ final public class AlarmAdapter {
 		final long time = cal.getTimeInMillis();
 
 		final Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(AlarmAdapter.ALERT_CHECKIN_DUE);
+		intent.setAction(AlarmAdapter.Alerts.CHECKIN_DUE);
 
 		setOneOffAlarm(context, time, intent);
 	}
@@ -313,12 +319,12 @@ final public class AlarmAdapter {
 				.getDefaultSharedPreferences(context);
 		final int offset = -1
 				* Integer.parseInt(settings.getString(
-						HomeActivity.PREFERENCES_CHECKIN_REMINDER_DELAY, "3"));
+						Preferences.CHECKIN_REMINDER_DELAY, "3"));
 		cal.add(Calendar.MINUTE, offset);
 
 		final Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(AlarmAdapter.ALERT_CHECKIN_REMINDER);
-		intent.putExtra(AlarmAdapter.ALERT_CHECKIN_REMINDER, checkin_id);
+		intent.setAction(AlarmAdapter.Alerts.CHECKIN_REMINDER);
+		intent.putExtra(AlarmAdapter.Alerts.CHECKIN_REMINDER, checkin_id);
 
 		setOneOffAlarm(context, cal.getTimeInMillis(), intent);
 	}
@@ -370,7 +376,7 @@ final public class AlarmAdapter {
 	private static void setGuardCheckin(final Context context,
 			final long house_id, final Date checkinTime) {
 		final Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.setAction(AlarmAdapter.ALERT_GUARD_CHECKIN);
+		intent.setAction(AlarmAdapter.Alerts.GUARD_CHECKIN);
 		intent.putExtra(DbAdapter.Columns.HOUSEID, house_id);
 
 		setOneOffAlarm(context, checkinTime.getTime(), intent);
@@ -390,8 +396,8 @@ final public class AlarmAdapter {
 		boolean addingToday = true;
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
-		final String old = settings.getString(
-				HomeActivity.PREFERENCES_GUARD_CHECKIN_END, "06:00");
+		final String old = settings.getString(Preferences.GUARD_CHECKIN_END,
+				"06:00");
 
 		// make sure that the time for the alarm is in the future, so that these
 		// events aren't really added every time you go to the home activity
@@ -401,7 +407,7 @@ final public class AlarmAdapter {
 			addingToday = false;
 		}
 
-		setDailyAlarm(context, AlarmAdapter.ALERT_RESET_GUARD_SCHEDULE,
+		setDailyAlarm(context, AlarmAdapter.Alerts.RESET_GUARD_SCHEDULE,
 				timeToAddAt);
 		return addingToday;
 	}

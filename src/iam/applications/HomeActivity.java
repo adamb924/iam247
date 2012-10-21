@@ -5,7 +5,6 @@ package iam.applications;
 
 import java.util.Date;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,77 +23,10 @@ import android.widget.TextView;
  * This is the home activity of the app, i.e., the first screen that is
  * displayed.
  */
-public class HomeActivity extends Activity {
+public class HomeActivity extends Preferences {
 
 	/** The debug tag. */
 	static public final String TAG = "Debug";
-
-	/** The name of the application preferences. */
-	static public final String PREFERENCES = "247-Preferences-File";
-
-	/** Preference key: what time callaround is due by. */
-	static public final String PREFERENCES_CALLAROUND_DUE_BY = "PREFERENCES_CALLAROUND_DUE_BY";
-
-	/** Preference key: the earliest time to callaround. */
-	static public final String PREFERENCES_CALLAROUND_DUE_FROM = "PREFERENCES_CALLAROUND_DUE_FROM";
-
-	/** Preference key: what time the call around alarm should actually sound. */
-	static public final String PREFERENCES_CALLAROUND_ALARM_TIME = "PREFERENCES_CALLAROUND_ALARM_TIME";
-
-	/** Preference key: what time the callarounds are added for the day. */
-	static public final String PREFERENCES_CALLAROUND_ADD = "PREFERENCES_CALLAROUND_ADD";
-
-	/** Preference key: whether the application permits "this is" messages. */
-	static public final String PREFERENCES_PERMIT_THISIS = "PREFERENCES_PERMIT_THISIS";
-
-	/**
-	 * Preference key: how many minutes before the checkin is due should a
-	 * reminder be sent.
-	 */
-	static public final String PREFERENCES_CHECKIN_REMINDER_DELAY = "PREFERENCES_CHECKIN_REMINDER_DELAY";
-
-	/**
-	 * Preference key: how long after the phone starts ringing should the
-	 * application wait before seeing if the person has hung up (and therefore
-	 * missed-called).
-	 */
-	static public final String PREFERENCES_MISSED_CALL_DELAY = "PREFERENCES_MISSED_CALL_DELAY";
-
-	/**
-	 * Preference key: whether callarounds scheduled for the future should be
-	 * displayed in the list.
-	 */
-	static public final String PREFERENCES_CALLAROUNDS_SHOW_FUTURE = "PREFERENCES_CALLAROUNDS_SHOW_FUTURE";
-
-	/** Preference key: a kill switch to disable 24/7. */
-	static public final String PREFERENCES_DISABLE_247 = "PREFERENCES_DISABLE_247";
-
-	/**
-	 * Preference key: the latest possible callaround, if someone requests a
-	 * delay.
-	 */
-	static public final String PREFERENCES_CALLAROUND_DELAYED_TIME = "PREFERENCES_CALLAROUND_DELAYED_TIME";
-
-	/** Preference key: what time 24/7 starts checking in on guards. */
-	static public final String PREFERENCES_GUARD_CHECKIN_START = "PREFERENCES_GUARD_CHECKIN_START";
-
-	/** Preference key: what time 24/7 stops checkin in on guards. */
-	static public final String PREFERENCES_GUARD_CHECKIN_END = "PREFERENCES_GUARD_CHECKIN_END";
-
-	/** Preference key: the fewest possible guard checks. */
-	static public final String PREFERENCES_FEWEST_GUARD_CHECKS = "PREFERENCES_FEWEST_GUARD_CHECKS";
-
-	/** Preference key: the maximum number of random checks allowed. */
-	static public final String PREFERENCES_RANDOM_GUARD_CHECKS = "PREFERENCES_RANDOM_GUARD_CHECKS";
-
-	/** Preference key: how long the guard as to respond. */
-	static public final String PREFERENCES_GUARD_CHECKIN_WINDOW = "PREFERENCES_GUARD_CHECKIN_WINDOW";
-
-	/** Preference key: ignore messages that do not have a certain prefix. */
-	static public final String PREFERENCES_REQUIRE_PREFIX = "PREFERENCES_REQUIRE_PREFIX";
-
-	/** Preference key: allow users to enable or disable call around. */
-	static public final String PREFERENCES_PERMIT_CALLAROUND_CONTROL = "PREFERENCES_PERMIT_CALLAROUND_CONTROL";
 
 	/** The database interface. */
 	private transient DbAdapter mDbHelper;
@@ -121,7 +53,7 @@ public class HomeActivity extends Activity {
 
 		setContentView(R.layout.home_activity);
 
-		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.Alerts.REFRESH);
 
 		final LinearLayout checkinsButton = (LinearLayout) findViewById(R.id.checkins_button);
 		checkinsButton.setOnClickListener(new View.OnClickListener() {
@@ -343,7 +275,7 @@ public class HomeActivity extends Activity {
 	 *            the application context
 	 */
 	static public void sendRefreshAlert(final Context context) {
-		final Intent intent = new Intent(AlarmAdapter.ALERT_REFRESH);
+		final Intent intent = new Intent(AlarmAdapter.Alerts.REFRESH);
 		context.sendBroadcast(intent);
 	}
 }
