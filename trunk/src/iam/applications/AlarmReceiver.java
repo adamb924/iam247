@@ -31,8 +31,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
-		final boolean disabled = settings.getBoolean(
-				HomeActivity.PREFERENCES_DISABLE_247, false);
+		final boolean disabled = settings.getBoolean(Preferences.DISABLE_247,
+				false);
 		if (disabled) {
 			return;
 		}
@@ -51,25 +51,30 @@ public class AlarmReceiver extends BroadcastReceiver {
 			// the action will have been set in one of the static member
 			// functions of this class.
 			final String action = intent.getAction();
-			if (action.equals(AlarmAdapter.ALERT_CHECKIN_DUE)) {
+			if (action.equals(AlarmAdapter.Alerts.CHECKIN_DUE)) {
 				checkinDue();
-			} else if (action.equals(AlarmAdapter.ALERT_ADD_CALLAROUNDS)) {
+			} else if (action.equals(AlarmAdapter.Alerts.ADD_CALLAROUNDS)) {
 				mDbHelper.addCallarounds();
 				HomeActivity.sendRefreshAlert(mContext);
-			} else if (action.equals(AlarmAdapter.ALERT_CHECKIN_REMINDER)) {
+			} else if (action
+					.equals(AlarmAdapter.Alerts.CHECKIN_REMINDER)) {
 				checkCheckinReminder(intent);
-			} else if (action.equals(AlarmAdapter.ALERT_CALLAROUND_ALARM)) {
+			} else if (action
+					.equals(AlarmAdapter.Alerts.CALLAROUND_ALARM)) {
 				checkCallaroundDue();
-			} else if (action.equals(AlarmAdapter.ALERT_CALLAROUND_DUE)) {
+			} else if (action.equals(AlarmAdapter.Alerts.CALLAROUND_DUE)) {
 				sendCallaroundReminders();
-			} else if (action.equals(AlarmAdapter.ALERT_DELAYED_CALLAROUND_DUE)) {
+			} else if (action
+					.equals(AlarmAdapter.Alerts.DELAYED_CALLAROUND_DUE)) {
 				checkDelayedCallaroundDue();
-			} else if (action.equals(AlarmAdapter.ALERT_ADD_GUARD_CHECKINS)) {
+			} else if (action
+					.equals(AlarmAdapter.Alerts.ADD_GUARD_CHECKINS)) {
 				AlarmAdapter.addGuardCheckins(mContext);
-			} else if (action.equals(AlarmAdapter.ALERT_GUARD_CHECKIN)) {
+			} else if (action.equals(AlarmAdapter.Alerts.GUARD_CHECKIN)) {
 				requestGuardCheckin(intent.getLongExtra(
 						DbAdapter.Columns.HOUSEID, -1));
-			} else if (action.equals(AlarmAdapter.ALERT_RESET_GUARD_SCHEDULE)) {
+			} else if (action
+					.equals(AlarmAdapter.Alerts.RESET_GUARD_SCHEDULE)) {
 				mDbHelper.resetGuardSchedule();
 			}
 		}
@@ -90,8 +95,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 					CallAroundDetailList.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			intent.putExtra(DbAdapter.Columns.DUEBY, Time.iso8601Date());
-			intent.putExtra(AlarmAdapter.ALERT_CALLAROUND_DUE,
-					AlarmAdapter.ALERT_CALLAROUND_DUE);
+			intent.putExtra(AlarmAdapter.Alerts.CALLAROUND_DUE,
+					AlarmAdapter.Alerts.CALLAROUND_DUE);
 			mContext.startActivity(intent);
 		}
 	}
@@ -101,12 +106,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * outstanding, and if so, sends the reminder text message.
 	 * 
 	 * @param intent
-	 *            An intent object with the extra ALERT_CHECKIN_REMINDER, which
-	 *            has the _id of the checkin.
+	 *            An intent object with the extra Alerts.ALERT_CHECKIN_REMINDER,
+	 *            which has the _id of the checkin.
 	 */
 	private void checkCheckinReminder(final Intent intent) {
 		final long checkinId = intent.getLongExtra(
-				AlarmAdapter.ALERT_CHECKIN_REMINDER, -1);
+				AlarmAdapter.Alerts.CHECKIN_REMINDER, -1);
 		if (mDbHelper.getCheckinOutstanding(checkinId)) {
 			SmsHandler.sendSms(mContext,
 					mDbHelper.getNumberForCheckin(checkinId),
@@ -129,8 +134,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 			intent.putExtra(DbAdapter.Columns.DUEBY, Time.iso8601Date());
 			intent.putExtra(DbAdapter.Columns.DELAYED,
 					DbAdapter.Columns.DELAYED);
-			intent.putExtra(AlarmAdapter.ALERT_CALLAROUND_DUE,
-					AlarmAdapter.ALERT_CALLAROUND_DUE);
+			intent.putExtra(AlarmAdapter.Alerts.CALLAROUND_DUE,
+					AlarmAdapter.Alerts.CALLAROUND_DUE);
 			mContext.startActivity(intent);
 		}
 	}
@@ -144,7 +149,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 			mDbHelper.close();
 			final Intent intent = new Intent(mContext, CheckinList.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			intent.putExtra(AlarmAdapter.ALERT_CHECKIN_DUE, true);
+			intent.putExtra(AlarmAdapter.Alerts.CHECKIN_DUE, true);
 			mContext.startActivity(intent);
 		}
 	}

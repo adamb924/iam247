@@ -52,7 +52,7 @@ public class UnsentMessageList extends ListActivity {
 
 		setContentView(R.layout.unsent_messages);
 
-		mIntentFilter = new IntentFilter(AlarmAdapter.ALERT_REFRESH);
+		mIntentFilter = new IntentFilter(AlarmAdapter.Alerts.REFRESH);
 
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();

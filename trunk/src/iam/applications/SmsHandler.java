@@ -360,7 +360,7 @@ public class SmsHandler {
 		if (ret == DbAdapter.Notifications.SUCCESS) {
 			final String time = Time.iso8601Time(Time
 					.timeFromSimpleTime(mSettings.getString(
-							HomeActivity.PREFERENCES_CALLAROUND_DELAYED_TIME,
+							Preferences.CALLAROUND_DELAYED_TIME,
 							"23:59")));
 			final String message = String.format(mContext
 					.getString(R.string.sms_callaround_delay_confirmation),
@@ -378,7 +378,7 @@ public class SmsHandler {
 	 */
 	private void disableCallaround() throws OurErrorException {
 		if (mSettings.getBoolean(
-				HomeActivity.PREFERENCES_PERMIT_CALLAROUND_CONTROL, false)) {
+				Preferences.PERMIT_CALLAROUND_CONTROL, false)) {
 			if (mHouseId == -1) {
 				sendSms(R.string.sms_callaround_nohouse);
 			} else {
@@ -401,7 +401,7 @@ public class SmsHandler {
 	 */
 	private void enableCallaround() throws OurErrorException {
 		if (mSettings.getBoolean(
-				HomeActivity.PREFERENCES_PERMIT_CALLAROUND_CONTROL, false)) {
+				Preferences.PERMIT_CALLAROUND_CONTROL, false)) {
 			if (mHouseId == -1) {
 				sendSms(R.string.sms_callaround_nohouse);
 			} else {
@@ -525,7 +525,7 @@ public class SmsHandler {
 		// perhaps he is identifying himself
 		if (messageMatches(R.string.re_thisis)) {
 			final boolean thisisAllowed = mSettings.getBoolean(
-					HomeActivity.PREFERENCES_PERMIT_THISIS, false);
+					Preferences.PERMIT_THISIS, false);
 			if (thisisAllowed) {
 				final String[] matches = getMessageMatches(R.string.re_thisis);
 				if (matches.length < 2) {

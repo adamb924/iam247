@@ -27,8 +27,8 @@ public class SmsReceiver extends BroadcastReceiver {
 
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
-		final boolean disabled = settings.getBoolean(
-				HomeActivity.PREFERENCES_DISABLE_247, false);
+		final boolean disabled = settings.getBoolean(Preferences.DISABLE_247,
+				false);
 		if (disabled) {
 			return;
 		}
@@ -55,7 +55,7 @@ public class SmsReceiver extends BroadcastReceiver {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		final boolean requirePrefix = settings.getBoolean(
-				HomeActivity.PREFERENCES_REQUIRE_PREFIX, false);
+				Preferences.REQUIRE_PREFIX, false);
 
 		final Bundle bundle = intent.getExtras();
 		if (bundle == null || !bundle.containsKey("pdus")) {
