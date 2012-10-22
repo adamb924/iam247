@@ -6,6 +6,10 @@
         android:title="@string/call_guard">
     </item>
     <item
+        android:id="@+id/request_guard_checkin"
+        android:title="@string/request_guard_checkin">
+    </item>
+    <item
         android:id="@+id/edit"
         android:title="@string/edit_name">
     </item>

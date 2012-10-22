@@ -1,5 +1,7 @@
 package iam.applications;
 
+import java.util.Date;
+
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
@@ -19,6 +21,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 /**
  * This <code>ListActivity</code> displays a checked list of houses/groups, with
@@ -186,10 +189,45 @@ public class HouseList extends ListActivity {
 			editTypicalGuardSchedule(info.id);
 			retVal = true;
 			break;
+		case R.id.request_guard_checkin:
+			requestGuardCheckin(info.id);
+			retVal = true;
+			break;
 		default:
 			retVal = super.onContextItemSelected(item);
 		}
 		return retVal;
+	}
+
+	/**
+	 * @param info
+	 */
+	private void requestGuardCheckin(final long id) {
+		Date start = Time.todayAtPreferenceTime(this,
+				Preferences.GUARD_CHECKIN_START, "22:00");
+		Date end = Time.tomorrowAtPreferenceTime(this,
+				Preferences.GUARD_CHECKIN_END, "06:00");
+		Date now = new Date();
+
+		if (now.after(start) && now.before(end)) {
+			final long guardId = AlarmReceiver.requestGuardCheckin(this,
+					mDbHelper, id);
+			if (guardId == -1) {
+				final Toast toast = Toast.makeText(this,
+						getString(R.string.request_guard_checkin_error),
+						Toast.LENGTH_LONG);
+				toast.show();
+			} else {
+				final Intent intent = new Intent(this, GuardCheckinList.class);
+				intent.putExtra(DbAdapter.Columns.ROWID, guardId);
+				startActivity(intent);
+			}
+		} else {
+			final Toast toast = Toast.makeText(this,
+					getString(R.string.request_guard_checkin_untimely),
+					Toast.LENGTH_LONG);
+			toast.show();
+		}
 	}
 
 	/**

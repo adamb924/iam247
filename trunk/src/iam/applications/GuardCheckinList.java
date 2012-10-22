@@ -4,7 +4,10 @@
 package iam.applications;
 
 import android.app.ListActivity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -24,6 +27,9 @@ public class GuardCheckinList extends ListActivity {
 	private transient DbAdapter mDbHelper;
 
 	private transient long mGuardId;
+
+	/** An intent filter to catch all broadcast refresh requests. */
+	private transient IntentFilter mIntentFilter;
 
 	/*
 	 * (non-Javadoc)
@@ -47,6 +53,8 @@ public class GuardCheckinList extends ListActivity {
 		mDbHelper = new DbAdapter(this);
 		mDbHelper.open();
 
+		mIntentFilter = new IntentFilter(AlarmAdapter.Alerts.REFRESH);
+
 		setTitle(mDbHelper.getGuardName(mGuardId));
 
 		fillData();
@@ -63,6 +71,31 @@ public class GuardCheckinList extends ListActivity {
 		mDbHelper.close();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		unregisterReceiver(mRefreshReceiver);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		fillData();
+		registerReceiver(mRefreshReceiver, mIntentFilter);
+	}
+
 	/**
 	 * Query the database and refresh the list.
 	 */
@@ -71,6 +104,17 @@ public class GuardCheckinList extends ListActivity {
 		final GuardReportAdapter adapter = new GuardReportAdapter(this, cur);
 		getListView().setAdapter(adapter);
 	}
+
+	/**
+	 * When the refresh request is received, call fillData() to refresh the
+	 * screen.
+	 */
+	public transient BroadcastReceiver mRefreshReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(final Context context, final Intent intent) {
+			fillData();
+		};
+	};
 
 	/**
 	 * An adapter for formatting the database query result into a proper list

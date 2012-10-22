@@ -56,25 +56,21 @@ public class AlarmReceiver extends BroadcastReceiver {
 			} else if (action.equals(AlarmAdapter.Alerts.ADD_CALLAROUNDS)) {
 				mDbHelper.addCallarounds();
 				HomeActivity.sendRefreshAlert(mContext);
-			} else if (action
-					.equals(AlarmAdapter.Alerts.CHECKIN_REMINDER)) {
+			} else if (action.equals(AlarmAdapter.Alerts.CHECKIN_REMINDER)) {
 				checkCheckinReminder(intent);
-			} else if (action
-					.equals(AlarmAdapter.Alerts.CALLAROUND_ALARM)) {
+			} else if (action.equals(AlarmAdapter.Alerts.CALLAROUND_ALARM)) {
 				checkCallaroundDue();
 			} else if (action.equals(AlarmAdapter.Alerts.CALLAROUND_DUE)) {
 				sendCallaroundReminders();
 			} else if (action
 					.equals(AlarmAdapter.Alerts.DELAYED_CALLAROUND_DUE)) {
 				checkDelayedCallaroundDue();
-			} else if (action
-					.equals(AlarmAdapter.Alerts.ADD_GUARD_CHECKINS)) {
+			} else if (action.equals(AlarmAdapter.Alerts.ADD_GUARD_CHECKINS)) {
 				AlarmAdapter.addGuardCheckins(mContext);
 			} else if (action.equals(AlarmAdapter.Alerts.GUARD_CHECKIN)) {
-				requestGuardCheckin(intent.getLongExtra(
-						DbAdapter.Columns.HOUSEID, -1));
-			} else if (action
-					.equals(AlarmAdapter.Alerts.RESET_GUARD_SCHEDULE)) {
+				requestGuardCheckin(mContext, mDbHelper,
+						intent.getLongExtra(DbAdapter.Columns.HOUSEID, -1));
+			} else if (action.equals(AlarmAdapter.Alerts.RESET_GUARD_SCHEDULE)) {
 				mDbHelper.resetGuardSchedule();
 			}
 		}
@@ -155,34 +151,45 @@ public class AlarmReceiver extends BroadcastReceiver {
 	}
 
 	/**
-	 * Send the specified guard a message requesting a checkin.
+	 * Send the specified guard a message requesting a check-in.
 	 * 
-	 * @param guard_id
+	 * @param context
+	 *            the context
+	 * @param db
+	 *            the database
+	 * @param house_id
+	 *            the house_id for which the check-in should be requested
+	 * @return the _id of the guard on duty
 	 */
-	private void requestGuardCheckin(final long house_id) {
+	static public long requestGuardCheckin(Context context, DbAdapter db,
+			final long house_id) {
+		long retVal = -1;
 		if (house_id != -1) {
-			final long guard_id = mDbHelper.getCurrentGuardForHouse(house_id);
+			final long guard_id = db.getCurrentGuardForHouse(house_id);
 
 			if (guard_id == -1) {
-				mDbHelper.addLogEvent(DbAdapter.LogTypes.SMS_ERROR, String
-						.format(mContext.getString(R.string.log_null_guard),
-								String.valueOf(house_id),
-								mDbHelper.getHouseName(house_id)));
+				db.addLogEvent(DbAdapter.LogTypes.SMS_ERROR, String.format(
+						context.getString(R.string.log_null_guard),
+						String.valueOf(house_id), db.getHouseName(house_id)));
 			} else {
-				final String number = mDbHelper.getGuardNumber(guard_id);
+				final String number = db.getGuardNumber(guard_id);
 				if (number.isEmpty()) {
-					mDbHelper.addLogEvent(DbAdapter.LogTypes.SMS_ERROR, String
-							.format(mContext
-									.getString(R.string.log_null_number),
-									String.valueOf(guard_id), mDbHelper
-											.getGuardName(guard_id)));
+					db.addLogEvent(
+							DbAdapter.LogTypes.SMS_ERROR,
+							String.format(
+									context.getString(R.string.log_null_number),
+									String.valueOf(guard_id),
+									db.getGuardName(guard_id)));
 				} else {
-					SmsHandler.sendSms(mContext, number,
-							mContext.getString(R.string.sms_guard_checkin));
-					mDbHelper.addGuardCheckin(guard_id, Time.iso8601DateTime());
+					SmsHandler.sendSms(context, number,
+							context.getString(R.string.sms_guard_checkin));
+					db.addGuardCheckin(guard_id, Time.iso8601DateTime());
+
+					retVal = guard_id;
 				}
 			}
 		}
+		return retVal;
 	}
 
 	/**
