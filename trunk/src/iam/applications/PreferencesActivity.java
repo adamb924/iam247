@@ -54,6 +54,13 @@ public class PreferencesActivity extends PreferenceActivity {
 
 		addPreferencesFromResource(R.xml.preferences);
 
+		setPreferenceClickListeners();
+	}
+
+	/**
+	 * 
+	 */
+	private void setPreferenceClickListeners() {
 		final Preference emailDatabase = findPreference("email_database");
 		emailDatabase
 				.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -141,23 +148,6 @@ public class PreferencesActivity extends PreferenceActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-
-		// I'm at a loss how else to make sure this gets called
-		// TODO replace this with an something like this snippet:
-		// SharedPreferences prefs =
-		// PreferenceManager.getDefaultSharedPreferences(this);
-		// // Instance field for listener
-		// listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-		// public void onSharedPreferenceChanged(SharedPreferences prefs, String
-		// key) {
-		// // Your Implementation
-		// }
-		// };
-		// prefs.registerOnSharedPreferenceChangeListener(listener);
-
-		mDbHelper.addCallarounds();
-		HomeActivity.sendRefreshAlert(this);
-
 		mDbHelper.close();
 	}
 
