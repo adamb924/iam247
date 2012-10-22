@@ -45,10 +45,9 @@ public class MissedCallReceiver extends PhoneStateListener {
 
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
-		mDelay = Long.valueOf(settings.getString(
-				Preferences.MISSED_CALL_DELAY, "5000"));
-		mDisabled = settings.getBoolean(Preferences.DISABLE_247,
-				false);
+		mDelay = Long.valueOf(settings.getString(Preferences.MISSED_CALL_DELAY,
+				"5000"));
+		mDisabled = settings.getBoolean(Preferences.DISABLE_247, false);
 	}
 
 	/*
@@ -119,6 +118,7 @@ public class MissedCallReceiver extends PhoneStateListener {
 			SmsHandler
 					.sendSms(mContext, mNumber, mContext
 							.getString(R.string.sms_guard_checkin_confirmation));
+			HomeActivity.sendRefreshAlert(mContext);
 		} else {
 			SmsHandler.sendSms(mContext, mNumber,
 					mContext.getString(R.string.sms_guard_checkin_rejection));

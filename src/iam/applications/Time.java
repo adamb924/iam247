@@ -211,15 +211,27 @@ final public class Time {
 		final SharedPreferences settings = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		final String simpleTime = settings.getString(preference, defaultValue);
+		return Time.todayAtGivenTime(simpleTime);
+	}
 
-		final Date targetTime = Time.timeFromSimpleTime(simpleTime);
-		final Date today = new Date();
-
-		today.setHours(targetTime.getHours());
-		today.setMinutes(targetTime.getMinutes());
-		today.setSeconds(targetTime.getSeconds());
-
-		return today;
+	/**
+	 * Return a Date object set to tomorrow's date, at the time specified by the
+	 * preference.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param preference
+	 *            the preference
+	 * @param defaultValue
+	 *            the default value
+	 * @return the date
+	 */
+	static public Date tomorrowAtPreferenceTime(final Context context,
+			final String preference, final String defaultValue) {
+		final SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		final String simpleTime = settings.getString(preference, defaultValue);
+		return Time.tomorrowAtGivenTime(simpleTime);
 	}
 
 	/**
