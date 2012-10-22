@@ -13,7 +13,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -55,7 +54,7 @@ public class HomeActivity extends Preferences {
 						| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 						| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-		setAlarms();
+		AlarmAdapter.resetAlarms(this);
 
 		setContentView(R.layout.home_activity);
 
@@ -81,7 +80,6 @@ public class HomeActivity extends Preferences {
 			@Override
 			public void onSharedPreferenceChanged(SharedPreferences prefs,
 					String key) {
-				Log.i("Debug", "Updating...");
 				AlarmAdapter.resetAlarms(HomeActivity.this);
 				HomeActivity.sendRefreshAlert(HomeActivity.this);
 			}
@@ -176,16 +174,6 @@ public class HomeActivity extends Preferences {
 				startActivity(intent);
 			}
 		});
-	}
-
-	/**
-	 * This method sets alarms daily alarms that we want to be sure are going
-	 * off.
-	 */
-	private void setAlarms() {
-		AlarmAdapter.setAddCallaroundAlarm(this);
-		AlarmAdapter.setAddGuardCheckinAlarms(this);
-		AlarmAdapter.setGuardScheduleResetAlarm(this);
 	}
 
 	/*
