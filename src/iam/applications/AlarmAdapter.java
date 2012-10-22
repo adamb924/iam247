@@ -86,6 +86,15 @@ final public class AlarmAdapter {
 		 * schedule to their typical schedule.
 		 */
 		public static final String RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
+
+		/** An array with all of he repeating alarm types. */
+		public static String[] REPEATING = { CALLAROUND_DUE, CALLAROUND_ALARM,
+				DELAYED_CALLAROUND_DUE, ADD_CALLAROUNDS, ADD_GUARD_CHECKINS,
+				RESET_GUARD_SCHEDULE };
+
+		/** An array with all of he one-off alarm types. */
+		public static String[] ONEOFF = { CHECKIN_DUE, CHECKIN_REMINDER,
+				GUARD_CHECKIN };
 	}
 
 	/**
@@ -234,14 +243,15 @@ final public class AlarmAdapter {
 		// Alerts.ALERT_ADD_CALLAROUNDS
 		AlarmAdapter.setAddCallaroundAlarm(context);
 
-		// TODO confirm that this has the intended effect
+		// Alerts.ADD_GUARD_CHECKINS
+		AlarmAdapter.setAddGuardCheckinAlarms(context);
+
 		// Alerts.ALERT_RESET_GUARD_SCHEDULE
 		if (!AlarmAdapter.setGuardScheduleResetAlarm(context)) {
 			// setGuardScheduleResetAlarm returns true if the alarm will go off
 			// today, so if it's false, that means we need to add the checkins
 			// manually for this day
 
-			// Alerts.ALERT_ADD_GUARD_CHECKINS
 			// Alerts.ALERT_GUARD_CHECKIN
 			AlarmAdapter.addGuardCheckins(context);
 		}
@@ -259,8 +269,7 @@ final public class AlarmAdapter {
 	static public void setAddCallaroundAlarm(final Context context) {
 		final Date timeToAddAt = Time.nextDateFromPreferenceString(context,
 				Preferences.CALLAROUND_ADD, "06:00");
-		setDailyAlarm(context, AlarmAdapter.Alerts.ADD_CALLAROUNDS,
-				timeToAddAt);
+		setDailyAlarm(context, AlarmAdapter.Alerts.ADD_CALLAROUNDS, timeToAddAt);
 	}
 
 	/**
