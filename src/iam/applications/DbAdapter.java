@@ -2895,7 +2895,7 @@ public class DbAdapter {
 	 */
 	public int setTripResolvedFromContact(final long contact_id)
 			throws SQLException {
-		resolveExistingCheckins(getContactIdForCheckin(contact_id));
+		resolveExistingCheckins(contact_id);
 
 		int retVal;
 		final ContentValues args = new ContentValues();
