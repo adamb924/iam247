@@ -379,9 +379,9 @@ public class DbAdapter {
 		AlarmAdapter.setDailyAlarm(mContext,
 				AlarmAdapter.Alerts.DELAYED_CALLAROUND_DUE, delayed);
 
-		updateTimesOfResolvedCallarounds(dueBy, dueFrom);
+		updateTimesOfResolvedDelayedCallarounds(dueBy, dueFrom);
 
-		deleteTodaysUnresolvedCallarounds();
+		deleteTodaysUnresolvedUndelayedCallarounds();
 
 		mDb.execSQL("insert or ignore into callarounds (house_id , dueby, duefrom) select _id,'"
 				+ Time.iso8601DateTime(dueBy)
@@ -891,11 +891,12 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Delete unresolved call arounds that match today's date.
+	 * Delete unresolved and unresolved call arounds that match today's date.
 	 */
-	private void deleteTodaysUnresolvedCallarounds() {
-		mDb.delete(Tables.CALLAROUNDS,
-				"date(dueby) = date('now','localtime') and outstanding='1'",
+	private void deleteTodaysUnresolvedUndelayedCallarounds() {
+		mDb.delete(
+				Tables.CALLAROUNDS,
+				"date(dueby) = date('now','localtime') and outstanding='1' and delayed = '0';",
 				null);
 	}
 
@@ -1999,7 +2000,11 @@ public class DbAdapter {
 	public long getNumberOfDueCallarounds() throws SQLException {
 		final Cursor cur = mDb.rawQuery(
 				"select count(_id) as count from callarounds where date(dueby)='"
-						+ Time.iso8601Date() + "' and outstanding='1';", null);
+						+ Time.iso8601Date()
+						+ "' and datetime('now','localtime') >= datetime('"
+						+ Time.iso8601Date(Time.todayAtPreferenceTime(mContext,
+								Preferences.CALLAROUND_DELAYED_TIME, "23:59"))
+						+ "') and outstanding='1';", null);
 		return cur.moveToFirst() ? cur.getLong(cur
 				.getColumnIndex(Columns.COUNT)) : 0;
 	}
@@ -2013,10 +2018,12 @@ public class DbAdapter {
 	 *             a SQL exception
 	 */
 	public long getNumberOfDueCallaroundsNoDelayed() throws SQLException {
-		final Cursor cur = mDb.rawQuery(
-				"select count(_id) as count from callarounds where date(dueby)='"
-						+ Time.iso8601Date()
-						+ "' and outstanding='1' and delayed='0';", null);
+		final Cursor cur = mDb
+				.rawQuery(
+						"select count(_id) as count from callarounds where date(dueby)='"
+								+ Time.iso8601Date()
+								+ "' and datetime(dueby) <= datetime('now','localtime') and outstanding='1' and delayed='0';",
+						null);
 		return cur.moveToFirst() ? cur.getLong(cur
 				.getColumnIndex(Columns.COUNT)) : 0;
 	}
@@ -2924,22 +2931,23 @@ public class DbAdapter {
 	}
 
 	/**
-	 * If a call around scheduled for today has already been resolved, update
-	 * the due times.
+	 * If a call around scheduled for today has already been resolved or is
+	 * delayed, update the due times.
 	 * 
 	 * @param dueby
 	 *            the date the call around is due by
 	 * @param duefrom
 	 *            the date the call around is due from
 	 */
-	private void updateTimesOfResolvedCallarounds(final Date dueby,
+	private void updateTimesOfResolvedDelayedCallarounds(final Date dueby,
 			final Date duefrom) {
 		final ContentValues args = new ContentValues();
 		args.put(Columns.DUEBY, Time.iso8601DateTime(dueby));
 		args.put(Columns.DUEFROM, Time.iso8601DateTime(duefrom));
 		mDb.update(Tables.CALLAROUNDS, args,
-				"date(dueby) = date('now','localtime') and "
-						+ Columns.OUTSTANDING + "='0'", null);
+				"date(dueby) = date('now','localtime') and ("
+						+ Columns.OUTSTANDING + "='0' or " + Columns.DELAYED
+						+ "='1');", null);
 	}
 
 }

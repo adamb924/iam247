@@ -104,18 +104,19 @@
     <string name="clear_oneweek_summary">Clear call arounds &amp; check-ins due before one week ago</string>
     <string name="clear_log">The event log</string>
     <string name="clear_log_summary">Clear logged events from before one week ago</string>
-    <string name="callaround_due">Call around due time</string>
-    <string name="callaround_due_summary">What time daily call around is due</string>
     <string name="previous_days">Previous days</string>
 
-        <string name="callaround_alarm_time">Call around alarm time</string>
+    <string name="callaround_alarm_time">Alarm time</string>
     <string name="callaround_alarm_time_summary">What time the call around alarm should sound, if no one has checked in</string>
+
+        <string name="callaround_due">Due time</string>
+    <string name="callaround_due_summary">What time daily call around is due</string>
     
-    <string name="callaround_earliest">Call around earliest time</string>
+    <string name="callaround_earliest">Earliest time</string>
     <string name="callaround_earliest_summary">The earliest time a team member can do call around</string>
-    <string name="callaround_delayed_time">Delayed call around time</string>
+    <string name="callaround_delayed_time">Delayed time</string>
     <string name="callaround_delayed_time_summary">The latest time a team member can do call around, if s/he requests a delay</string>
-    <string name="callaround_add">Call around add time</string>
+    <string name="callaround_add">Add time</string>
     <string name="callaround_add_summary">The time each day that the day\'s call arounds should be added</string>
     <string name="callaround_settings">Call around settings</string>
     <string name="blocked_numbers">Block number</string>
