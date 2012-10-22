@@ -89,7 +89,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 			final Intent intent = new Intent(mContext,
 					CallAroundDetailList.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // this is necessary
+															// because the
+															// activity is being
+															// started from a
+															// receiver and not
+															// from an activity
 			intent.putExtra(DbAdapter.Columns.DUEBY, Time.iso8601Date());
 			intent.putExtra(AlarmAdapter.Alerts.CALLAROUND_DUE,
 					AlarmAdapter.Alerts.CALLAROUND_DUE);
