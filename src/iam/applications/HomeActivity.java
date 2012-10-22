@@ -9,7 +9,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,7 +22,6 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-// TODO: Auto-generated Javadoc
 /**
  * This is the home activity of the app, i.e., the first screen that is
  * displayed.
@@ -33,6 +36,9 @@ public class HomeActivity extends Preferences {
 
 	/** An intent filter to catch all broadcast refresh requests. */
 	private transient IntentFilter mIntentFilter;
+
+	/** A listener for when the preferences change. */
+	private transient OnSharedPreferenceChangeListener mPreferenceListener;
 
 	/*
 	 * (non-Javadoc)
@@ -55,6 +61,38 @@ public class HomeActivity extends Preferences {
 
 		mIntentFilter = new IntentFilter(AlarmAdapter.Alerts.REFRESH);
 
+		setButtonClickListeners();
+
+		setPreferenceChangeListener();
+
+		mDbHelper = new DbAdapter(this);
+		mDbHelper.open();
+
+		fillData();
+	}
+
+	/**
+	 * 
+	 */
+	private void setPreferenceChangeListener() {
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+			@Override
+			public void onSharedPreferenceChanged(SharedPreferences prefs,
+					String key) {
+				Log.i("Debug", "Updating...");
+				AlarmAdapter.resetAlarms(HomeActivity.this);
+				HomeActivity.sendRefreshAlert(HomeActivity.this);
+			}
+		};
+		prefs.registerOnSharedPreferenceChangeListener(mPreferenceListener);
+	}
+
+	/**
+	 * 
+	 */
+	private void setButtonClickListeners() {
 		final LinearLayout checkinsButton = (LinearLayout) findViewById(R.id.checkins_button);
 		checkinsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -138,11 +176,6 @@ public class HomeActivity extends Preferences {
 				startActivity(intent);
 			}
 		});
-
-		mDbHelper = new DbAdapter(this);
-		mDbHelper.open();
-
-		fillData();
 	}
 
 	/**
