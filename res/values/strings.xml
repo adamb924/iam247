@@ -3,6 +3,7 @@
 
     <!-- UI Strings -->
     <string name="app_name">24/7</string>
+    <string name="major_preferences">Important preferences</string>
     <string name="activty_where">Team member locations</string>
     <string name="activty_teammembers">Team members</string>
     <string name="activty_callaround">Call around</string>
@@ -27,7 +28,7 @@
     <string name="call_number">Call number</string>
     <string name="red_alert">Red Alert!</string>
     <string name="noCheckins">There are no outstanding check-ins.</string>
-    <string name="callaround_enabled">Call around Enabled</string>
+    <string name="callaround_enabled">Call around enabled</string>
     <string name="editTeammember">Edit Teammember</string>
     <!-- <string name="checkedout">Not checked in:</string> -->
     <!-- <string name="checkedin">Checked in:</string> -->
@@ -40,8 +41,8 @@
     <string name="returning">Check-in by: %s</string>
     <string name="due">Due: %s</string>
     <string name="with">With: %s</string>
-    <string name="resolve_checkin">Resolve checkin</string>
-    <string name="unresolve_checkin">Unresolve checkin</string>
+    <string name="resolve_checkin">Resolve check-in</string>
+    <string name="unresolve_checkin">Unresolve check-in</string>
     <string name="resolve_trip">Resolve trip</string>
     <string name="unresolve_trip">Unresolve trip</string>
     <string name="resolve_callaround">Resolve call around</string>
@@ -56,9 +57,6 @@
     <string name="callaround_summary" formatted="false">%s called in, %s remaining</string>
     <string name="callaround_summary_allin">All in</string>
     <string name="callaround_summary_none">No call arounds are set</string>
-    <!-- <string name="checkin_summary_none">No pending check-ins</string> -->
-    <!-- <string name="checkin_summary_singular">1 pending check-in</string> -->
-    <!-- <string name="checkin_summary" formatted="false">%s pending check-ins</string> -->
     <string name="checkin_summary_none">No one out</string>
     <string name="checkin_summary_singular">1 person out</string>
     <string name="checkin_summary" formatted="false">%s people out</string>
@@ -93,7 +91,7 @@
     <string name="reset_database">Reset database</string>
     <string name="reset_database_summary">Clear all data from the database, permanently.</string>
     <string name="callaround">Call around</string>
-    <string name="database">Database</string>
+    <string name="database">Database operations</string>
     <string name="upload_database_instructions">If you don\'t know exactly what you\'re doing here, hit Cancel now. Otherwise, hit OK to upload a new database. The database should be called "thedatabase" and it should be on the SD card, in the "bluetooth" folder.</string>
     <string name="reset_database_first_warning">If you don\'t know exactly what you\'re doing here, hit Cancel now. You will lose ALL of the data. You will never get it back.</string>
     <string name="reset_database_second_warning">This is just to confirm that you want to delete EVERYTHING, irrecoverably. This is the last warning! Click Ok to delete everything and start from scratch.</string>
@@ -119,14 +117,14 @@
     <string name="callaround_add">Add time</string>
     <string name="callaround_add_summary">The time each day that the day\'s call arounds should be added</string>
     <string name="callaround_settings">Call around settings</string>
-    <string name="blocked_numbers">Block number</string>
+    <string name="blocked_numbers">Number blocking</string>
     <string name="block_number">Block number</string>
     <string name="block_number_summary">Blocking number will make 24/7 ignore everything from that number.</string>
     <string name="block_number_warning">If you block this person\'s number, s/he will be cut off from the system entirely. (This can be undone later.) Are you sure you want to do this?</string>
     <string name="unblock_number">Unblock number</string>
     <string name="number_blocking">Number blocking</string>
     <string name="customization">Preferences</string>
-    <string name="thisis_enabled">Permit "This is"</string>
+    <string name="thisis_enabled">Permit “this is”</string>
     <string name="thisis_enabled_summary">Allow new users to add themselves to the system</string>
     <string name="callaround_reminder_enabled">Send all around reminder</string>
     <string name="no_blocked_numbers">There are currently no blocked numbers</string>
@@ -154,7 +152,7 @@
     <string name="callaround_window">Window (minutes)</string>
     <string name="show_future">Show future</string>
     <string name="show_future_summary">Show call arounds that are scheduled after today</string>
-    <string name="callaround_preferences">Call around preferences</string>
+    <string name="callaround_preferences">Call around</string>
     <string name="delete_all_unsent_warning">Are you sure you want to delete all records of unsent and undelivered messages?</string>
     <string name="unsent">Not sent</string>
     <string name="unconfirmed">Not confirmed</string>
@@ -176,13 +174,13 @@
     <string name="house_label_keyword" formatted="false">%s (%s)</string>
     <string name="edit_keyword">Edit keyword</string>
     <string name="delayed_suffix">—Delayed</string>
-    <string name="guard_preferences">Guard Preferences</string>
+    <string name="guard_preferences">Guard check-ins</string>
     <string name="fewest_calls">Fewest calls</string>
     <string name="fewest_calls_summary">Every guard will get at least this many calls.</string>
     <string name="random_calls">Random extra calls</string>
     <string name="random_calls_summary">Randomly add up to n calls. The probability of all n calls being made is 0.5^n.</string>
-    <string name="guard_checkin_start">Beginning of checkin times</string>
-    <string name="guard_checkin_end">End of checkin times</string>
+    <string name="guard_checkin_start">Beginning time</string>
+    <string name="guard_checkin_end">End time</string>
     <string name="guard_response_window">Response window</string>
     <string name="guard_response_window_summary">Time in minutes that the guard has to respond</string>
     <string name="broadcast">Broadcast</string>
@@ -203,7 +201,7 @@
     <string name="synchronize_receive_warning">If you don\'t know exactly what you\'re doing here, hit Cancel now. Otherwise, hit OK to copy the 24/7 database and settings from the SD card (the bluetooth folder). All of the data on this device will be removed, and this cannot be undone.</string>
     <string name="synchronize_receive_summary">Read settings that you\'ve sent to the SD card from another phone.</string>
     <string name="file_delete_error">The file %s could not be deleted. Make sure that this file is gone, or it will be difficult for future synchronizations.</string>
-    <string name="permit_callaround_control">Permit disabling call around</string>
+    <string name="permit_callaround_control">Permit disabling</string>
     <string name="permit_callaround_control_summary">Permit users to enable or disable call around</string>
     <string name="request_guard_checkin">Request guard check-in</string>
     <string name="request_guard_checkin_error">There was an error in sending the guard request. ()Does this house have an assigned guard?)</string>
@@ -286,9 +284,9 @@
     <string name="sms_callaround_not_timely">24/7 says: Sorry, but it\'s either too early or too late for today\'s callaround. Contact the RTL if you have questions.</string>
     <string name="sms_callaround_delay_confirmation">24/7 says:  Your call around time has been delayed until %s. You can call around before then if you wish.</string>
     <string name="sms_location_keywords">24/7 says:  The location keywords are: %s</string>
-    <string name="sms_guard_checkin">daftara mist kal ko. Missed call the office.</string>
-    <string name="sms_guard_checkin_confirmation">Tashakur. Thank you.</string>
-    <string name="sms_guard_checkin_rejection">yA wakht bArE checkin nEs, yA wakhtesh tEr shuda. Either it is not the time for checkin, or the time has passed.</string>
+    <string name="sms_guard_checkin">لطفاً این نمبر را مست کال کنید. Lutfan in nambar ra mist kal koned. Please missed call this number.</string>
+    <string name="sms_guard_checkin_confirmation">تشکر. Tashakur. Thank you.</string>
+    <string name="sms_guard_checkin_rejection">یا وقت برای چکین نیست، یا وقتش تیر شده. Ya wakht bare checkin nest, ya wakhtesh ter shuda. Either it is not the time for checkin, or the time has passed.</string>
     <string name="sms_refuse_permission">24/7 says: You are currently not allowed to go there. You can missed-call 24/7 to get a list of forbidden locations.</string>
     <string name="sms_need_location_keyword">24/7 says:  Your checkin has not been processed. Please include a valid location keyword with your location. The possibilites are: %s</string>
     <string name="sms_houses">24/7 says: The houses are: %s</string>

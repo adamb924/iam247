@@ -9,16 +9,18 @@
         android:id="@+id/call_guard"
         android:title="@string/call_guard">
     </item>
+
     <group android:checkableBehavior="all" >
-        <item
-            android:id="@+id/callaround_enabled"
-            android:title="@string/callaround_enabled">
-        </item>
         <item
             android:id="@+id/callaround_resolved"
             android:title="@string/callaround_resolved">
         </item>
+        <item
+            android:id="@+id/callaround_enabled"
+            android:title="@string/callaround_enabled">
+        </item>
     </group>
+
     <item
         android:id="@+id/delete_callaround"
         android:title="@string/delete_callaround">

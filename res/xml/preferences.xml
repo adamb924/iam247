@@ -1,47 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="PREFERENCES_DISABLE_247"
-        android:summary="@string/disable_247_summary"
-        android:title="@string/disable_247" />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="PREFERENCES_PERMIT_THISIS"
-        android:summary="@string/thisis_enabled_summary"
-        android:title="@string/thisis_enabled" />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="PREFERENCES_REQUIRE_PREFIX"
-        android:summary="@string/require_prefix_summary"
-        android:title="@string/require_prefix" />
-
-    <EditTextPreference
-        android:defaultValue="5000"
-        android:inputType="number"
-        android:key="PREFERENCES_MISSED_CALL_DELAY"
-        android:summary="@string/missed_call_delay_summary"
-        android:title="@string/missed_call_delay" >
-    </EditTextPreference>
-
-    <PreferenceCategory android:title="@string/blocked_numbers" >
-        <iam.applications.BlockPhonePreferenceDialog
-            android:defaultValue=""
-            android:inputType="phone"
-            android:summary="@string/block_number_summary"
-            android:title="@string/block_number" />
-
-        <Preference
-            android:key="unblock_number"
-            android:title="@string/unblock_number" />
-    </PreferenceCategory>
     <PreferenceCategory android:title="@string/callaround_preferences" >
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="PREFERENCES_PERMIT_CALLAROUND_CONTROL"
-            android:summary="@string/permit_callaround_control_summary"
-            android:title="@string/permit_callaround_control" />
         <iam.applications.TimePreferenceDialog
             android:defaultValue="05:00"
             android:key="PREFERENCES_CALLAROUND_ADD"
@@ -67,6 +27,12 @@
             android:key="PREFERENCES_CALLAROUND_DELAYED_TIME"
             android:summary="@string/callaround_delayed_time_summary"
             android:title="@string/callaround_delayed_time" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="PREFERENCES_PERMIT_CALLAROUND_CONTROL"
+            android:summary="@string/permit_callaround_control_summary"
+            android:title="@string/permit_callaround_control" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="PREFERENCES_CALLAROUNDS_SHOW_FUTURE"
@@ -128,6 +94,42 @@
             android:key="synchronize_receive"
             android:summary="@string/synchronize_receive_summary"
             android:title="@string/synchronize_receive" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/blocked_numbers" >
+        <iam.applications.BlockPhonePreferenceDialog
+            android:defaultValue=""
+            android:inputType="phone"
+            android:summary="@string/block_number_summary"
+            android:title="@string/block_number" />
+
+        <Preference
+            android:key="unblock_number"
+            android:title="@string/unblock_number" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/major_preferences" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="PREFERENCES_DISABLE_247"
+            android:summary="@string/disable_247_summary"
+            android:title="@string/disable_247" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="PREFERENCES_PERMIT_THISIS"
+            android:summary="@string/thisis_enabled_summary"
+            android:title="@string/thisis_enabled" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="PREFERENCES_REQUIRE_PREFIX"
+            android:summary="@string/require_prefix_summary"
+            android:title="@string/require_prefix" />
+
+        <EditTextPreference
+            android:defaultValue="5000"
+            android:inputType="number"
+            android:key="PREFERENCES_MISSED_CALL_DELAY"
+            android:summary="@string/missed_call_delay_summary"
+            android:title="@string/missed_call_delay" >
+        </EditTextPreference>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/clear_data" >
         <Preference
