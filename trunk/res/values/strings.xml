@@ -206,6 +206,7 @@
     <string name="request_guard_checkin">Request guard check-in</string>
     <string name="request_guard_checkin_error">This house does not have a guard assigned for tonight.</string>
     <string name="request_guard_checkin_untimely">It is not the time for a check-in, so you shouldn\'t ask the guard for one right now.</string>
+    <string name="guard_has_no_number">This guard does not appear to have a phone number yet.</string>
 
     <string-array name="broadcast_options_array">
         <item>@string/broadcast_to_active</item>
