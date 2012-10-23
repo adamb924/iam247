@@ -835,7 +835,7 @@ public class DbAdapter {
 			final String typicalColumn = DbAdapter.getGuardScheduleColumnName(
 					i, true);
 			args.put(typicalColumn, -1);
-			mDb.update(CreateStatements.HOUSES, args, typicalColumn + "=?",
+			mDb.update(Tables.HOUSES, args, typicalColumn + "=?",
 					new String[] { String.valueOf(rowId) });
 
 			args.clear();
@@ -843,7 +843,7 @@ public class DbAdapter {
 			final String otherColumn = DbAdapter.getGuardScheduleColumnName(i,
 					false);
 			args.put(otherColumn, -1);
-			mDb.update(CreateStatements.HOUSES, args, otherColumn + "=?",
+			mDb.update(Tables.HOUSES, args, otherColumn + "=?",
 					new String[] { String.valueOf(rowId) });
 
 		}
