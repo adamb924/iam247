@@ -179,7 +179,7 @@ public class GuardScheduleActivity extends Activity {
 	 */
 	private void setAll() {
 		final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-		alert.setCursor(mDbHelper.fetchAllGuards(),
+		alert.setCursor(mDbHelper.fetchAllGuardsWithNone(),
 				new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(final DialogInterface dialog,
@@ -235,7 +235,7 @@ public class GuardScheduleActivity extends Activity {
 			mDay = day;
 			mTypical = typical;
 
-			mCur = mDbHelper.fetchAllGuards();
+			mCur = mDbHelper.fetchAllGuardsWithNone();
 
 			final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
 			final int[] toFields = new int[] { android.R.id.text1 };

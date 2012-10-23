@@ -191,14 +191,11 @@ public class DbAdapter {
 	 * Class containing log event types
 	 * 
 	 */
+	@SuppressWarnings("javadoc")
 	public static final class LogTypes {
-
-		/** Log message types. */
 		public static final String SMS_ERROR = "SMS Error";
-
-		/** Log message types. */
 		public static final String SMS_NOTIFICATION = "SMS Event";
-
+		public static final String DEBUG = "Debug Information";
 	}
 
 	/**
@@ -981,6 +978,20 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Return a cursor with all of the guards, plus one with _id -1 and name
+	 * "None". Columns: Columns.ROWID, Columns.NAME, Columns.NUMBER
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public Cursor fetchAllGuardsWithNone() throws SQLException {
+		return mDb.rawQuery(
+				"select _id, name, number from guards union select -1,'"
+						+ mContext.getString(R.string.none) + "',-1;", null);
+	}
+
+	/**
 	 * Return a cursor with all houses. Columns: Columns.ROWID, Columns.NAME,
 	 * Columns.ACTIVE
 	 * 
@@ -1620,7 +1631,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns the ID of the guard given the house_id and the 'which' parameter.
+	 * Returns the ID of the guard given the house_id and the 'which' parameter,
+	 * or -1 if no guard is assigned.
 	 * 
 	 * @param house_id
 	 *            the house_id

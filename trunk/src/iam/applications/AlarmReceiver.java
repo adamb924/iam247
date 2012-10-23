@@ -66,6 +66,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 					.equals(AlarmAdapter.Alerts.DELAYED_CALLAROUND_DUE)) {
 				checkDelayedCallaroundDue();
 			} else if (action.equals(AlarmAdapter.Alerts.ADD_GUARD_CHECKINS)) {
+				mDbHelper.addLogEvent(DbAdapter.LogTypes.DEBUG,
+						"Adding the guard check-ins");
 				AlarmAdapter.addGuardCheckins(mContext);
 			} else if (action.equals(AlarmAdapter.Alerts.GUARD_CHECKIN)) {
 				requestGuardCheckin(mContext, mDbHelper,
