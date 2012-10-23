@@ -168,7 +168,7 @@ final public class Time {
 	}
 
 	/**
-	 * Returns a date object corresponding to the last time it was the time
+	 * Returns a date object corresponding to the next time it will be the time
 	 * specified in the specified preference string.
 	 * 
 	 * @param context

@@ -204,7 +204,7 @@
     <string name="permit_callaround_control">Permit disabling</string>
     <string name="permit_callaround_control_summary">Permit users to enable or disable call around</string>
     <string name="request_guard_checkin">Request guard check-in</string>
-    <string name="request_guard_checkin_error">There was an error in sending the guard request. ()Does this house have an assigned guard?)</string>
+    <string name="request_guard_checkin_error">This house does not have a guard assigned for tonight.</string>
     <string name="request_guard_checkin_untimely">It is not the time for a check-in, so you shouldn\'t ask the guard for one right now.</string>
 
     <string-array name="broadcast_options_array">

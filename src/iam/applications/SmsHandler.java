@@ -61,6 +61,10 @@ public class SmsHandler {
 		// is, being called from SmsReceiver)
 		final Context appContext = context.getApplicationContext();
 
+		if (phoneNumber.length() == 0) {
+			return;
+		}
+
 		final SmsManager sms = SmsManager.getDefault();
 		final ArrayList<String> parts = sms.divideMessage(message);
 
@@ -298,10 +302,8 @@ public class SmsHandler {
 				}
 
 				if (ret != DbAdapter.Notifications.FAILURE
-						&& mDbHelper
-								.getContactPreference(
-										mContactId,
-										DbAdapter.UserPreferences.CHECKIN_REMINDER)) {
+						&& mDbHelper.getContactPreference(mContactId,
+								DbAdapter.UserPreferences.CHECKIN_REMINDER)) {
 					AlarmAdapter.setCheckinReminderAlert(mContext,
 							mDbHelper.lastInsertId());
 				}
@@ -360,8 +362,7 @@ public class SmsHandler {
 		if (ret == DbAdapter.Notifications.SUCCESS) {
 			final String time = Time.iso8601Time(Time
 					.timeFromSimpleTime(mSettings.getString(
-							Preferences.CALLAROUND_DELAYED_TIME,
-							"23:59")));
+							Preferences.CALLAROUND_DELAYED_TIME, "23:59")));
 			final String message = String.format(mContext
 					.getString(R.string.sms_callaround_delay_confirmation),
 					time);
@@ -377,8 +378,7 @@ public class SmsHandler {
 	 * @throws OurErrorException
 	 */
 	private void disableCallaround() throws OurErrorException {
-		if (mSettings.getBoolean(
-				Preferences.PERMIT_CALLAROUND_CONTROL, false)) {
+		if (mSettings.getBoolean(Preferences.PERMIT_CALLAROUND_CONTROL, false)) {
 			if (mHouseId == -1) {
 				sendSms(R.string.sms_callaround_nohouse);
 			} else {
@@ -400,8 +400,7 @@ public class SmsHandler {
 	 * @throws OurErrorException
 	 */
 	private void enableCallaround() throws OurErrorException {
-		if (mSettings.getBoolean(
-				Preferences.PERMIT_CALLAROUND_CONTROL, false)) {
+		if (mSettings.getBoolean(Preferences.PERMIT_CALLAROUND_CONTROL, false)) {
 			if (mHouseId == -1) {
 				sendSms(R.string.sms_callaround_nohouse);
 			} else {
@@ -656,10 +655,8 @@ public class SmsHandler {
 		}
 
 		if (ret != DbAdapter.Notifications.FAILURE
-				&& mDbHelper
-						.getContactPreference(
-								mContactId,
-								DbAdapter.UserPreferences.CHECKIN_REMINDER)) {
+				&& mDbHelper.getContactPreference(mContactId,
+						DbAdapter.UserPreferences.CHECKIN_REMINDER)) {
 			AlarmAdapter.setCheckinReminderAlert(mContext,
 					mDbHelper.lastInsertId());
 		}
@@ -728,8 +725,7 @@ public class SmsHandler {
 	 */
 	private void turnOffReminders() throws OurErrorException {
 		final int ret = mDbHelper.setContactPreference(mContactId,
-				DbAdapter.UserPreferences.CHECKIN_REMINDER,
-				false);
+				DbAdapter.UserPreferences.CHECKIN_REMINDER, false);
 		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_off_confirm);
 		} else if (ret == DbAdapter.Notifications.FAILURE) {
@@ -746,8 +742,7 @@ public class SmsHandler {
 	 */
 	private void turnOnReminders() throws OurErrorException {
 		final int ret = mDbHelper.setContactPreference(mContactId,
-				DbAdapter.UserPreferences.CHECKIN_REMINDER,
-				true);
+				DbAdapter.UserPreferences.CHECKIN_REMINDER, true);
 		if (ret == DbAdapter.Notifications.SUCCESS) {
 			sendSms(R.string.sms_checkin_reminder_on_confirm);
 
