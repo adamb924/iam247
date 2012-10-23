@@ -87,14 +87,19 @@ public class BroadcastActivity extends Activity {
 
 		if (toWhom.equals(getString(R.string.broadcast_to_all))) {
 			cur = mDbHelper.fetchAllContactNumbers();
-		} else {
+		} else if (toWhom.equals(getString(R.string.broadcast_to_active))) {
 			cur = mDbHelper.fetchActiveContactNumbers();
+		} else if (toWhom.equals(getString(R.string.broadcast_to_out))) {
+			cur = mDbHelper.fetchCheckedOutNumbers();
+		} else {
+			return;
 		}
 
 		if (cur.moveToFirst()) {
 			long count = 0;
 			do {
-				final String number = cur.getString(0);
+				final String number = cur.getString(cur
+						.getColumnIndex(DbAdapter.Columns.NUMBER));
 				SmsHandler.sendSms(this, number, message);
 				count++;
 			} while (cur.moveToNext());

@@ -1095,8 +1095,8 @@ public class DbAdapter {
 	}
 
 	/**
-	 * Returns a cursor with all people not checked out. Columns.LABEL is the
-	 * house name. Columns: Columns.ROWID, Columns.NAME, Columns.LABEL
+	 * Returns a cursor with all people who are checked out. Columns.LABEL is
+	 * the house name. Columns: Columns.ROWID, Columns.NAME, Columns.LABEL
 	 * 
 	 * @return the cursor
 	 * @throws SQLException
@@ -1106,6 +1106,21 @@ public class DbAdapter {
 		return mDb
 				.rawQuery(
 						"select contacts._id,contacts.name as name, houses.name as label from contacts left join housemembers on housemembers.contact_id=contacts._id left join houses on houses._id=housemembers.house_id  where contacts._id in (select contact_id from trips where tripresolved='0');",
+						null);
+	}
+
+	/**
+	 * Returns a cursor with numbers of all checked out people. Columns.LABEL is
+	 * the house name. Columns: Columns.NUMBER
+	 * 
+	 * @return the cursor
+	 * @throws SQLException
+	 *             a SQL exception
+	 */
+	public Cursor fetchCheckedOutNumbers() throws SQLException {
+		return mDb
+				.rawQuery(
+						"select number from contactphones where contact_id in (select contact_id from trips where tripresolved='0');",
 						null);
 	}
 
