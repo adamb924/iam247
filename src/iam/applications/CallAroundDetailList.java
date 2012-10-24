@@ -389,11 +389,27 @@ public class CallAroundDetailList extends ListActivity implements
 	 *            The _id of the house for which to display numbers.
 	 */
 	private void callGuard(final long house_id) {
-		final String number = mDbHelper.getGuardNumberFromDate(house_id, mDay);
+		final int dayOfWeek = Time.numericDayOfWeek(mDay);
+		final long guardId = mDbHelper.getGuard(house_id, dayOfWeek);
 
-		final Intent callIntent = new Intent(Intent.ACTION_CALL);
-		callIntent.setData(Uri.parse("tel:" + number));
-		startActivity(callIntent);
+		if (guardId == -1) {
+			final Toast toast = Toast.makeText(this,
+					getString(R.string.request_guard_checkin_error),
+					Toast.LENGTH_LONG);
+			toast.show();
+		} else {
+			final String number = mDbHelper.getGuardNumber(guardId);
+			if (number.length() == 0) {
+				final Toast toast = Toast.makeText(this,
+						getString(R.string.guard_has_no_number),
+						Toast.LENGTH_LONG);
+				toast.show();
+			} else {
+				final Intent callIntent = new Intent(Intent.ACTION_CALL);
+				callIntent.setData(Uri.parse("tel:" + number));
+				startActivity(callIntent);
+			}
+		}
 	}
 
 	/**
