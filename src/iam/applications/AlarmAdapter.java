@@ -214,20 +214,23 @@ final public class AlarmAdapter {
 	}
 
 	/**
-	 * Resets all of the alarms, based on database and preference information.
+	 * Resets all of the one-off alarms, based on database and preference
+	 * information.
 	 * 
 	 * @param context
 	 *            the context
 	 */
-	public static void resetAlarms(final Context context) {
+	public static void resetOneOffAlarms(final Context context) {
 		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
 
-		// clear the database of any existing alarms
-		dbHelper.deleteAllAlarms();
+		// clear the database of any one-off alarms
+		dbHelper.deleteAlarmsByType(Alerts.CHECKIN_DUE);
+		dbHelper.deleteAlarmsByType(Alerts.CHECKIN_REMINDER);
+		dbHelper.deleteAlarmsByType(Alerts.GUARD_CHECKIN);
 
-		// Alerts.ALERT_CHECKIN_DUE
-		// Alerts.ALERT_CHECKIN_REMINDER
+		// Alerts.CHECKIN_DUE
+		// Alerts.CHECKIN_REMINDER
 		final Cursor cur = dbHelper.fetchUnresolvedCheckins();
 		if (cur.moveToFirst()) {
 			do {
@@ -246,29 +249,46 @@ final public class AlarmAdapter {
 			} while (cur.moveToNext());
 		}
 
+		// Alerts.GUARD_CHECKIN
+		AlarmAdapter.addGuardCheckins(context);
+
+		cur.close();
+		dbHelper.close();
+	}
+
+	/**
+	 * Resets all repeating alarms, and the call around alarms.
+	 * 
+	 * @param context
+	 *            the context
+	 */
+	public static void resetRepeatingAlarms(final Context context) {
+		final DbAdapter dbHelper = new DbAdapter(context);
+		dbHelper.open();
+
+		// clear the database of any existing repeating alarms
+		dbHelper.deleteAlarmsByType(Alerts.CALLAROUND_DUE);
+		dbHelper.deleteAlarmsByType(Alerts.DELAYED_CALLAROUND_DUE);
+		dbHelper.deleteAlarmsByType(Alerts.CALLAROUND_ALARM);
+		dbHelper.deleteAlarmsByType(Alerts.ADD_CALLAROUNDS);
+		dbHelper.deleteAlarmsByType(Alerts.ADD_GUARD_CHECKINS);
+		dbHelper.deleteAlarmsByType(Alerts.RESET_GUARD_SCHEDULE);
+
 		// Both these handled by one function call
-		// Alerts.ALERT_CALLAROUND_DUE
-		// Alerts.ALERT_DELAYED_CALLAROUND_DUE
-		// Alerts.ALERT_CALLAROUND_ALARM
+		// Alerts.CALLAROUND_DUE
+		// Alerts.DELAYED_CALLAROUND_DUE
+		// Alerts.CALLAROUND_ALARM
 		dbHelper.addCallarounds();
 
-		// Alerts.ALERT_ADD_CALLAROUNDS
+		// Alerts.ADD_CALLAROUNDS
 		AlarmAdapter.setAddCallaroundAlarm(context);
 
 		// Alerts.ADD_GUARD_CHECKINS
 		AlarmAdapter.setAddGuardCheckinAlarms(context);
 
-		// Alerts.ALERT_RESET_GUARD_SCHEDULE
-		if (!AlarmAdapter.setGuardScheduleResetAlarm(context)) {
-			// setGuardScheduleResetAlarm returns true if the alarm will go off
-			// today, so if it's false, that means we need to add the checkins
-			// manually for this day
+		// Alerts.RESET_GUARD_SCHEDULE
+		AlarmAdapter.setGuardScheduleResetAlarm(context);
 
-			// Alerts.ALERT_GUARD_CHECKIN
-			AlarmAdapter.addGuardCheckins(context);
-		}
-
-		cur.close();
 		dbHelper.close();
 	}
 

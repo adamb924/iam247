@@ -412,7 +412,10 @@ public class PreferencesActivity extends PreferenceActivity {
 							final int whichButton) {
 						getPreferencesFromSD(PREFERENCES_SD_PATH);
 						getDatabaseFromSD(DATABASE_SD_PATH);
-						AlarmAdapter.resetAlarms(PreferencesActivity.this);
+						AlarmAdapter
+								.resetOneOffAlarms(PreferencesActivity.this);
+						AlarmAdapter
+								.resetRepeatingAlarms(PreferencesActivity.this);
 
 						// this is a cheaty thing, because the preference
 						// activity doesn't automatically refresh, so the

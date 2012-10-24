@@ -54,7 +54,7 @@ public class HomeActivity extends Preferences {
 						| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 						| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-		AlarmAdapter.resetAlarms(this);
+		AlarmAdapter.resetRepeatingAlarms(this);
 
 		setContentView(R.layout.home_activity);
 
@@ -80,7 +80,7 @@ public class HomeActivity extends Preferences {
 			@Override
 			public void onSharedPreferenceChanged(SharedPreferences prefs,
 					String key) {
-				AlarmAdapter.resetAlarms(HomeActivity.this);
+				AlarmAdapter.resetRepeatingAlarms(HomeActivity.this);
 				HomeActivity.sendRefreshAlert(HomeActivity.this);
 			}
 		};
