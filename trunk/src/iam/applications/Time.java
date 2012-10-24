@@ -539,6 +539,48 @@ final public class Time {
 	}
 
 	/**
+	 * Returns a numeric day of the week (0, 1, ..., 6) for the given time
+	 * string (which can be either yyyy-MM-dd or yyyy-MM-dd HH:mm), or -1 if the
+	 * string cannot be parsed.
+	 * 
+	 * @param date
+	 *            the date
+	 * @return the day of the week
+	 */
+	static public int numericDayOfWeek(final String date) {
+		int retVal;
+		try {
+			final SimpleDateFormat format = new SimpleDateFormat(ISO8601_DAY,
+					Locale.US);
+			retVal = numericDayOfWeek(format.parse(date));
+		} catch (ParseException e) {
+			try {
+				final SimpleDateFormat format = new SimpleDateFormat(ISO8601,
+						Locale.US);
+				retVal = numericDayOfWeek(format.parse(date));
+			} catch (ParseException e2) {
+				Log.v(HomeActivity.TAG, Log.getStackTraceString(e));
+				Log.v(HomeActivity.TAG, Log.getStackTraceString(e2));
+				retVal = -1;
+			}
+		}
+		return retVal;
+	}
+
+	/**
+	 * Returns a numeric day of the week (0, 1, ..., 6) for the given Date.
+	 * 
+	 * @param date
+	 *            the date
+	 * @return the day of the week
+	 */
+	static public int numericDayOfWeek(final Date date) {
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		return calendar.get(Calendar.DAY_OF_WEEK);
+	}
+
+	/**
 	 * Returns a Date object at today's date, and with the time specified by the
 	 * supplied simple time.
 	 * 
