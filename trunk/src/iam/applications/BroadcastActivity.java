@@ -94,6 +94,7 @@ public class BroadcastActivity extends Activity {
 		} else {
 			return;
 		}
+		startManagingCursor(cur);
 
 		if (cur.moveToFirst()) {
 			long count = 0;

@@ -341,6 +341,7 @@ public class CallAroundDetailList extends ListActivity implements
 	 */
 	private void callNumber(final long house_id) {
 		final Cursor cur = mDbHelper.fetchContactsForHouse(house_id);
+		startManagingCursor(cur);
 		if (cur.getCount() == 0) {
 			final Toast toast = Toast.makeText(this,
 					getString(R.string.no_house_contacts), Toast.LENGTH_LONG);

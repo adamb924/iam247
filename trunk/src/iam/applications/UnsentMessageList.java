@@ -69,6 +69,8 @@ public class UnsentMessageList extends ListActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 
+		mReportCur.close();
+
 		mDbHelper.close();
 	}
 

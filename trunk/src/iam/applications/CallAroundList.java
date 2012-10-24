@@ -68,7 +68,7 @@ public class CallAroundList extends ListActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-
+		mReportCur.close();
 		mDbHelper.close();
 	}
 

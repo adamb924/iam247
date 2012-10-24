@@ -30,8 +30,6 @@
     <string name="noCheckins">There are no outstanding check-ins.</string>
     <string name="callaround_enabled">Call around enabled</string>
     <string name="editTeammember">Edit Teammember</string>
-    <!-- <string name="checkedout">Not checked in:</string> -->
-    <!-- <string name="checkedin">Checked in:</string> -->
     <string name="checkedout">Out:</string>
     <string name="checkedin">In:</string>
     <string name="no_teammembers">No teammembers</string>
@@ -103,13 +101,10 @@
     <string name="clear_log">The event log</string>
     <string name="clear_log_summary">Clear logged events from before one week ago</string>
     <string name="previous_days">Previous days</string>
-
     <string name="callaround_alarm_time">Alarm time</string>
     <string name="callaround_alarm_time_summary">What time the call around alarm should sound, if no one has checked in</string>
-
-        <string name="callaround_due">Due time</string>
+    <string name="callaround_due">Due time</string>
     <string name="callaround_due_summary">What time daily call around is due</string>
-    
     <string name="callaround_earliest">Earliest time</string>
     <string name="callaround_earliest_summary">The earliest time a team member can do call around</string>
     <string name="callaround_delayed_time">Delayed time</string>
@@ -187,6 +182,7 @@
     <string name="broadcast_message">Broadcast message</string>
     <string name="broadcast_to_active">Those with active callarounds</string>
     <string name="broadcast_to_all">All team members</string>
+    <string name="broadcast_to_out">Team members who are out</string>
     <string name="broadcast_forbidden"> The place(s) that are currently off-limits are: %s</string>
     <string name="broadcast_result">Broadcast to %s number(s)</string>
     <string name="no_guard_checkins">This guard has no check-ins at this time.</string>
@@ -211,7 +207,8 @@
     <string-array name="broadcast_options_array">
         <item>@string/broadcast_to_active</item>
         <item>@string/broadcast_to_all</item>
-    </string-array>
+        <item>@string/broadcast_to_out</item>
+        </string-array>
 
     <!-- Localization -->
     <string name="loc_country_phonecode">+93</string>
@@ -242,7 +239,7 @@
     <string name="re_houses">.*houses.*</string>
     <string name="re_staying_at">.*staying\\s*at\\s*(.*)</string>
     <string name="re_leaving">.*leaving.*</string>
-    
+
     <!-- TTS Messages -->
     <string name="tts_redalert">Attention! Someone is requesting immediate help!</string>
     <string name="tts_missedcheckin">Attention! Someone has missed a check-in.</string>
@@ -295,7 +292,7 @@
     <string name="sms_leaving_confirmation">24/7 says: Thank you. We\'ve dissociated you from all houses.</string>
     <string name="sms_staying_confirmation">24/7 says: Thank you. We\'ve recorded that you\'ll be staying at %s.</string>
     <string name="sms_callaround_reminder">24/7 says: We haven\'t received your call around. If everything is fine please text \"all in\".</string>
-    
+
     <!-- Log Messages -->
     <string name="log_null_guard" formatted="false">Tried to get the guard associated with %s (%s), but got -1 as a return value.</string>
     <string name="log_null_number" formatted="false">Tried to get the number associated with guard %s (%s), but got a null return value.</string>

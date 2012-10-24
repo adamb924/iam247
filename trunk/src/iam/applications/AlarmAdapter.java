@@ -172,6 +172,7 @@ final public class AlarmAdapter {
 			}
 		} while (cur.moveToNext());
 
+		cur.close();
 		dbHelper.close();
 	}
 
@@ -208,6 +209,7 @@ final public class AlarmAdapter {
 
 		dbHelper.deleteAlarmsByType(type);
 
+		cur.close();
 		dbHelper.close();
 	}
 
@@ -266,6 +268,7 @@ final public class AlarmAdapter {
 			AlarmAdapter.addGuardCheckins(context);
 		}
 
+		cur.close();
 		dbHelper.close();
 	}
 
