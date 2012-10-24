@@ -213,5 +213,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 						mContext.getString(R.string.sms_callaround_reminder));
 			} while (cur.moveToNext());
 		}
+		cur.close();
 	}
 }

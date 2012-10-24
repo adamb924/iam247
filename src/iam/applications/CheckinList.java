@@ -65,8 +65,7 @@ public class CheckinList extends ListActivity implements OnInitListener {
 		mIntentFilter = new IntentFilter(AlarmAdapter.Alerts.REFRESH);
 
 		final Intent intent = getIntent();
-		if (intent
-				.getBooleanExtra(AlarmAdapter.Alerts.CHECKIN_DUE, false)) {
+		if (intent.getBooleanExtra(AlarmAdapter.Alerts.CHECKIN_DUE, false)) {
 			// play the alert ... eventually
 			final Intent checkIntent = new Intent();
 			checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
@@ -171,7 +170,6 @@ public class CheckinList extends ListActivity implements OnInitListener {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
-		// Cursor oustandingCur = mDbHelper.fetchOustandingCheckins();
 		final Cursor oustandingCur = mDbHelper.fetchAllCheckins();
 		startManagingCursor(oustandingCur);
 

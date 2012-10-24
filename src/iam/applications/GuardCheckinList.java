@@ -101,6 +101,7 @@ public class GuardCheckinList extends ListActivity {
 	 */
 	private void fillData() {
 		final Cursor cur = mDbHelper.fetchGuardCheckinReport(mGuardId);
+		startManagingCursor(cur);
 		final GuardReportAdapter adapter = new GuardReportAdapter(this, cur);
 		getListView().setAdapter(adapter);
 	}

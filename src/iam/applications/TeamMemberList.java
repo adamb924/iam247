@@ -445,6 +445,7 @@ public class TeamMemberList extends Activity {
 
 		final Spinner spinnerinput = new Spinner(TeamMemberList.this);
 		final Cursor cur = mDbHelper.fetchAllHouses();
+		startManagingCursor(cur);
 		final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
 		final int[] toFields = new int[] { android.R.id.text1 };
 		final SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
