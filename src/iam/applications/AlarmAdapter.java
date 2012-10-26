@@ -150,10 +150,6 @@ final public class AlarmAdapter {
 				checkinTime = new Date(startTime.getTime()
 						+ random.nextInt(range));
 				setGuardCheckin(context, house_id, checkinTime);
-
-				dbHelper.addLogEvent(DbAdapter.LogTypes.DEBUG,
-						"Adding the guard check-in for house " + house_id
-								+ " at: " + Time.prettyDateTime(checkinTime));
 			}
 
 			// the random checkins
@@ -162,12 +158,6 @@ final public class AlarmAdapter {
 					checkinTime = new Date(startTime.getTime()
 							+ random.nextInt(range));
 					setGuardCheckin(context, house_id, checkinTime);
-
-					dbHelper.addLogEvent(
-							DbAdapter.LogTypes.DEBUG,
-							"Adding the guard check-in for house " + house_id
-									+ " at: "
-									+ Time.prettyDateTime(checkinTime));
 				}
 			}
 		} while (cur.moveToNext());
