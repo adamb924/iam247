@@ -577,7 +577,7 @@ final public class Time {
 	static public int numericDayOfWeek(final Date date) {
 		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
-		return calendar.get(Calendar.DAY_OF_WEEK);
+		return calendar.get(Calendar.DAY_OF_WEEK) - 1;
 	}
 
 	/**

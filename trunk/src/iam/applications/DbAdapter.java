@@ -1607,11 +1607,7 @@ public class DbAdapter {
 	public long getCurrentGuardForHouse(final long house_id) {
 		final Date checkinStartTime = Time.previousDateFromPreferenceString(
 				mContext, Preferences.GUARD_CHECKIN_START, "22:00");
-
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(checkinStartTime);
-		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-
+		final int dayOfWeek = Time.numericDayOfWeek(checkinStartTime);
 		return getGuard(house_id, dayOfWeek);
 	}
 
@@ -1746,10 +1742,7 @@ public class DbAdapter {
 	 * @return the guard number from date
 	 */
 	public String getGuardNumberFromDate(final long house_id, final String date) {
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(Time.iso8601DateTime(date));
-		final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-
+		final int dayOfWeek = Time.numericDayOfWeek(date);
 		final long guardId = getGuard(house_id, dayOfWeek);
 		return getGuardNumber(guardId);
 	}
