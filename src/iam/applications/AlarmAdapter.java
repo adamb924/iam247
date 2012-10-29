@@ -395,8 +395,8 @@ final public class AlarmAdapter {
 
 		final AlarmManager alarmManager = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, date.getTime(),
-				AlarmManager.INTERVAL_DAY, sender);
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+				cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, sender);
 
 		final DbAdapter dbHelper = new DbAdapter(context);
 		dbHelper.open();
