@@ -191,6 +191,10 @@ public class HomeActivity extends Preferences {
 	 * Query the database and refresh the list.
 	 */
 	private void fillData() {
+		if (mDbHelper == null) {
+			return;
+		}
+
 		final TextView checkinSummary = (TextView) findViewById(R.id.home_checkins_summary);
 		checkinSummary.setText(mDbHelper.getCheckinSummary());
 
