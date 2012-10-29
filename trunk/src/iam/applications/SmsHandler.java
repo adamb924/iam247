@@ -45,6 +45,21 @@ public class SmsHandler {
 	}
 
 	/**
+	 * Checks if the supplied number is a phone number. Currently the heuristic
+	 * is that the string have at least four numeric characters.
+	 * 
+	 * @param number
+	 *            the number
+	 * @return the string
+	 */
+	static public boolean isPhoneNumber(final String number) {
+		final Pattern pattern = Pattern.compile("[1234567890]{4,}",
+				Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(number);
+		return matcher.find();
+	}
+
+	/**
 	 * Send an SMS message to the given phone number, with the given message.
 	 * 
 	 * @param context
@@ -153,12 +168,15 @@ public class SmsHandler {
 		mDbHelper.open();
 
 		mContext = context;
-		mPhoneNumber = getNormalizedPhoneNumber(context, number);
+		mSettings = PreferenceManager.getDefaultSharedPreferences(mContext);
 		mMessage = text.trim();
 		mContactId = mDbHelper.getContactId(number);
 		mHouseId = mDbHelper.getHouseId(mContactId);
 
-		mSettings = PreferenceManager.getDefaultSharedPreferences(mContext);
+		mPhoneNumber = getNormalizedPhoneNumber(context, number);
+		if (!isPhoneNumber(mPhoneNumber)) {
+			return;
+		}
 
 		// ignore blocked numbers
 		if (mDbHelper.getNumberIsBlocked(mPhoneNumber)) {
