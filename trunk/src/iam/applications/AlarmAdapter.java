@@ -363,7 +363,9 @@ final public class AlarmAdapter {
 
 	/**
 	 * Create a repeating alarm of the given type, starting on the given date.
-	 * All other alarms of the same type are deleted from the database.
+	 * If the date is before the current time, then the alarm is set for
+	 * tomorrow. All other alarms of the same type are deleted from the
+	 * database.
 	 * 
 	 * @param context
 	 *            the context
@@ -376,6 +378,10 @@ final public class AlarmAdapter {
 			final Date date) {
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
+
+		if (date.before(new Date())) {
+			cal.add(Calendar.DATE, 1);
+		}
 
 		final int _id = (int) System.currentTimeMillis();
 		final Intent intent = new Intent(context, AlarmReceiver.class);
