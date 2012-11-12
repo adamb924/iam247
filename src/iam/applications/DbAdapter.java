@@ -1219,6 +1219,27 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Gets whether the specified alarm exists in the database (i.e., is valid).
+	 * Note that request_id is the id value from AlarmManager, and not the _id
+	 * column of the SQL table.
+	 * 
+	 * @param request_id
+	 *            the request_id of the alarm
+	 * @return whether the alarm exists
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public boolean getAlarmExists(final int request_id) throws SQLException {
+		Cursor cur = mDb.rawQuery(
+				"select count(_id) from alarms where request_id=?;",
+				new String[] { String.valueOf(request_id) });
+		if (cur.moveToFirst())
+			return cur.getLong(0) == 1 ? true : false;
+		else
+			return false;
+	}
+
+	/**
 	 * Returns true if the house is expected to be doing call around, otherwise
 	 * false.
 	 * 
