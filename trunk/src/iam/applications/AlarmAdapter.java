@@ -378,7 +378,6 @@ final public class AlarmAdapter {
 			final Date date) {
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
-
 		if (date.before(new Date())) {
 			cal.add(Calendar.DATE, 1);
 		}

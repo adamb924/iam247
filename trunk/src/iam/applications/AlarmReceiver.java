@@ -1,5 +1,7 @@
 package iam.applications;
 
+import java.util.Arrays;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,15 +44,24 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		final int request_id = intent.getIntExtra(DbAdapter.Columns.REQUESTID,
 				-1);
-		if (request_id != -1 && mDbHelper.deleteAlarm(request_id) > 0) {
+
+		final String action = intent.getAction();
+
+		// TODO remove this debug code
+		mDbHelper.addLogEvent(DbAdapter.LogTypes.DEBUG, action);
+
+		if (mDbHelper.getAlarmExists(request_id)) {
 			// checking to see if the alarm is in the database is not the
 			// most elegant solution, but neither is the Android alarm
 			// documentation very effective
 
+			if (!Arrays.asList(AlarmAdapter.Alerts.REPEATING).contains(action)) {
+				mDbHelper.deleteAlarm(request_id);
+			}
+
 			// call various functions depending on the action of the intent.
 			// the action will have been set in one of the static member
 			// functions of this class.
-			final String action = intent.getAction();
 			if (action.equals(AlarmAdapter.Alerts.CHECKIN_DUE)) {
 				checkinDue();
 			} else if (action.equals(AlarmAdapter.Alerts.ADD_CALLAROUNDS)) {
@@ -174,11 +185,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if (house_id != -1) {
 			final long guard_id = db.getCurrentGuardForHouse(house_id);
 
-			if (guard_id == -1) {
-				db.addLogEvent(DbAdapter.LogTypes.SMS_ERROR, String.format(
-						context.getString(R.string.log_null_guard),
-						String.valueOf(house_id), db.getHouseName(house_id)));
-			} else {
+			if (guard_id != -1) {
 				final String number = db.getGuardNumber(guard_id);
 				if (number.isEmpty()) {
 					db.addLogEvent(
