@@ -149,19 +149,43 @@ public class TeamMemberList extends Activity {
 			menu.removeItem(R.id.resolve_checkin);
 		}
 
+		final MenuItem caResolved = menu.findItem(R.id.callaround_resolved);
 		if (!mDbHelper.getCallaroundActive(house_id) || house_id == -1) {
 			menu.removeItem(R.id.callaround_resolved);
 		} else {
-			final MenuItem caResolved = menu.findItem(R.id.callaround_resolved);
 			caResolved.setCheckable(true);
+			Log.i("Debug",
+					"Outstanding: "
+							+ mDbHelper.getCallaroundOutstanding(house_id));
 			caResolved
 					.setChecked(!mDbHelper.getCallaroundOutstanding(house_id));
 		}
 
-		final MenuItem callaroundEnabled = menu
-				.findItem(R.id.callaround_enabled);
-		callaroundEnabled.setCheckable(true);
-		callaroundEnabled.setChecked(mDbHelper.getCallaroundActive(house_id));
+		if (house_id == -1) {
+			menu.removeItem(R.id.callaround_enabled);
+			menu.removeItem(R.id.remove_teammember_from_house);
+		} else {
+			final String houseName = mDbHelper.getHouseName(house_id);
+
+			caResolved.setTitle(String.format(
+					getString(R.string.teammember_house_callaround_resolved),
+					houseName));
+
+			final MenuItem callaroundEnabled = menu
+					.findItem(R.id.callaround_enabled);
+			callaroundEnabled.setCheckable(true);
+			callaroundEnabled.setChecked(mDbHelper
+					.getCallaroundActive(house_id));
+			callaroundEnabled.setTitle(String.format(
+					getString(R.string.teammember_house_callaround_enabled),
+					houseName));
+
+			final MenuItem removeFromHouse = menu
+					.findItem(R.id.remove_teammember_from_house);
+			removeFromHouse.setTitle(String
+					.format(getString(R.string.remove_teammember_from_house),
+							houseName));
+		}
 
 		final MenuItem reportsEnabled = menu
 				.findItem(R.id.allow_request_reports);
@@ -245,7 +269,7 @@ public class TeamMemberList extends Activity {
 		case R.id.callaround_resolved:
 			newValue = !item.isChecked();
 			item.setChecked(newValue);
-			mDbHelper.setCallaroundResolved(house_id, newValue);
+			mDbHelper.forceTodaysCallaroundResolved(house_id, newValue);
 			retVal = true;
 			break;
 		case R.id.checkin_reminders:
@@ -253,6 +277,11 @@ public class TeamMemberList extends Activity {
 			item.setChecked(newValue);
 			mDbHelper.setContactPreference(mContactId,
 					DbAdapter.UserPreferences.CHECKIN_REMINDER, newValue);
+			retVal = true;
+			break;
+		case R.id.remove_teammember_from_house:
+			mDbHelper.setHouse(mContactId, -1);
+			fillData();
 			retVal = true;
 			break;
 		default:

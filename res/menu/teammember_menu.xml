@@ -51,14 +51,18 @@
     <group android:checkableBehavior="all" >
         <item
             android:id="@+id/callaround_resolved"
-            android:title="@string/callaround_resolved">
+            android:title="@string/teammember_house_callaround_resolved">
         </item>
         <item
             android:id="@+id/callaround_enabled"
-            android:title="@string/callaround_enabled">
+            android:title="@string/teammember_house_callaround_enabled">
         </item>
     </group>
-
+        <item
+            android:id="@+id/remove_teammember_from_house"
+            android:title="@string/remove_teammember_from_house">
+        </item>
+    
     <item
         android:id="@+id/delete_teammember"
         android:title="@string/delete_teammember">

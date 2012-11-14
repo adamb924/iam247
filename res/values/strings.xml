@@ -204,6 +204,10 @@
     <string name="request_guard_checkin_untimely">It is not the time for a check-in, so you shouldn\'t ask the guard for one right now.</string>
     <string name="guard_has_no_number">This guard does not appear to have a phone number yet.</string>
 
+    <string name="remove_teammember_from_house">Remove from %s</string>
+    <string name="teammember_house_callaround_enabled">%s call around enabled</string>
+    <string name="teammember_house_callaround_resolved">%s call around resolved</string>
+    
     <string-array name="broadcast_options_array">
         <item>@string/broadcast_to_active</item>
         <item>@string/broadcast_to_all</item>
