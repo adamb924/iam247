@@ -550,7 +550,6 @@ public class SmsHandler {
 				}
 				final String name = matches[0];
 				final String house = matches[1];
-				final long contactId = mDbHelper.addContact(name, mPhoneNumber);
 				final long houseId = mDbHelper.getHouseId(house);
 
 				if (houseId == -1) {
@@ -559,6 +558,8 @@ public class SmsHandler {
 							mDbHelper.getHouses());
 					sendSms(message);
 				} else {
+					final long contactId = mDbHelper.addContact(name,
+							mPhoneNumber);
 					mDbHelper.setHouse(contactId, houseId);
 
 					if (contactId > -1) {
