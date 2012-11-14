@@ -1219,6 +1219,38 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Forces today's call around to be resolved (or not), regardless of the
+	 * time or other factors.
+	 * 
+	 * @param house_id
+	 *            the id of the house
+	 * @param resolveCallaround
+	 *            Whether the call around should be forced to be resolved or not
+	 * @return Notifications.SUCCESS, Notifications.Failure
+	 * @throws SQLException
+	 */
+	public int forceTodaysCallaroundResolved(final long house_id,
+			final boolean resolveCallaround) throws SQLException {
+		int retVal;
+
+		final String sOutstanding = resolveCallaround ? "0" : "1";
+
+		// if we're not expecting a call around from the house, say so
+		mDb.execSQL("update callarounds set outstanding='"
+				+ sOutstanding
+				+ "',timereceived=datetime('now','localtime') where date(dueby)=date('now','localtime') and house_id='"
+				+ house_id + "';");
+
+		if (changes() > 0) {
+			retVal = Notifications.SUCCESS;
+		} else {
+			retVal = Notifications.FAILURE;
+		}
+
+		return retVal;
+	}
+
+	/**
 	 * Gets whether the specified alarm exists in the database (i.e., is valid).
 	 * Note that request_id is the id value from AlarmManager, and not the _id
 	 * column of the SQL table.
@@ -1270,9 +1302,12 @@ public class DbAdapter {
 	 */
 	public boolean getCallaroundOutstanding(final long house_id)
 			throws SQLException {
-		final Cursor cur = mDb.rawQuery(
-				"select count(_id) as count from callarounds where house_id='"
-						+ house_id + "' and outstanding='1';", null);
+		final Cursor cur = mDb
+				.rawQuery(
+						"select count(_id) as count from callarounds where house_id='"
+								+ house_id
+								+ "' and date(dueby)=date('now','localtime') and outstanding='1';",
+						null);
 
 		boolean retVal;
 		if (cur.moveToFirst()) {
@@ -2345,9 +2380,9 @@ public class DbAdapter {
 	 *            the house_id of the call around to update
 	 * @param resolveCallaround
 	 *            whether the call around is to be resolved or not
-	 * @return Possible return values: Notifications.NOTIFY_SUCCESS,
-	 *         Notifications.NOTIFY_FAILURE, Notifications.NOTIFY_ALREADY,
-	 *         Notifications.NOTIFY_INACTIVE
+	 * @return Possible return values: Notifications.SUCCESS,
+	 *         Notifications.FAILURE, Notifications.ALREADY,
+	 *         Notifications.INACTIVE, Notifications.UNTIMELY
 	 * @throws SQLException
 	 *             a SQL exception
 	 */
