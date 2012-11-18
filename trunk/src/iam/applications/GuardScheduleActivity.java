@@ -5,6 +5,7 @@ package iam.applications;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -79,14 +80,11 @@ public class GuardScheduleActivity extends Activity {
 			final int first = Integer
 					.parseInt(getString(R.string.loc_first_day_of_week));
 
-			DateFormatSymbols symbols;
-			String[] dayNames;
+			final DateFormatSymbols symbols = new DateFormatSymbols(Locale.US);
+			final String[] dayNames = symbols.getWeekdays();
 			TextView label;
 			for (int i = 0; i < 7; i++) {
 				final int day = (first + i) % 7;
-
-				symbols = new DateFormatSymbols();
-				dayNames = symbols.getWeekdays();
 
 				label = new TextView(this);
 				label.setText(dayNames[day + 1]);

@@ -304,7 +304,7 @@ public class SmsHandler {
 
 				if (ret == DbAdapter.Notifications.FAILURE) {
 					throw new OurErrorException();
-				} else if (ret == DbAdapter.Notifications.EXISTING_CHECKIN_RESOLVED) {
+				} else if (ret == DbAdapter.Notifications.CHECKIN_RESOLVED) {
 					final String message = String.format(mContext
 							.getString(R.string.sms_confirm_checkin_request),
 							place, Time.timeTodayTomorrow(mContext, time))
@@ -658,7 +658,7 @@ public class SmsHandler {
 
 		if (ret == DbAdapter.Notifications.FAILURE) {
 			throw new OurErrorException();
-		} else if (ret == DbAdapter.Notifications.EXISTING_CHECKIN_RESOLVED) {
+		} else if (ret == DbAdapter.Notifications.CHECKIN_RESOLVED) {
 			final String message = String.format(
 					mContext.getString(R.string.sms_confirm_checkin_request),
 					place, Time.timeTodayTomorrow(mContext, time))

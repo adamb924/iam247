@@ -3,8 +3,11 @@
  */
 package iam.applications;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import android.app.AlarmManager;
@@ -88,13 +91,14 @@ final public class AlarmAdapter {
 		public static final String RESET_GUARD_SCHEDULE = "ALERT_RESET_GUARD_SCHEDULE";
 
 		/** An array with all of he repeating alarm types. */
-		public static String[] REPEATING = { CALLAROUND_DUE, CALLAROUND_ALARM,
-				DELAYED_CALLAROUND_DUE, ADD_CALLAROUNDS, ADD_GUARD_CHECKINS,
-				RESET_GUARD_SCHEDULE };
+		public static final List<String> REPEATING = new ArrayList<String>(
+				Arrays.asList(CALLAROUND_DUE, CALLAROUND_ALARM,
+						DELAYED_CALLAROUND_DUE, ADD_CALLAROUNDS,
+						ADD_GUARD_CHECKINS, RESET_GUARD_SCHEDULE));
 
 		/** An array with all of he one-off alarm types. */
-		public static String[] ONEOFF = { CHECKIN_DUE, CHECKIN_REMINDER,
-				GUARD_CHECKIN };
+		public static final List<String> ONEOFF = new ArrayList<String>(
+				Arrays.asList(CHECKIN_DUE, CHECKIN_REMINDER, GUARD_CHECKIN));
 	}
 
 	/**
@@ -140,22 +144,22 @@ final public class AlarmAdapter {
 			return;
 		}
 
-		Date checkinTime;
+		Date checkinTime = new Date();
 		// cycle through the houses
 		do {
 			final long house_id = cur.getLong(0);
 
 			// the fixed checkins
 			for (int i = 0; i < fewestCheckins; i++) {
-				checkinTime = new Date(startTime.getTime()
-						+ random.nextInt(range));
+				checkinTime
+						.setTime(startTime.getTime() + random.nextInt(range));
 				setGuardCheckin(context, house_id, checkinTime);
 			}
 
 			// the random checkins
 			for (int i = 0; i < randomCheckins; i++) {
 				if (random.nextBoolean()) {
-					checkinTime = new Date(startTime.getTime()
+					checkinTime.setTime(startTime.getTime()
 							+ random.nextInt(range));
 					setGuardCheckin(context, house_id, checkinTime);
 				}

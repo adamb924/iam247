@@ -10,7 +10,7 @@ import android.app.Activity;
  */
 public class Preferences extends Activity {
 	/** The name of the application preferences. */
-	public static final String PREFERENCES = "247-Preferences-File";
+	public static final String PREFERENCES_NAME = "247-Preferences-File";
 	/** Preference key: what time call around is due by. */
 	public static final String CALLAROUND_DUE_BY = "PREFERENCES_CALLAROUND_DUE_BY";
 	/** Preference key: the earliest time to call around. */

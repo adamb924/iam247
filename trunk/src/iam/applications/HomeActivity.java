@@ -37,7 +37,7 @@ public class HomeActivity extends Preferences {
 	private transient IntentFilter mIntentFilter;
 
 	/** A listener for when the preferences change. */
-	private transient OnSharedPreferenceChangeListener mPreferenceListener;
+	private transient OnSharedPreferenceChangeListener mPrefListener;
 
 	/*
 	 * (non-Javadoc)
@@ -74,17 +74,17 @@ public class HomeActivity extends Preferences {
 	 * 
 	 */
 	private void setPreferenceChangeListener() {
-		SharedPreferences prefs = PreferenceManager
+		final SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(this);
-		mPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+		mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 			@Override
-			public void onSharedPreferenceChanged(SharedPreferences prefs,
-					String key) {
+			public void onSharedPreferenceChanged(
+					final SharedPreferences prefs, final String key) {
 				AlarmAdapter.resetRepeatingAlarms(HomeActivity.this);
 				HomeActivity.sendRefreshAlert(HomeActivity.this);
 			}
 		};
-		prefs.registerOnSharedPreferenceChangeListener(mPreferenceListener);
+		prefs.registerOnSharedPreferenceChangeListener(mPrefListener);
 	}
 
 	/**

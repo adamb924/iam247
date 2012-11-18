@@ -215,7 +215,7 @@ public class DbAdapter {
 		 * Return value to indicate that an existing check-in was resolved when
 		 * the new one was added.
 		 */
-		public static final int EXISTING_CHECKIN_RESOLVED = 1;
+		public static final int CHECKIN_RESOLVED = 1;
 
 		/** Return value to indicate failure. */
 		public static final int FAILURE = 0;
@@ -434,7 +434,7 @@ public class DbAdapter {
 		if (rowId > -1) {
 			AlarmAdapter.setCheckinAlert(mContext, time);
 			if (count > 0) {
-				retVal = Notifications.EXISTING_CHECKIN_RESOLVED;
+				retVal = Notifications.CHECKIN_RESOLVED;
 			} else {
 				retVal = Notifications.SUCCESS;
 			}
@@ -1262,13 +1262,10 @@ public class DbAdapter {
 	 *             the SQL exception
 	 */
 	public boolean getAlarmExists(final int request_id) throws SQLException {
-		Cursor cur = mDb.rawQuery(
-				"select count(_id) from alarms where request_id=?;",
+		final Cursor cur = mDb.rawQuery(
+				"select _id from alarms where request_id=?;",
 				new String[] { String.valueOf(request_id) });
-		if (cur.moveToFirst())
-			return cur.getLong(0) == 1 ? true : false;
-		else
-			return false;
+		return cur.moveToFirst();
 	}
 
 	/**
@@ -1286,9 +1283,7 @@ public class DbAdapter {
 				new String[] { Columns.ROWID }, Columns.ROWID + "='" + house_id
 						+ "' and " + Columns.ACTIVE + "='1'", null, null, null,
 				null);
-		final boolean ret = cur.moveToFirst();
-		cur.close();
-		return ret;
+		return cur.moveToFirst();
 	}
 
 	/**
@@ -2152,8 +2147,8 @@ public class DbAdapter {
 	public String getReport() throws SQLException {
 		String checkin_people;
 		String callaround_houses;
-		final StringBuffer checkin_people_buffer = new StringBuffer();
-		final StringBuffer callaround_houses_buffer = new StringBuffer();
+		final StringBuffer bCheckinPeople = new StringBuffer();
+		final StringBuffer bCallaroundHouses = new StringBuffer();
 
 		Cursor cur = mDb
 				.rawQuery(
@@ -2161,14 +2156,14 @@ public class DbAdapter {
 						null);
 		if (cur.moveToFirst()) {
 			for (int i = 0; i < cur.getCount(); i++) {
-				checkin_people_buffer.append(cur.getString(0) + " ("
+				bCheckinPeople.append(cur.getString(0) + " ("
 						+ cur.getString(1) + ")");
 				if (!cur.isLast()) {
-					checkin_people_buffer.append(", ");
+					bCheckinPeople.append(", ");
 				}
 				cur.moveToNext();
 			}
-			checkin_people = checkin_people_buffer.toString();
+			checkin_people = bCheckinPeople.toString();
 		} else {
 			checkin_people = mContext.getString(R.string.none);
 		}
@@ -2179,13 +2174,13 @@ public class DbAdapter {
 						null);
 		if (cur.moveToFirst()) {
 			for (int i = 0; i < cur.getCount(); i++) {
-				callaround_houses_buffer.append(cur.getString(0));
+				bCallaroundHouses.append(cur.getString(0));
 				if (!cur.isLast()) {
-					callaround_houses_buffer.append(", ");
+					bCallaroundHouses.append(", ");
 				}
 				cur.moveToNext();
 			}
-			callaround_houses = callaround_houses_buffer.toString();
+			callaround_houses = bCallaroundHouses.toString();
 		} else {
 			callaround_houses = mContext.getString(R.string.none);
 		}

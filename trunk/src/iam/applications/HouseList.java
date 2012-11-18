@@ -203,11 +203,11 @@ public class HouseList extends ListActivity {
 	 * @param info
 	 */
 	private void requestGuardCheckin(final long id) {
-		Date start = Time.todayAtPreferenceTime(this,
+		final Date start = Time.todayAtPreferenceTime(this,
 				Preferences.GUARD_CHECKIN_START, "22:00");
-		Date end = Time.tomorrowAtPreferenceTime(this,
+		final Date end = Time.tomorrowAtPreferenceTime(this,
 				Preferences.GUARD_CHECKIN_END, "06:00");
-		Date now = new Date();
+		final Date now = new Date();
 
 		if (now.after(start) && now.before(end)) {
 			final long guardId = AlarmReceiver.requestGuardCheckin(this,

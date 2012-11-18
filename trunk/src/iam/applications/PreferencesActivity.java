@@ -38,7 +38,7 @@ public class PreferencesActivity extends PreferenceActivity {
 	private transient DbAdapter mDbHelper;
 
 	final private static String DATABASE_SD_PATH = "bluetooth/thedatabase";
-	final private static String PREFERENCES_SD_PATH = "bluetooth/preferences";
+	final private static String PREF_SD_PATH = "bluetooth/preferences";
 
 	/*
 	 * (non-Javadoc)
@@ -410,7 +410,7 @@ public class PreferencesActivity extends PreferenceActivity {
 					@Override
 					public void onClick(final DialogInterface dialog,
 							final int whichButton) {
-						getPreferencesFromSD(PREFERENCES_SD_PATH);
+						getPreferencesFromSD(PREF_SD_PATH);
 						getDatabaseFromSD(DATABASE_SD_PATH);
 						AlarmAdapter
 								.resetOneOffAlarms(PreferencesActivity.this);
@@ -435,7 +435,7 @@ public class PreferencesActivity extends PreferenceActivity {
 	 */
 	private void synchronizeSend() {
 		final File databaseFile = saveDatabaseToSD(DATABASE_SD_PATH);
-		final File preferencesFile = savePreferencesToSD(PREFERENCES_SD_PATH);
+		final File preferencesFile = savePreferencesToSD(PREF_SD_PATH);
 
 		final ArrayList<Uri> uris = new ArrayList<Uri>();
 		uris.add(Uri.fromFile(databaseFile));
