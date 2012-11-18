@@ -92,7 +92,8 @@ public class BroadcastActivity extends Activity {
 		} else if (toWhom.equals(getString(R.string.broadcast_to_out))) {
 			cur = mDbHelper.fetchCheckedOutNumbers();
 		} else {
-			return;
+			// just to have some sensible default behavior
+			cur = mDbHelper.fetchAllContactNumbers();
 		}
 		startManagingCursor(cur);
 

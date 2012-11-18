@@ -1,7 +1,5 @@
 package iam.applications;
 
-import java.util.Arrays;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -47,15 +45,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		final String action = intent.getAction();
 
-		// TODO remove this debug code
-		mDbHelper.addLogEvent(DbAdapter.LogTypes.DEBUG, action);
-
 		if (mDbHelper.getAlarmExists(request_id)) {
 			// checking to see if the alarm is in the database is not the
 			// most elegant solution, but neither is the Android alarm
 			// documentation very effective
 
-			if (!Arrays.asList(AlarmAdapter.Alerts.REPEATING).contains(action)) {
+			if (!AlarmAdapter.Alerts.REPEATING.contains(action)) {
 				mDbHelper.deleteAlarm(request_id);
 			}
 
@@ -179,8 +174,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 *            the house_id for which the check-in should be requested
 	 * @return the _id of the guard on duty
 	 */
-	static public long requestGuardCheckin(Context context, DbAdapter db,
-			final long house_id) {
+	static public long requestGuardCheckin(final Context context,
+			final DbAdapter db, final long house_id) {
 		long retVal = -1;
 		if (house_id != -1) {
 			final long guard_id = db.getCurrentGuardForHouse(house_id);
