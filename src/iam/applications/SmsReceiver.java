@@ -25,14 +25,6 @@ public class SmsReceiver extends BroadcastReceiver {
 	public void onReceive(final Context context, final Intent intent) {
 		final String action = intent.getAction();
 
-		final SharedPreferences settings = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		final boolean disabled = settings.getBoolean(Preferences.DISABLE_247,
-				false);
-		if (disabled) {
-			return;
-		}
-
 		// process the message according to whether it is a received SMS, or a
 		// sent confirmation, or a delivery confirmation
 		if ("android.provider.Telephony.SMS_RECEIVED".equals(action)) {

@@ -157,7 +157,9 @@
     <string name="message_errors">%s message errors</string>
     <string name="unsent_undelivered_header">Unsent/Undelivered:</string>
     <string name="disable_247">Disable 24/7</string>
-    <string name="disable_247_summary">If this box is checked, 24/7 will ignore any incoming messages or calls.</string>
+    <string name="disable_247_summary">If this box is checked, 24/7 will ignore any incoming messages or calls (except guard checks).</string>
+    <string name="disable_guard_checks">Disable Guard Checks</string>
+    <string name="disable_guard_checks_summary">If this box is checked, 24/7 will not conduct guard checks.</string>
     <string name="newGuard">New guard</string>
     <string name="guards">Guards</string>
     <string name="name">Name</string>

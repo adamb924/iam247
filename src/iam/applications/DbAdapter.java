@@ -2695,6 +2695,41 @@ public class DbAdapter {
 	}
 
 	/**
+	 * Sets the guard checkin resolved.
+	 *
+	 * @param context
+	 *            the context
+	 * @param guard_id
+	 *            the guard_id
+	 * @return the int
+	 */
+	public boolean getGuardHasPendingCheck(final Context context,
+									   final long guard_id) {
+		final SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext);
+		final int window = Integer.parseInt(settings.getString(
+				Preferences.GUARD_CHECKIN_WINDOW, "5"));
+
+		final String checkinTime = getGuardCheckinTime(guard_id);
+		if (checkinTime.isEmpty()) {
+			return false;
+		} else {
+			final ContentValues args = new ContentValues();
+			args.put(Columns.RESPONSE, 1);
+
+			final Cursor cur = mDb.query(Tables.GUARD_CHECKINS,
+					new String[] { Columns.ROWID }, "guard_id=? and response='0' and datetime('now','localtime') >= time and datetime('now','localtime') <= datetime(time,'+"
+							+ window + " minutes')", new String[] { String.valueOf(guard_id) }, null, null,
+					null);
+			if ( cur.getCount() > 0 ){
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	/**
 	 * Sets the guard.
 	 * 
 	 * @param house_id

@@ -37,8 +37,13 @@ public class Preferences extends Activity {
 	 * displayed in the list.
 	 */
 	public static final String CALLAROUNDS_SHOW_FUTURE = "PREFERENCES_CALLAROUNDS_SHOW_FUTURE";
-	/** Preference key: a kill switch to disable 24/7. */
+
+	/** Preference key: a kill switch to disable 24/7 except for guard checks. */
 	public static final String DISABLE_247 = "PREFERENCES_DISABLE_247";
+
+	/** Preference key: a kill switch to disable guard checks. */
+	public static final String DISABLE_GUARD_CHECKS = "PREFERENCES_DISABLE_GUARD_CHECKS";
+
 	/**
 	 * Preference key: the latest possible call around, if someone requests a
 	 * delay.

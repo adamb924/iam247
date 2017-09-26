@@ -136,6 +136,12 @@ public class SmsHandler {
 	/** The contact id of the sender (or -1). */
 	private transient final long mContactId;
 
+	/** Whether 24/7 is disabled (aside from guard checks). */
+	private transient final boolean m247Disabled;
+
+	/** Whether 24/7 is disabled (aside from guard checks). */
+	private transient final boolean mGuardChecksDisabled;
+
 	/** The house id of the sender (or -1). */
 	private transient final long mHouseId;
 	/** The database interface. */
@@ -172,6 +178,8 @@ public class SmsHandler {
 		mMessage = text.trim();
 		mContactId = mDbHelper.getContactId(number);
 		mHouseId = mDbHelper.getHouseId(mContactId);
+		m247Disabled = mSettings.getBoolean(Preferences.DISABLE_247, false);
+		mGuardChecksDisabled = mSettings.getBoolean(Preferences.DISABLE_GUARD_CHECKS, false);
 
 		mPhoneNumber = getNormalizedPhoneNumber(context, number);
 		if (!isPhoneNumber(mPhoneNumber)) {
@@ -539,6 +547,10 @@ public class SmsHandler {
 	 */
 	private void processUnknownNumber() throws YourErrorException,
 			OurErrorException {
+		if( m247Disabled ) {
+			return;
+		}
+
 		// perhaps he is identifying himself
 		if (messageMatches(R.string.re_thisis)) {
 			final boolean thisisAllowed = mSettings.getBoolean(

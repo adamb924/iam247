@@ -2,10 +2,15 @@ package iam.applications;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.CallLog;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 /**
  * This PhoneStateListener detects when someone has missed-called the phone, and
@@ -58,19 +63,38 @@ public class MissedCallReceiver extends PhoneStateListener {
 	 */
 	@Override
 	public void onCallStateChanged(final int state, final String incomingNumber) {
-		super.onCallStateChanged(state, incomingNumber);
-
 		if (mDisabled) {
 			return;
 		}
 
 		mNumber = SmsHandler.getNormalizedPhoneNumber(mContext, incomingNumber);
 
+		// only do the check if a new call is coming in
+		if( state == TelephonyManager.CALL_STATE_RINGING ) {
+            AudioManager audiomanager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+            final DbAdapter dbHelper = new DbAdapter(mContext);
+            dbHelper.open();
+            final long putative_guard_id = dbHelper.getGuardIdFromNumber(mNumber);
+            final boolean hasPendingCheck = dbHelper.getGuardHasPendingCheck(mContext, putative_guard_id);
+            dbHelper.close();
+
+            if (hasPendingCheck) {
+                // it it's a guard number, mute the speaker
+                audiomanager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+            } else {
+                audiomanager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+            }
+        }
+
+        // call this after we've (possibly) muted the sound
+        super.onCallStateChanged(state, incomingNumber);
+
 		// if the phone is ringing set a timer to check the phone status after
 		// mDelay milliseconds
 		if (state == TelephonyManager.CALL_STATE_RINGING) {
 			mHandler.postDelayed(callListener, mDelay);
 		}
+
 	}
 
 	/** If the phone is not ringing, send the SMS. */
@@ -104,7 +128,7 @@ public class MissedCallReceiver extends PhoneStateListener {
 			tryToResolveGuardCheckin(dbHelper, putative_guard_id);
 		}
 		dbHelper.close();
-	}
+    }
 
 	/**
 	 * @param dbHelper
@@ -124,5 +148,4 @@ public class MissedCallReceiver extends PhoneStateListener {
 					mContext.getString(R.string.sms_guard_checkin_rejection));
 		}
 	}
-
 }

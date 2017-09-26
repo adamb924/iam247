@@ -42,8 +42,6 @@ final public class Time {
 	/**
 	 * Return the ISO 8601 string of the current time.
 	 * 
-	 * @param d
-	 *            the date
 	 * @return the string
 	 */
 	static public String iso8601DateTime() {

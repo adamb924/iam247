@@ -14,7 +14,6 @@ import android.telephony.TelephonyManager;
  * has changed, a new <code>MissedCallReceiver</code> is launched.
  */
 public class PhoneStateBroadcastReceiver extends BroadcastReceiver {
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -27,9 +26,6 @@ public class PhoneStateBroadcastReceiver extends BroadcastReceiver {
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		telephonyManager.listen(new MissedCallReceiver(context),
 				PhoneStateListener.LISTEN_CALL_STATE);
-		telephonyManager.listen(new ServiceChangeReceiver(context),
-				PhoneStateListener.LISTEN_SERVICE_STATE
-						| PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 	}
 
 }

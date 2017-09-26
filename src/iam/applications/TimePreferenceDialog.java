@@ -25,8 +25,8 @@ public class TimePreferenceDialog extends DialogPreference {
 	private transient int mMinute = 0;
 
 	/**
-	 * @param context
-	 * @param attrs
+	 * @param context The application context
+	 * @param attrs The attributes
 	 */
 	public TimePreferenceDialog(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
@@ -110,7 +110,7 @@ public class TimePreferenceDialog extends DialogPreference {
 	/**
 	 * Returns the hour portion of a time formatted thusly: XX:XX
 	 * 
-	 * @param time
+	 * @param time the time
 	 * @return the hour part of the time
 	 */
 	public static int getHour(final String time) {
@@ -121,7 +121,7 @@ public class TimePreferenceDialog extends DialogPreference {
 	/**
 	 * Returns the minute portion of a time formatted thusly: XX:XX
 	 * 
-	 * @param time
+	 * @param time the time
 	 * @return the minute part of the time
 	 */
 	public static int getMinute(final String time) {

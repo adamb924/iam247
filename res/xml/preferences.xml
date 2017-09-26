@@ -27,7 +27,6 @@
             android:key="PREFERENCES_CALLAROUND_DELAYED_TIME"
             android:summary="@string/callaround_delayed_time_summary"
             android:title="@string/callaround_delayed_time" />
-
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="PREFERENCES_PERMIT_CALLAROUND_CONTROL"
@@ -61,7 +60,6 @@
             android:summary="@string/guard_response_window_summary"
             android:title="@string/guard_response_window" >
         </EditTextPreference>
-
         <iam.applications.TimePreferenceDialog
             android:defaultValue="22:00"
             android:key="PREFERENCES_GUARD_CHECKIN_START"
@@ -70,6 +68,13 @@
             android:defaultValue="06:00"
             android:key="PREFERENCES_GUARD_CHECKIN_END"
             android:title="@string/guard_checkin_end" />
+        <EditTextPreference
+            android:defaultValue="5000"
+            android:inputType="number"
+            android:key="PREFERENCES_MISSED_CALL_DELAY"
+            android:summary="@string/missed_call_delay_summary"
+            android:title="@string/missed_call_delay" >
+        </EditTextPreference>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/database" >
         <Preference
@@ -114,6 +119,11 @@
             android:title="@string/disable_247" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="PREFERENCES_DISABLE_GUARD_CHECKS"
+            android:summary="@string/disable_guard_checks_summary"
+            android:title="@string/disable_guard_checks" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="PREFERENCES_PERMIT_THISIS"
             android:summary="@string/thisis_enabled_summary"
             android:title="@string/thisis_enabled" />
@@ -122,14 +132,6 @@
             android:key="PREFERENCES_REQUIRE_PREFIX"
             android:summary="@string/require_prefix_summary"
             android:title="@string/require_prefix" />
-
-        <EditTextPreference
-            android:defaultValue="5000"
-            android:inputType="number"
-            android:key="PREFERENCES_MISSED_CALL_DELAY"
-            android:summary="@string/missed_call_delay_summary"
-            android:title="@string/missed_call_delay" >
-        </EditTextPreference>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/clear_data" >
         <Preference

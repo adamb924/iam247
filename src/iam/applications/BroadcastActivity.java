@@ -4,14 +4,21 @@
 package iam.applications;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.widget.TextView;
 
 /**
  * @author Adam
@@ -25,6 +32,7 @@ public class BroadcastActivity extends Activity {
 	private transient EditText mMessageBody;
 
 	private transient Spinner mToWhom;
+	private Spinner mSmsSpinner;
 
 	/*
 	 * (non-Javadoc)
@@ -40,8 +48,6 @@ public class BroadcastActivity extends Activity {
 
 		setContentView(R.layout.broadcast_layout);
 
-		mMessageBody = (EditText) findViewById(R.id.message);
-		initializeMessageBody();
 
 		mToWhom = (Spinner) findViewById(R.id.towhom);
 		final ArrayAdapter<CharSequence> adapter = ArrayAdapter
@@ -50,11 +56,54 @@ public class BroadcastActivity extends Activity {
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mToWhom.setAdapter(adapter);
 
+		initializeSmsSpinner();
+
+		mMessageBody = (EditText) findViewById(R.id.message);
+		initializeMessageBody();
+
 		final Button broadcastButton = (Button) findViewById(R.id.broadcast);
 		broadcastButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(final View view) {
 				sendMessage();
+			}
+		});
+	}
+
+	private void initializeSmsSpinner() {
+		mSmsSpinner = (Spinner) findViewById(R.id.sms_spinner);
+/*
+		final Cursor smsCursor = mDbHelper.fetchAllHouses();
+		startManagingCursor(smsCursor);
+		final String[] fromFields = new String[] { DbAdapter.Columns.NAME };
+		final int[] toFields = new int[] { android.R.id.text1 };
+
+		final SimpleCursorAdapter smsAdapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_spinner_item, smsCursor, fromFields, toFields);
+		smsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		mSmsSpinner.setAdapter(smsAdapter);
+*/
+		/// http://stackoverflow.com/questions/848728/how-can-i-read-sms-messages-from-the-inbox-programmatically-in-android
+		Cursor smsCursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
+		final String[] fromFields = new String[] { "body" };
+		final int[] toFields = new int[] { android.R.id.text1 };
+
+		final SimpleCursorAdapter smsAdapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_spinner_item, smsCursor, fromFields, toFields);
+
+		smsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		mSmsSpinner.setAdapter(smsAdapter);
+
+		// http://stackoverflow.com/questions/1337424/android-spinner-get-the-selected-item-change-event
+		mSmsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+				Cursor cursor = (Cursor) smsAdapter.getItem(position);
+				mMessageBody.setText( cursor.getString( cursor.getColumnIndex( "body") ) , TextView.BufferType.EDITABLE);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parentView) {
 			}
 		});
 	}

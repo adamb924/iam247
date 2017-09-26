@@ -78,6 +78,9 @@ public class AddTravelCallaround extends Activity {
 					}
 				});
 
+		// load recent SMS messages
+		Spinner spinner = (Spinner) findViewById(R.id.sms_spinner);
+
 		// logic for the Ok and Cancel buttons
 		final Button okButton = (Button) findViewById(R.id.ok);
 		okButton.setOnClickListener(new View.OnClickListener() {
